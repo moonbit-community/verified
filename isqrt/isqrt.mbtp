@@ -1,0 +1,7 @@
+predicate nonneg(n : Int) {
+  n >= 0
+}
+
+predicate isqrt_ok(n : Int, result : Int) {
+  (result >= 0) && (result * result <= n) && (n < (result + 1) * (result + 1))
+}

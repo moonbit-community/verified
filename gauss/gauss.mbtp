@@ -1,0 +1,7 @@
+predicate nonneg(n : Int) {
+  n >= 0
+}
+
+predicate gauss_ok(n : Int, result : Int) {
+  result * 2 == n * (n + 1)
+}

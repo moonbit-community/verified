@@ -1,0 +1,7 @@
+predicate valid_div_args(a : Int, b : Int) {
+  (a >= 0) && (b > 0)
+}
+
+predicate div_ok(a : Int, b : Int, q : Int) {
+  (q >= 0) && (q * b <= a) && (a < (q + 1) * b)
+}

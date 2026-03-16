@@ -1,0 +1,12 @@
+predicate nonempty(xs : FixedArray[Int]) {
+  xs.length() > 0
+}
+
+predicate max_in_prefix(xs : FixedArray[Int], best : Int, len : Int) {
+  ∀ k : Int, ((0 <= k) && (k < len)) → xs[k] <= xs[best]
+}
+
+predicate is_max_index(xs : FixedArray[Int], idx : Int) {
+  ∀ k : Int, ((0 <= k) && (k < xs.length())) →
+    ((xs[k] <= xs[idx]) && (0 <= idx) && (idx < xs.length()))
+}
