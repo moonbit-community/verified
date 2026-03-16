@@ -1,0 +1,3 @@
+predicate abs_ok(x : Int, result : Int) {
+  (result >= 0) && ((result == x) || (result == -x))
+}

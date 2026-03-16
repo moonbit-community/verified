@@ -1,0 +1,3 @@
+predicate is_max(a : Int, b : Int, result : Int) {
+  (result >= a) && (result >= b) && ((result == a) || (result == b))
+}
