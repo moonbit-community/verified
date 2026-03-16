@@ -1,0 +1,11 @@
+predicate same_length(xs : FixedArray[Int], ys : FixedArray[Int]) {
+  xs.length() == ys.length()
+}
+
+predicate eq_upto_when_ok(xs : FixedArray[Int], ys : FixedArray[Int], ok : Int, upto : Int) {
+  ∀ k : Int, ((ok == 1) && (0 <= k) && (k < upto)) → xs[k] == ys[k]
+}
+
+predicate arrays_eq_ok(xs : FixedArray[Int], ys : FixedArray[Int], result : Int) {
+  ∀ k : Int, ((result == 1) && (0 <= k) && (k < xs.length())) → xs[k] == ys[k]
+}

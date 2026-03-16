@@ -1,0 +1,8 @@
+predicate in_range(xs : FixedArray[Int], lo : Int, hi : Int) {
+  ∀ i : Int, ((0 <= i) && (i < xs.length())) →
+    ((lo <= xs[i]) && (xs[i] <= hi))
+}
+
+predicate sum_bounded(xs : FixedArray[Int], lo : Int, hi : Int, result : Int) {
+  (lo * xs.length() <= result) && (result <= hi * xs.length())
+}
