@@ -1,0 +1,21 @@
+predicate in_bounds(arr : FixedArray[Int], i : Int) {
+  0 <= i && i < arr.length()
+}
+
+predicate sorted_desc(arr : FixedArray[Int]) {
+  ∀ k : Int,
+    (0 <= k && k + 1 < arr.length()) → arr[k] >= arr[k + 1]
+}
+
+predicate prefix_dominates_suffix(arr : FixedArray[Int], i : Int) {
+  ∀ j : Int, ∀ k : Int,
+    (0 <= j && j < i && j < k && k < arr.length()) → arr[j] >= arr[k]
+}
+
+predicate max_in_range(arr : FixedArray[Int], i : Int, j : Int, ub : Int) {
+  ∀ k : Int, (i <= k && k < j) → ub >= arr[k]
+}
+
+predicate max_index_in_range(arr : FixedArray[Int], i : Int, j : Int, l : Int) {
+  i <= l && l < j
+}

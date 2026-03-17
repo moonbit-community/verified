@@ -1,0 +1,66 @@
+predicate in_bounds(a : FixedArray[Int], i : Int) {
+  0 <= i && i < a.length()
+}
+
+predicate has_two_sum_before_i(a : FixedArray[Int], sum : Int, i : Int) {
+  ∃ ii : Int, ∃ j : Int,
+    0 <= ii && ii < i && in_bounds(a, j) && a[ii] + a[j] == sum
+}
+
+predicate has_two_sum(a : FixedArray[Int], sum : Int) {
+  has_two_sum_before_i(a, sum, a.length())
+}
+
+predicate has_two_sum_before_j(a : FixedArray[Int], sum : Int, i : Int, j : Int) {
+  ∃ jj : Int,
+    0 <= jj && jj < j && a[i] + a[jj] == sum
+}
+
+predicate two_loop_exists_ok(a : FixedArray[Int], sum : Int, result : Bool) {
+  result == has_two_sum(a, sum)
+}
+
+predicate two_sum_result_ok(a : FixedArray[Int], sum : Int, result : Option[(Int, Int)]) {
+  match result {
+    None => !has_two_sum(a, sum)
+    Some((i, j)) => in_bounds(a, i) && in_bounds(a, j) && a[i] + a[j] == sum
+  }
+}
+
+predicate witness_state_ok(
+  a : FixedArray[Int],
+  sum : Int,
+  found : Bool,
+  ri : Int,
+  rj : Int
+) {
+  !found || (in_bounds(a, ri) && in_bounds(a, rj) && a[ri] + a[rj] == sum)
+}
+
+predicate nonnegative(n : Int) {
+  0 <= n
+}
+
+predicate nonnegative_entries(a : FixedArray[Int]) {
+  ∀ i : Int, in_bounds(a, i) → 0 <= a[i]
+}
+
+predicate has_two_sum_in_prefix(a : FixedArray[Int], sum : Int, i : Int) {
+  ∃ ii : Int, ∃ j : Int,
+    0 <= ii && ii < i && 0 <= j && j < i && a[ii] + a[j] == sum
+}
+
+predicate no_value_in_prefix(a : FixedArray[Int], i : Int, k : Int) {
+  ∀ j : Int, (0 <= j && j < i) → a[j] != k
+}
+
+predicate seen_complete(seen : FixedArray[Int], a : FixedArray[Int], i : Int) {
+  ∀ k : Int,
+    (0 <= k && k < seen.length()) → ((seen[k] == 0) == no_value_in_prefix(a, i, k))
+}
+
+predicate seen_sound(seen : FixedArray[Int], a : FixedArray[Int], i : Int) {
+  ∀ k : Int,
+    (0 <= k && k < seen.length() && seen[k] != 0) →
+      0 < seen[k] && seen[k] <= i && a[seen[k] - 1] == k
+}

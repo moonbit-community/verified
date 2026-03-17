@@ -1,0 +1,13 @@
+predicate sorted_desc(arr : FixedArray[Int]) {
+  ∀ k : Int,
+    (0 <= k && k + 1 < arr.length()) → arr[k] >= arr[k + 1]
+}
+
+predicate prefix_dominates_suffix(arr : FixedArray[Int], i : Int) {
+  ∀ k : Int, ∀ l : Int,
+    (0 <= k && k < i && k < l && l < arr.length()) → arr[k] >= arr[l]
+}
+
+predicate suffix_head_dominates(arr : FixedArray[Int], j : Int) {
+  ∀ k : Int, (j <= k && k < arr.length()) → arr[j] >= arr[k]
+}
