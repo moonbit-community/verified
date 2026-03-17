@@ -1,3 +1,4 @@
+///|
 #ensures(find_ok(xs, key, result))
 pub fn find(xs : FixedArray[Int], key : Int) -> Int {
   for i = 0, found = -1; i < xs.length(); {

@@ -1,3 +1,4 @@
+///|
 #requires(sorted(xs))
 #ensures(lower_bound_ok(xs, key, result))
 pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {

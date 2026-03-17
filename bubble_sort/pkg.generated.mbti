@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "username/moon_prove/bubble_sort"
+package "bobzhang/prove/bubble_sort"
 
 // Values
 pub fn sort(FixedArray[Int]) -> Int

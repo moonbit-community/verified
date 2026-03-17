@@ -1,3 +1,4 @@
+///|
 #ensures(check_sorted_ok(xs, result))
 pub fn check_sorted(xs : FixedArray[Int]) -> Int {
   for i = 0, ok = 1; i < xs.length() - 1; {

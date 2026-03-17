@@ -1,3 +1,4 @@
+///|
 #ensures(count_bounded(xs, result))
 pub fn count_nonneg(xs : FixedArray[Int]) -> Int {
   for i = 0, count = 0; i < xs.length(); {

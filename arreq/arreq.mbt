@@ -1,3 +1,4 @@
+///|
 #requires(same_length(xs, ys))
 #ensures(arrays_eq_ok(xs, ys, result))
 pub fn arrays_equal(xs : FixedArray[Int], ys : FixedArray[Int]) -> Int {

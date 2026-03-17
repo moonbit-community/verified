@@ -1,3 +1,4 @@
+///|
 #requires(sorted(xs))
 #ensures(binary_search_ok(xs, key, result))
 pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {
@@ -10,7 +11,7 @@ pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {
     }
   } nobreak {
     if i < xs.length() && xs[i] == key {
-        i
+      i
     } else {
       -1
     }

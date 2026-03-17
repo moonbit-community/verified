@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "username/moon_prove/two_sum"
+package "bobzhang/prove/two_sum"
 
 // Values
 pub fn first_hit(FixedArray[Int], Int) -> (Int, Int)?

@@ -1,3 +1,4 @@
+///|
 #requires(valid_div_args(a, b))
 #ensures(div_ok(a, b, result))
 pub fn div(a : Int, b : Int) -> Int {

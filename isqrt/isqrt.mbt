@@ -1,3 +1,4 @@
+///|
 #requires(nonneg(n))
 #ensures(isqrt_ok(n, result))
 pub fn isqrt(n : Int) -> Int {

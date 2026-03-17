@@ -1,3 +1,4 @@
+///|
 #requires(sorted(xs))
 #ensures(binary_search_ok(xs, key, result))
 pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {

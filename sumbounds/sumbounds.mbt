@@ -1,3 +1,4 @@
+///|
 #requires(in_range(xs, lo, hi))
 #ensures(sum_bounded(xs, lo, hi, result))
 pub fn bounded_sum(xs : FixedArray[Int], lo : Int, hi : Int) -> Int {

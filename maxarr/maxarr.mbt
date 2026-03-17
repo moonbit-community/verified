@@ -1,3 +1,4 @@
+///|
 #requires(nonempty(xs))
 #ensures(is_max_index(xs, result))
 pub fn index_of_max(xs : FixedArray[Int]) -> Int {

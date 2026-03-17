@@ -1,3 +1,4 @@
+///|
 #requires(nonneg(n))
 #ensures(gauss_ok(n, result))
 pub fn sum_to(n : Int) -> Int {

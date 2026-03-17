@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/selection_sort"
+package "bobzhang/prove/abs"
 
 // Values
-pub fn sort(FixedArray[Int]) -> Int
+pub fn abs(Int) -> Int
 
 // Errors
 
