@@ -11,6 +11,8 @@ concurrency:
 
 jobs:
   prove:
+    env:
+      Z3_VERSION: 4.15.4
     strategy:
       fail-fast: false
       matrix:
@@ -32,13 +34,17 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s nightly
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Install Z3 (Ubuntu)
+      - name: Install Z3 4.15.4 (Ubuntu)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y z3
-          echo "Z3PATH=$(command -v z3)" >> "$GITHUB_ENV"
+          curl -fsSL \
+            -o "$RUNNER_TEMP/z3.zip" \
+            "https://github.com/Z3Prover/z3/releases/download/z3-${Z3_VERSION}/z3-${Z3_VERSION}-x64-glibc-2.39.zip"
+          unzip -q "$RUNNER_TEMP/z3.zip" -d "$RUNNER_TEMP/z3"
+          Z3PATH="$(find "$RUNNER_TEMP/z3" -type f -name z3 | head -n 1)"
+          echo "$(dirname "$Z3PATH")" >> "$GITHUB_PATH"
+          echo "Z3PATH=$Z3PATH" >> "$GITHUB_ENV"
 
       - name: Install Z3 (macOS)
         if: ${{ matrix.os == 'macos-latest' }}
