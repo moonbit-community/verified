@@ -2,11 +2,21 @@
 package "bobzhang/prove/avl"
 
 // Values
+pub fn contains(Int, Tree) -> Bool
+
+pub fn empty() -> Tree
+
+pub fn insert(Int, Tree) -> Tree
 
 // Errors
 
 // Types and methods
-type Fset[T]
+pub type Fset[T]
+
+pub enum Tree {
+  Empty
+  Node(Tree, Int, Tree, Int)
+}
 
 // Type aliases
 

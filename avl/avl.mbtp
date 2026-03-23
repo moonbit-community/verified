@@ -37,28 +37,9 @@ predicate all_gt(x : Int, s : Fset[Int]) {
 }
 
 ///|
-predicate ordered_node(l : Tree, x : Int, r : Tree) {
-  all_lt(elements(l), x) && all_gt(x, elements(r))
-}
-
-///|
-predicate stored_height_ok(l : Tree, r : Tree, h : Int) {
-  h == 1 + max2(height(l), height(r))
-}
-
-///|
 predicate balanced_heights(l : Tree, r : Tree) {
   -1 <= height(l) - height(r) &&
   height(l) - height(r) <= 1
-}
-
-///|
-predicate height_node_ok(l : Tree, r : Tree, h : Int) {
-  stored_height_ok(l, r, h) && balanced_heights(l, r)
-}
-
-predicate local_node_ok(l : Tree, x : Int, r : Tree, h : Int) {
-  ordered_node(l, x, r) && height_node_ok(l, r, h)
 }
 
 ///|
@@ -66,27 +47,22 @@ predicate avl(t : Tree) {
   match t {
     Empty => true
     Node(l, x, r, h) =>
-      avl(l) && (avl(r) && local_node_ok(l, x, r, h))
+      avl(l) &&
+      avl(r) &&
+      all_lt(elements(l), x) && all_gt(x, elements(r)) &&
+      h == 1 + max2(height(l), height(r)) &&
+      -1 <= height(l) - height(r) &&
+      height(l) - height(r) <= 1
   }
-}
-
-///|
-predicate height_diff_leq(l : Tree, r : Tree, k : Int) {
-  height(l) - height(r) <= k
-}
-
-///|
-predicate height_diff_geq(l : Tree, r : Tree, k : Int) {
-  k <= height(l) - height(r)
 }
 
 ///|
 predicate balance_pre(l : Tree, x : Int, r : Tree) {
   avl(l) &&
   avl(r) &&
-  ordered_node(l, x, r) &&
-  height_diff_geq(l, r, -2) &&
-  height_diff_leq(l, r, 2)
+  all_lt(elements(l), x) && all_gt(x, elements(r)) &&
+  -2 <= height(l) - height(r) &&
+  height(l) - height(r) <= 2
 }
 
 ///|
@@ -94,19 +70,10 @@ predicate left_heavy(l : Tree, r : Tree) {
   height(l) > height(r) + 1
 }
 
-///|
-predicate left_single_case(l : Tree) {
-  match l {
-    Empty => false
-    Node(ll, x, lr, h) => height(ll) >= height(lr)
-  }
-}
-
-///|
 predicate left_double_case(l : Tree) {
   match l {
     Empty => false
-    Node(ll, x, lr, h) => height(ll) < height(lr)
+    Node(ll, _x, lr, _h) => height(ll) < height(lr)
   }
 }
 
@@ -115,19 +82,10 @@ predicate right_heavy(l : Tree, r : Tree) {
   height(r) > height(l) + 1
 }
 
-///|
-predicate right_single_case(r : Tree) {
-  match r {
-    Empty => false
-    Node(rl, x, rr, h) => height(rr) >= height(rl)
-  }
-}
-
-///|
 predicate right_double_case(r : Tree) {
   match r {
     Empty => false
-    Node(rl, x, rr, h) => height(rr) < height(rl)
+    Node(rl, _x, rr, _h) => height(rr) < height(rl)
   }
 }
 
@@ -152,15 +110,6 @@ predicate balance_height_exact_ok(l : Tree, r : Tree, result : Tree) {
 }
 
 ///|
-predicate balance_ok(l : Tree, x : Int, r : Tree, result : Tree) {
-  avl(result) &&
-  balance_elements_ok(l, x, r, result) &&
-  balance_height_exact_ok(l, r, result) &&
-  balance_height_upper_ok(l, r, result) &&
-  balance_height_lower_ok(l, r, result)
-}
-
-///|
 predicate insert_elements_ok(x : Int, t : Tree, result : Tree) {
   fset_eq(elements(result), fset_add(x, elements(t)))
 }
@@ -176,57 +125,8 @@ predicate insert_height_upper_ok(t : Tree, result : Tree) {
 }
 
 ///|
-predicate mk_ok(l : Tree, x : Int, r : Tree, result : Tree) {
-  avl(result) &&
-  fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r)))) &&
+predicate mk_height_ok(l : Tree, r : Tree, result : Tree) {
   height(result) == 1 + max2(height(l), height(r))
-}
-
-///|
-predicate single_left_rotation_ready(
-  l : Tree,
-  x : Int,
-  r : Tree,
-  ll : Tree,
-  lx : Int,
-  lr : Tree,
-  nr : Tree,
-  res : Tree
-) {
-  balance_pre(l, x, r) &&
-  left_heavy(l, r) &&
-  left_single_case(l) &&
-  avl(ll) &&
-  avl(lr) &&
-  ordered_node(ll, lx, lr) &&
-  stored_height_ok(ll, lr, height(l)) &&
-  lx < x &&
-  all_gt(lx, elements(r)) &&
-  elements_subset(lr, l) &&
-  all_lt(elements(lr), x) &&
-  all_gt(x, elements(r)) &&
-  ordered_node(lr, x, r) &&
-  balanced_heights(lr, r) &&
-  avl(nr) &&
-  fset_eq(elements(nr), fset_add(x, fset_union(elements(lr), elements(r)))) &&
-  height(nr) == 1 + max2(height(lr), height(r)) &&
-  ordered_node(ll, lx, nr) &&
-  balanced_heights(ll, nr) &&
-  fset_eq(
-    fset_add(lx, fset_union(elements(ll), elements(nr))),
-    fset_add(x, fset_union(elements(l), elements(r)))
-  ) &&
-  avl(res) &&
-  fset_eq(elements(res), fset_add(lx, fset_union(elements(ll), elements(nr)))) &&
-  height(res) == 1 + max2(height(ll), height(nr))
-}
-
-///|
-predicate insert_ok(x : Int, t : Tree, result : Tree) {
-  avl(result) &&
-  insert_elements_ok(x, t, result) &&
-  insert_height_lower_ok(t, result) &&
-  insert_height_upper_ok(t, result)
 }
 
 ///|
@@ -241,15 +141,9 @@ predicate height_nonneg_ok(t : Tree) {
 lemma height_nonneg_lemma(t : Tree) {
   match t {
     Empty => ()
-    Node(l, x, r, h) => {
+    Node(l, _x, r, _h) => {
       height_nonneg_lemma(l)
       height_nonneg_lemma(r)
-      proof_assert height_nonneg_ok(l)
-      proof_assert height_nonneg_ok(r)
-      proof_assert stored_height_ok(l, r, h)
-      proof_assert height(t) == 1 + max2(height(l), height(r))
-      proof_assert 0 <= 1 + max2(height(l), height(r))
-      proof_assert height_nonneg_ok(t)
     }
   }
 }
@@ -265,54 +159,35 @@ predicate int_lt(x : Int, y : Int) {
 }
 
 ///|
-predicate all_gt_after_add(x : Int, y : Int, s : Fset[Int]) {
-  all_gt(x, fset_add(y, s))
-}
-
-///|
 #requires(int_lt(x, y))
 #requires(all_gt(x, s))
-#ensures(all_gt_after_add(x, y, s))
+#ensures(all_gt(x, fset_add(y, s)))
 lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) {
-  proof_assert all_gt_after_add(x, y, s)
-}
 
-///|
-predicate all_gt_after_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) {
-  all_gt(x, fset_union(s1, s2))
 }
 
 ///|
 #requires(all_gt(x, s1))
 #requires(all_gt(x, s2))
-#ensures(all_gt_after_union(x, s1, s2))
+#ensures(all_gt(x, fset_union(s1, s2)))
 lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) {
-  proof_assert all_gt_after_union(x, s1, s2)
-}
-
-predicate all_lt_after_add(s : Fset[Int], x : Int, y : Int) {
-  all_lt(fset_add(y, s), x)
+  
 }
 
 ///|
 #requires(int_lt(y, x))
 #requires(all_lt(s, x))
-#ensures(all_lt_after_add(s, x, y))
+#ensures(all_lt(fset_add(y, s), x))
 lemma all_lt_add(s : Fset[Int], x : Int, y : Int) {
-  proof_assert all_lt_after_add(s, x, y)
-}
 
-///|
-predicate all_lt_after_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) {
-  all_lt(fset_union(s1, s2), x)
 }
 
 ///|
 #requires(all_lt(s1, x))
 #requires(all_lt(s2, x))
-#ensures(all_lt_after_union(s1, s2, x))
+#ensures(all_lt(fset_union(s1, s2), x))
 lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) {
-  proof_assert all_lt_after_union(s1, s2, x)
+
 }
 
 ///|
@@ -341,7 +216,6 @@ lemma single_rotation_mem(
   proof_assert single_rotation_mem_ok(a, b, s1, s2, s3, z)
 }
 
-///|
 predicate single_rotation_eq(
   a : Int,
   b : Int,
@@ -403,7 +277,6 @@ lemma double_rotation_mem_lr(
   proof_assert double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z)
 }
 
-///|
 predicate double_rotation_eq_lr(
   a : Int,
   b : Int,
@@ -469,7 +342,6 @@ lemma double_rotation_mem_rl(
   proof_assert double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z)
 }
 
-///|
 predicate double_rotation_eq_rl(
   a : Int,
   b : Int,
@@ -523,7 +395,6 @@ lemma insert_elements_mem(
   proof_assert insert_elements_mem_ok(a, b, s1, s2, z)
 }
 
-///|
 predicate insert_elements_eq(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {
   fset_eq(fset_add(a, fset_union(fset_add(b, s1), s2)), fset_add(b, fset_add(a, fset_union(s1, s2))))
 }
