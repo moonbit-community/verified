@@ -7,8 +7,8 @@ pub fn check_sorted(xs : FixedArray[Int]) -> Int {
   } nobreak {
     ok
   } where {
-    invariant: 0 <= i,
-    invariant: ok == 0 || ok == 1,
-    invariant: adj_sorted_upto(xs, ok, i + 1),
+    proof_invariant: 0 <= i,
+    proof_invariant: ok == 0 || ok == 1,
+    proof_invariant: adj_sorted_upto(xs, ok, i + 1),
   }
 }

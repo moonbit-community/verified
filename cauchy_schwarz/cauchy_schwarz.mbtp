@@ -1,0 +1,7 @@
+predicate same_length(xs : FixedArray[Int], ys : FixedArray[Int]) {
+  xs.length() == ys.length()
+}
+
+predicate nonneg(result : Int) {
+  result >= 0
+}

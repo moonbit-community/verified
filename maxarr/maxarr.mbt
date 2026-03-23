@@ -8,10 +8,10 @@ pub fn index_of_max(xs : FixedArray[Int]) -> Int {
   } nobreak {
     best
   } where {
-    invariant: 1 <= i,
-    invariant: i <= xs.length(),
-    invariant: 0 <= best,
-    invariant: best < i,
-    invariant: max_in_prefix(xs, best, i),
+    proof_invariant: 1 <= i,
+    proof_invariant: i <= xs.length(),
+    proof_invariant: 0 <= best,
+    proof_invariant: best < i,
+    proof_invariant: max_in_prefix(xs, best, i),
   }
 }

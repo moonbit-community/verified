@@ -1,134 +1,68 @@
 ///|
-#ensures(two_loop_exists_ok(a, sum, result))
-pub fn two_loop_exists(a : FixedArray[Int], sum : Int) -> Bool {
-  for i = 0, found = false; i < a.length(); {
-    let found_in_row = for j = 0, found = found; j < a.length(); {
-      let next_found = found || a[i] + a[j] == sum
-      continue j + 1, next_found
-    } nobreak {
-      found
-    } where {
-      invariant: 0 <= j,
-      invariant: j <= a.length(),
-      invariant: found ==
-      (has_two_sum_before_i(a, sum, i) || has_two_sum_before_j(a, sum, i, j)),
-    }
-    continue i + 1, found_in_row
-  } nobreak {
-    found
-  } where {
-    invariant: 0 <= i,
-    invariant: i <= a.length(),
-    invariant: found == has_two_sum_before_i(a, sum, i),
-  }
-}
-
-///|
 #ensures(two_sum_result_ok(a, sum, result))
 pub fn first_hit(a : FixedArray[Int], sum : Int) -> (Int, Int)? {
-  let (found, ri, rj) = for i = 0, found = false, ri = 0, rj = 0; i < a.length(); {
-    let (row_found, row_ri, row_rj) = for j = 0, found = found, ri = ri, rj = rj; j <
-                                         a.length(); {
-      if found {
-        continue j + 1, true, ri, rj
+  for i = 0; i < a.length(); {
+    let row_hit = for j = 0; j < a.length(); {
+      if a[i] + a[j] == sum {
+        break Some((i, j))
       } else {
-        let hit = a[i] + a[j] == sum
-        let next_ri = if hit { i } else { ri }
-        let next_rj = if hit { j } else { rj }
-        continue j + 1, hit, next_ri, next_rj
+        continue j + 1
       }
     } nobreak {
-      (found, ri, rj)
+      None
     } where {
-      invariant: 0 <= j,
-      invariant: j <= a.length(),
-      invariant: witness_state_ok(a, sum, found, ri, rj),
-      invariant: found ==
-      (has_two_sum_before_i(a, sum, i) || has_two_sum_before_j(a, sum, i, j)),
+      proof_invariant: 0 <= j,
+      proof_invariant: j <= a.length(),
+      proof_invariant: no_two_sum_before_i(a, sum, i),
+      proof_invariant: no_two_sum_before_j(a, sum, i, j),
+      proof_yield: res => first_hit_row_ok(a, sum, i, res),
     }
-    continue i + 1, row_found, row_ri, row_rj
+    match row_hit {
+      Some((ri, rj)) => break Some((ri, rj))
+      None => continue i + 1
+    }
   } nobreak {
-    (found, ri, rj)
-  } where {
-    invariant: 0 <= i,
-    invariant: i <= a.length(),
-    invariant: witness_state_ok(a, sum, found, ri, rj),
-    invariant: found == has_two_sum_before_i(a, sum, i),
-  }
-  if found {
-    Some((ri, rj))
-  } else {
     None
+  } where {
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= a.length(),
+    proof_invariant: no_two_sum_before_i(a, sum, i),
+    proof_yield: res => two_sum_result_ok(a, sum, res),
   }
 }
 
 ///|
 #requires(nonnegative(sum))
 #requires(nonnegative_entries(a))
-#ensures(two_sum_result_ok(a, sum, result))
+#ensures(positive_two_sum_result_ok(a, sum, result))
 pub fn one_loop_positive(a : FixedArray[Int], sum : Int) -> (Int, Int)? {
   let seen = FixedArray::make(sum + 1, 0)
-  let (found, ri, rj) = for i = 0, found = false, ri = 0, rj = 0; i < a.length(); {
-    if found {
-      continue i + 1, true, ri, rj
-    } else if a[i] <= sum {
-      seen[a[i]] = i + 1
+  for i = 0; i < a.length(); {
+    if a[i] <= sum {
       let complement = sum - a[i]
       if complement == a[i] {
-        let hit_i = i
-        continue i + 1, true, hit_i, hit_i
+        break Some((i, i))
       } else {
         let j = seen[complement]
-        let hit = j != 0
-        let next_ri = if hit { i } else { ri }
-        let next_rj = if hit { j - 1 } else { rj }
-        continue i + 1, hit, next_ri, next_rj
+        if j != 0 {
+          break Some((i, j - 1))
+        } else {
+          seen[a[i]] = i + 1
+          continue i + 1
+        }
       }
     } else {
-      continue i + 1, false, ri, rj
+      continue i + 1
     }
   } nobreak {
-    (found, ri, rj)
-  } where {
-    invariant: 0 <= i,
-    invariant: i <= a.length(),
-    invariant: seen.length() == sum + 1,
-    invariant: witness_state_ok(a, sum, found, ri, rj),
-    invariant: found == has_two_sum_in_prefix(a, sum, i),
-    invariant: found || seen_complete(seen, a, i),
-    invariant: found || seen_sound(seen, a, i),
-  }
-  if found {
-    Some((ri, rj))
-  } else {
     None
-  }
-}
-
-///|
-#requires(nonnegative(sum))
-#requires(nonnegative_entries(a))
-#ensures(two_loop_exists_ok(a, sum, result))
-pub fn one_loop_positive_exists(a : FixedArray[Int], sum : Int) -> Bool {
-  let seen = FixedArray::make(sum + 1, 0)
-  for i = 0, found = false; i < a.length(); {
-    if found {
-      continue i + 1, true
-    } else if a[i] <= sum {
-      seen[a[i]] = i + 1
-      let hit = seen[sum - a[i]] != 0
-      continue i + 1, hit
-    } else {
-      continue i + 1, false
-    }
-  } nobreak {
-    found
   } where {
-    invariant: 0 <= i,
-    invariant: i <= a.length(),
-    invariant: seen.length() == sum + 1,
-    invariant: found == has_two_sum_in_prefix(a, sum, i),
-    invariant: found || seen_complete(seen, a, i),
-    invariant: found || seen_sound(seen, a, i),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= a.length(),
+    proof_invariant: seen.length() == sum + 1,
+    proof_invariant: no_two_sum_in_prefix(a, sum, i),
+    proof_invariant: seen_complete(seen, a, i),
+    proof_invariant: seen_sound(seen, a, i),
+    proof_yield: res => positive_two_sum_result_ok(a, sum, res),
   }
 }

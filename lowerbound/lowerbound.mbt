@@ -12,10 +12,10 @@ pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {
   } nobreak {
     lo
   } where {
-    invariant: 0 <= lo,
-    invariant: lo <= hi,
-    invariant: hi <= xs.length(),
-    invariant: all_less_before(xs, key, lo),
-    invariant: all_geq_from(xs, key, hi),
+    proof_invariant: 0 <= lo,
+    proof_invariant: lo <= hi,
+    proof_invariant: hi <= xs.length(),
+    proof_invariant: all_less_before(xs, key, lo),
+    proof_invariant: all_geq_from(xs, key, hi),
   }
 }

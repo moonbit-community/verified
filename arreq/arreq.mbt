@@ -8,9 +8,9 @@ pub fn arrays_equal(xs : FixedArray[Int], ys : FixedArray[Int]) -> Int {
   } nobreak {
     ok
   } where {
-    invariant: 0 <= i,
-    invariant: i <= xs.length(),
-    invariant: ok == 0 || ok == 1,
-    invariant: eq_upto_when_ok(xs, ys, ok, i),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= xs.length(),
+    proof_invariant: ok == 0 || ok == 1,
+    proof_invariant: eq_upto_when_ok(xs, ys, ok, i),
   }
 }

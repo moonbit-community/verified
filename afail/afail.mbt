@@ -16,7 +16,7 @@ pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {
       -1
     }
   } where {
-    invariant: 0 <= i && i <= j && j <= xs.length(),
-    // invariant: i <= j,
+    proof_invariant: 0 <= i && i <= j && j <= xs.length(),
+    // proof_invariant: i <= j,
   }
 }

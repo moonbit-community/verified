@@ -1,0 +1,71 @@
+///|
+#proof_import("set.Fset")
+fn fset_empty() -> Fset[Int] = "empty"
+
+///|
+#proof_import("set.Fset")
+fn fset_add(x : Int, s : Fset[Int]) -> Fset[Int] = "add"
+
+///|
+#proof_import("set.Fset")
+fn fset_union(s1 : Fset[Int], s2 : Fset[Int]) -> Fset[Int] = "union"
+
+///|
+#proof_import("set.Fset")
+fn fset_eq(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "(==)"
+
+///|
+fn elements(t : Tree) -> Fset[Int] {
+  match t {
+    Empty => fset_empty()
+    Node(l, x, r, _) => fset_add(x, fset_union(elements(l), elements(r)))
+  }
+}
+
+///|
+predicate avl(t : Tree) {
+  match t {
+    Empty => true
+    Node(l, _, r, h) =>
+      avl(l) && avl(r) && local_node_ok(l, h, r)
+  }
+}
+
+///|
+predicate ordered_node(l : Tree, x : Int, r : Tree) {
+  x == x
+}
+
+///|
+predicate stored_height_ok(l : Tree, h : Int, r : Tree) {
+  h == 1 + max2(height(l), height(r))
+}
+
+///|
+predicate balanced_heights(l : Tree, r : Tree) {
+  -1 <= height(l) - height(r) && height(l) - height(r) <= 1
+}
+
+///|
+predicate height_node_ok(l : Tree, h : Int, r : Tree) {
+  stored_height_ok(l, h, r) && balanced_heights(l, r)
+}
+
+///|
+predicate local_node_ok(l : Tree, h : Int, r : Tree) {
+  height_node_ok(l, h, r)
+}
+
+predicate expected_height(l : Tree, r : Tree, result : Tree) {
+  height(result) == 1 + max2(height(l), height(r))
+}
+
+///|
+predicate same_elements_as_node(l : Tree, x : Int, r : Tree, result : Tree) {
+  fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r))))
+}
+
+///|
+predicate mk_ok(l : Tree, x : Int, r : Tree, result : Tree) {
+  avl(result) && expected_height(l, r, result) && same_elements_as_node(l, x, r, result)
+}

@@ -2,39 +2,39 @@ predicate in_bounds(a : FixedArray[Int], i : Int) {
   0 <= i && i < a.length()
 }
 
-predicate has_two_sum_before_i(a : FixedArray[Int], sum : Int, i : Int) {
-  ∃ ii : Int, ∃ j : Int,
-    0 <= ii && ii < i && in_bounds(a, j) && a[ii] + a[j] == sum
+predicate no_two_sum_before_i(a : FixedArray[Int], sum : Int, i : Int) {
+  ∀ ii : Int, ∀ j : Int,
+    (0 <= ii && ii < i && in_bounds(a, j)) → a[ii] + a[j] != sum
 }
 
-predicate has_two_sum(a : FixedArray[Int], sum : Int) {
-  has_two_sum_before_i(a, sum, a.length())
-}
-
-predicate has_two_sum_before_j(a : FixedArray[Int], sum : Int, i : Int, j : Int) {
-  ∃ jj : Int,
-    0 <= jj && jj < j && a[i] + a[jj] == sum
-}
-
-predicate two_loop_exists_ok(a : FixedArray[Int], sum : Int, result : Bool) {
-  result == has_two_sum(a, sum)
+predicate no_two_sum_before_j(a : FixedArray[Int], sum : Int, i : Int, j : Int) {
+  ∀ jj : Int, (0 <= jj && jj < j) → a[i] + a[jj] != sum
 }
 
 predicate two_sum_result_ok(a : FixedArray[Int], sum : Int, result : Option[(Int, Int)]) {
   match result {
-    None => !has_two_sum(a, sum)
+    None => no_two_sum_before_i(a, sum, a.length())
     Some((i, j)) => in_bounds(a, i) && in_bounds(a, j) && a[i] + a[j] == sum
   }
 }
 
-predicate witness_state_ok(
+predicate first_hit_row_ok(a : FixedArray[Int], sum : Int, i : Int, result : Option[(Int, Int)]) {
+  match result {
+    None => no_two_sum_before_i(a, sum, i + 1)
+    Some((ri, rj)) =>
+      ri == i && in_bounds(a, ri) && in_bounds(a, rj) && a[ri] + a[rj] == sum
+  }
+}
+
+predicate positive_two_sum_result_ok(
   a : FixedArray[Int],
   sum : Int,
-  found : Bool,
-  ri : Int,
-  rj : Int
+  result : Option[(Int, Int)]
 ) {
-  !found || (in_bounds(a, ri) && in_bounds(a, rj) && a[ri] + a[rj] == sum)
+  match result {
+    None => no_two_sum_in_prefix(a, sum, a.length())
+    Some((i, j)) => in_bounds(a, i) && in_bounds(a, j) && a[i] + a[j] == sum
+  }
 }
 
 predicate nonnegative(n : Int) {
@@ -45,9 +45,9 @@ predicate nonnegative_entries(a : FixedArray[Int]) {
   ∀ i : Int, in_bounds(a, i) → 0 <= a[i]
 }
 
-predicate has_two_sum_in_prefix(a : FixedArray[Int], sum : Int, i : Int) {
-  ∃ ii : Int, ∃ j : Int,
-    0 <= ii && ii < i && 0 <= j && j < i && a[ii] + a[j] == sum
+predicate no_two_sum_in_prefix(a : FixedArray[Int], sum : Int, i : Int) {
+  ∀ ii : Int, ∀ j : Int,
+    (0 <= ii && ii < i && 0 <= j && j < i) → a[ii] + a[j] != sum
 }
 
 predicate no_value_in_prefix(a : FixedArray[Int], i : Int, k : Int) {
