@@ -1,0 +1,300 @@
+module SimpleAVL
+
+  use int.Int
+  use set.Fset as S
+
+  type tree =
+    | E
+    | N tree int tree int
+
+  let function height (t: tree) : int =
+    match t with
+    | E -> 0
+    | N _ _ _ h -> h
+    end
+
+  let function max2 (a b: int) : int =
+    if a < b then b else a
+
+  function elements (t: tree) : S.fset int =
+    match t with
+    | E -> S.empty
+    | N l x r _ -> S.add x (S.union (elements l) (elements r))
+    end
+
+  predicate all_lt (s: S.fset int) (x: int) =
+    forall y: int. S.mem y s -> y < x
+
+  predicate all_gt (x: int) (s: S.fset int) =
+    forall y: int. S.mem y s -> x < y
+
+  predicate avl (t: tree) =
+    match t with
+    | E -> true
+    | N l x r h ->
+        avl l /\ avl r /\
+        all_lt (elements l) x /\
+        all_gt x (elements r) /\
+        h = 1 + max2 (height l) (height r) /\
+        -1 <= height l - height r <= 1
+    end
+
+  let rec lemma height_nonneg (t: tree) : unit
+    requires { avl t }
+    ensures  { height t >= 0 }
+    variant  { t }
+  = match t with
+    | E -> ()
+    | N l _ r _ -> height_nonneg l; height_nonneg r
+    end
+
+  lemma all_gt_add : forall x y: int, s: S.fset int.
+    x < y -> all_gt x s -> all_gt x (S.add y s)
+
+  lemma all_gt_union : forall x: int, s1 s2: S.fset int.
+    all_gt x s1 -> all_gt x s2 -> all_gt x (S.union s1 s2)
+
+  lemma all_lt_add : forall s: S.fset int, x y: int.
+    y < x -> all_lt s x -> all_lt (S.add y s) x
+
+  lemma all_lt_union : forall s1 s2: S.fset int, x: int.
+    all_lt s1 x -> all_lt s2 x -> all_lt (S.union s1 s2) x
+
+  lemma single_rotation_mem: forall a b: int, s1 s2 s3: S.fset int, z: int.
+    S.mem z (S.add a (S.union s1 (S.add b (S.union s2 s3))))
+    <-> S.mem z (S.add b (S.union (S.add a (S.union s1 s2)) s3))
+
+  lemma double_rotation_mem_lr: forall a b c: int, s1 s2 s3 s4: S.fset int, z: int.
+    S.mem z (S.add a (S.union (S.add b (S.union s1 s2)) (S.add c (S.union s3 s4))))
+    <-> S.mem z (S.add c (S.union (S.add b (S.union s1 (S.add a (S.union s2 s3)))) s4))
+
+  lemma double_rotation_mem_rl: forall a b c: int, s1 s2 s3 s4: S.fset int, z: int.
+    S.mem z (S.add a (S.union (S.add b (S.union s1 s2)) (S.add c (S.union s3 s4))))
+    <-> S.mem z (S.add b (S.union s1 (S.add c (S.union (S.add a (S.union s2 s3)) s4))))
+
+  lemma insert_elements_mem: forall a b: int, s1 s2: S.fset int, z: int.
+    S.mem z (S.add a (S.union (S.add b s1) s2))
+    <-> S.mem z (S.add b (S.add a (S.union s1 s2)))
+
+  let empty () : tree
+    ensures { avl result }
+    ensures { elements result = S.empty }
+  = E
+
+  let mk (l: tree) (x: int) (r: tree) : tree
+    requires { avl l /\ avl r }
+    requires { all_lt (elements l) x /\ all_gt x (elements r) }
+    requires { -1 <= height l - height r <= 1 }
+    ensures  { avl result }
+    ensures  { elements result = S.add x (S.union (elements l) (elements r)) }
+    ensures  { height result = 1 + max2 (height l) (height r) }
+  = N l x r (1 + max2 (height l) (height r))
+
+  let rec member (x: int) (t: tree) : bool
+    requires { avl t }
+    ensures  { result = S.mem x (elements t) }
+    variant  { t }
+  = match t with
+    | E -> false
+    | N l y r _ ->
+        if x < y then member x l
+        else if y < x then member x r
+        else true
+    end
+
+  let balance (l: tree) (x: int) (r: tree) : tree
+    requires { avl l /\ avl r }
+    requires { all_lt (elements l) x /\ all_gt x (elements r) }
+    requires { -2 <= height l - height r <= 2 }
+    ensures  { avl result }
+    ensures  { elements result = S.add x (S.union (elements l) (elements r)) }
+    ensures  { -1 <= height l - height r <= 1 ->
+               height result = 1 + max2 (height l) (height r) }
+    ensures  { height result <= 1 + max2 (height l) (height r) }
+    ensures  { height result >= max2 (height l) (height r) }
+  =
+    if height l > height r + 1 then
+      match l with
+      | E -> absurd
+      | N ll lx lr _ ->
+          assert { all_gt lx (elements r) };
+          if height ll >= height lr then begin
+            assert { -1 <= height lr - height r <= 1 };
+            let nr = mk lr x r in
+            assert { -1 <= height ll - height nr <= 1 };
+            assert { S.(==) (S.add lx (S.union (elements ll) (elements nr)))
+                            (S.add x (S.union (elements l) (elements r))) };
+            mk ll lx nr
+          end else
+            match lr with
+            | E -> absurd
+            | N lrl lrx lrr _ ->
+                assert { S.mem lrx (elements l) };
+                assert { lrx < x };
+                assert { all_lt (elements ll) lrx };
+                assert { all_gt lrx (elements r) };
+                assert { -1 <= height ll - height lrl <= 1 };
+                let nl = mk ll lx lrl in
+                assert { forall y: int. S.mem y (elements lrr) -> S.mem y (elements lr) };
+                assert { all_lt (elements lrr) x };
+                assert { -1 <= height lrr - height r <= 1 };
+                let nr = mk lrr x r in
+                assert { -1 <= height nl - height nr <= 1 };
+                assert { S.(==) (S.add lrx (S.union (elements nl) (elements nr)))
+                                (S.add x (S.union (elements l) (elements r))) };
+                mk nl lrx nr
+            end
+      end
+    else if height r > height l + 1 then
+      match r with
+      | E -> absurd
+      | N rl rx rr _ ->
+          assert { all_lt (elements l) rx };
+          if height rr >= height rl then begin
+            assert { -1 <= height l - height rl <= 1 };
+            let nl = mk l x rl in
+            assert { -1 <= height nl - height rr <= 1 };
+            assert { S.(==) (S.add rx (S.union (elements nl) (elements rr)))
+                            (S.add x (S.union (elements l) (elements r))) };
+            mk nl rx rr
+          end else
+            match rl with
+            | E -> absurd
+            | N rll rlx rlr _ ->
+                assert { S.mem rlx (elements r) };
+                assert { x < rlx };
+                assert { all_lt (elements l) rlx };
+                assert { all_gt rlx (elements rr) };
+                assert { all_gt x (elements rll) };
+                assert { -1 <= height l - height rll <= 1 };
+                let nl = mk l x rll in
+                assert { forall y: int. S.mem y (elements rlr) -> S.mem y (elements rl) };
+                assert { all_lt (elements rlr) rx };
+                assert { -1 <= height rlr - height rr <= 1 };
+                let nr = mk rlr rx rr in
+                assert { -1 <= height nl - height nr <= 1 };
+                assert { S.(==) (S.add rlx (S.union (elements nl) (elements nr)))
+                                (S.add x (S.union (elements l) (elements r))) };
+                mk nl rlx nr
+            end
+      end
+    else
+      mk l x r
+
+  let rec insert (x: int) (t: tree) : tree
+    requires { avl t }
+    ensures  { avl result }
+    ensures  { elements result = S.add x (elements t) }
+    ensures  { height t <= height result <= height t + 1 }
+    variant  { t }
+  =
+    match t with
+    | E -> N E x E 1
+    | N l y r _ ->
+        if x < y then
+          let l' = insert x l in
+          assert { S.(==) (S.add y (S.union (elements l') (elements r)))
+                          (S.add x (S.add y (S.union (elements l) (elements r)))) };
+          balance l' y r
+        else if y < x then
+          let r' = insert x r in
+          assert { S.(==) (S.add y (S.union (elements l) (elements r')))
+                          (S.add x (S.add y (S.union (elements l) (elements r)))) };
+          balance l y r'
+        else
+          t
+    end
+
+  lemma all_gt_not_mem : forall x: int, s: S.fset int.
+    all_gt x s -> not S.mem x s
+
+  lemma all_lt_not_mem : forall s: S.fset int, x: int.
+    all_lt s x -> not S.mem x s
+
+  lemma delete_left_mem: forall x y: int, s_l s_r: S.fset int, z: int.
+    x <> y -> not S.mem x s_r ->
+    (S.mem z (S.add y (S.union (S.remove x s_l) s_r))
+     <-> S.mem z (S.remove x (S.add y (S.union s_l s_r))))
+
+  lemma delete_right_mem: forall x y: int, s_l s_r: S.fset int, z: int.
+    x <> y -> not S.mem x s_l ->
+    (S.mem z (S.add y (S.union s_l (S.remove x s_r)))
+     <-> S.mem z (S.remove x (S.add y (S.union s_l s_r))))
+
+  lemma delete_root_mem: forall y m: int, s_l s_r': S.fset int, z: int.
+    not S.mem y s_l -> not S.mem y s_r' -> y <> m ->
+    (S.mem z (S.add m (S.union s_l s_r'))
+     <-> S.mem z (S.remove y (S.add y (S.union s_l (S.add m s_r')))))
+
+  let rec extract_min (t: tree) : (int, tree)
+    requires { avl t }
+    requires { height t > 0 }
+    ensures  { let (m, t') = result in
+               avl t' /\
+               S.mem m (elements t) /\
+               elements t = S.add m (elements t') /\
+               all_gt m (elements t') /\
+               height t - 1 <= height t' <= height t }
+    variant  { t }
+  = match t with
+    | E -> absurd
+    | N E x r _ -> (x, r)
+    | N l x r _ ->
+        assert { height l > 0 };
+        let (m, l') = extract_min l in
+        assert { all_lt (elements l') x };
+        assert { m < x };
+        assert { all_gt m (elements r) };
+        let t' = balance l' x r in
+        assert { S.(==) (S.add m (elements t')) (elements t) };
+        assert { all_gt m (elements t') };
+        (m, t')
+    end
+
+  let rec delete (x: int) (t: tree) : tree
+    requires { avl t }
+    ensures  { avl result }
+    ensures  { elements result = S.remove x (elements t) }
+    ensures  { height t - 1 <= height result <= height t }
+    variant  { t }
+  = match t with
+    | E -> E
+    | N l y r _ ->
+        if x < y then
+          let l' = delete x l in
+          assert { not S.mem x (elements r) };
+          assert { S.(==) (S.add y (S.union (elements l') (elements r)))
+                          (S.remove x (S.add y (S.union (elements l) (elements r)))) };
+          balance l' y r
+        else if y < x then
+          let r' = delete x r in
+          assert { not S.mem x (elements l) };
+          assert { S.(==) (S.add y (S.union (elements l) (elements r')))
+                          (S.remove x (S.add y (S.union (elements l) (elements r)))) };
+          balance l y r'
+        else
+          match l with
+          | E ->
+              assert { not S.mem y (elements r) };
+              r
+          | N _ _ _ _ ->
+              match r with
+              | E ->
+                  assert { not S.mem y (elements l) };
+                  l
+              | N _ _ _ _ ->
+                  let (m, r') = extract_min r in
+                  assert { y < m };
+                  assert { all_lt (elements l) m };
+                  assert { all_gt m (elements r') };
+                  assert { not S.mem y (elements l) };
+                  assert { not S.mem y (elements r') };
+                  assert { y <> m };
+                  assert { S.(==) (S.add m (S.union (elements l) (elements r')))
+                                  (S.remove y (S.add y (S.union (elements l) (elements r)))) };
+                  balance l m r'
+              end
+          end
+    end
+
+end
