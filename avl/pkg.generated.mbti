@@ -4,6 +4,8 @@ package "bobzhang/prove/avl"
 // Values
 pub fn contains(Int, Tree) -> Bool
 
+pub fn delete(Int, Tree) -> Tree
+
 pub fn empty() -> Tree
 
 pub fn insert(Int, Tree) -> Tree
