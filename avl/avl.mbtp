@@ -176,10 +176,11 @@ predicate height_nonneg_ok(t : Tree) {
 }
 
 ///|
-#proof_decrease(t)
-#requires(avl(t))
-#ensures(height_nonneg_ok(t))
-lemma height_nonneg_lemma(t : Tree) {
+lemma height_nonneg_lemma(t : Tree) where {
+  proof_decrease: t,
+  proof_require: avl(t),
+  proof_ensure: height_nonneg_ok(t),
+} {
   match t {
     Empty => ()
     Node(l, _x, r, _h) => {
@@ -200,50 +201,56 @@ predicate int_lt(x : Int, y : Int) {
 }
 
 ///|
-#requires(int_lt(x, y))
-#requires(all_gt(x, s))
-#ensures(all_gt(x, fset_add(y, s)))
-lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) {
+lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
+  proof_require: int_lt(x, y),
+  proof_require: all_gt(x, s),
+  proof_ensure: all_gt(x, fset_add(y, s)),
+} {
 
 }
 
 ///|
-#requires(all_gt(x, s1))
-#requires(all_gt(x, s2))
-#ensures(all_gt(x, fset_union(s1, s2)))
-lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+  proof_require: all_gt(x, s1),
+  proof_require: all_gt(x, s2),
+  proof_ensure: all_gt(x, fset_union(s1, s2)),
+} {
   
 }
 
 ///|
-#requires(int_lt(x, y))
-#requires(all_gt(y, s))
-#ensures(all_gt(x, s))
-lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) {
+lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
+  proof_require: int_lt(x, y),
+  proof_require: all_gt(y, s),
+  proof_ensure: all_gt(x, s),
+} {
 
 }
 
 ///|
-#requires(int_lt(y, x))
-#requires(all_lt(s, x))
-#ensures(all_lt(fset_add(y, s), x))
-lemma all_lt_add(s : Fset[Int], x : Int, y : Int) {
+lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
+  proof_require: int_lt(y, x),
+  proof_require: all_lt(s, x),
+  proof_ensure: all_lt(fset_add(y, s), x),
+} {
 
 }
 
 ///|
-#requires(all_lt(s1, x))
-#requires(all_lt(s2, x))
-#ensures(all_lt(fset_union(s1, s2), x))
-lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) {
+lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) where {
+  proof_require: all_lt(s1, x),
+  proof_require: all_lt(s2, x),
+  proof_ensure: all_lt(fset_union(s1, s2), x),
+} {
 
 }
 
 ///|
-#requires(all_lt(s, x))
-#requires(int_lt(x, y))
-#ensures(all_lt(s, y))
-lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) {
+lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) where {
+  proof_require: all_lt(s, x),
+  proof_require: int_lt(x, y),
+  proof_ensure: all_lt(s, y),
+} {
 
 }
 
@@ -260,7 +267,6 @@ predicate single_rotation_mem_ok(
 }
 
 ///|
-#ensures(single_rotation_mem_ok(a, b, s1, s2, s3, z))
 lemma single_rotation_mem(
   a : Int,
   b : Int,
@@ -268,7 +274,9 @@ lemma single_rotation_mem(
   s2 : Fset[Int],
   s3 : Fset[Int],
   z : Int
-) {
+) where {
+  proof_ensure: single_rotation_mem_ok(a, b, s1, s2, s3, z),
+} {
   proof_assert single_rotation_mem_ok(a, b, s1, s2, s3, z)
 }
 
@@ -286,14 +294,15 @@ predicate single_rotation_eq(
 }
 
 ///|
-#ensures(single_rotation_eq(a, b, s1, s2, s3))
 lemma single_rotation_eq_lemma(
   a : Int,
   b : Int,
   s1 : Fset[Int],
   s2 : Fset[Int],
   s3 : Fset[Int]
-) {
+) where {
+  proof_ensure: single_rotation_eq(a, b, s1, s2, s3),
+} {
   proof_assert single_rotation_eq(a, b, s1, s2, s3)
 }
 
@@ -319,7 +328,6 @@ predicate double_rotation_mem_lr_ok(
 }
 
 ///|
-#ensures(double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z))
 lemma double_rotation_mem_lr(
   a : Int,
   b : Int,
@@ -329,7 +337,9 @@ lemma double_rotation_mem_lr(
   s3 : Fset[Int],
   s4 : Fset[Int],
   z : Int
-) {
+) where {
+  proof_ensure: double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z),
+} {
   proof_assert double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z)
 }
 
@@ -349,7 +359,6 @@ predicate double_rotation_eq_lr(
 }
 
 ///|
-#ensures(double_rotation_eq_lr(a, b, c, s1, s2, s3, s4))
 lemma double_rotation_eq_lr_lemma(
   a : Int,
   b : Int,
@@ -358,7 +367,9 @@ lemma double_rotation_eq_lr_lemma(
   s2 : Fset[Int],
   s3 : Fset[Int],
   s4 : Fset[Int]
-) {
+) where {
+  proof_ensure: double_rotation_eq_lr(a, b, c, s1, s2, s3, s4),
+} {
   proof_assert double_rotation_eq_lr(a, b, c, s1, s2, s3, s4)
 }
 
@@ -384,7 +395,6 @@ predicate double_rotation_mem_rl_ok(
 }
 
 ///|
-#ensures(double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z))
 lemma double_rotation_mem_rl(
   a : Int,
   b : Int,
@@ -394,7 +404,9 @@ lemma double_rotation_mem_rl(
   s3 : Fset[Int],
   s4 : Fset[Int],
   z : Int
-) {
+) where {
+  proof_ensure: double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z),
+} {
   proof_assert double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z)
 }
 
@@ -414,7 +426,6 @@ predicate double_rotation_eq_rl(
 }
 
 ///|
-#ensures(double_rotation_eq_rl(a, b, c, s1, s2, s3, s4))
 lemma double_rotation_eq_rl_lemma(
   a : Int,
   b : Int,
@@ -423,7 +434,9 @@ lemma double_rotation_eq_rl_lemma(
   s2 : Fset[Int],
   s3 : Fset[Int],
   s4 : Fset[Int]
-) {
+) where {
+  proof_ensure: double_rotation_eq_rl(a, b, c, s1, s2, s3, s4),
+} {
   proof_assert double_rotation_eq_rl(a, b, c, s1, s2, s3, s4)
 }
 
@@ -440,14 +453,15 @@ predicate insert_elements_mem_ok(
 }
 
 ///|
-#ensures(insert_elements_mem_ok(a, b, s1, s2, z))
 lemma insert_elements_mem(
   a : Int,
   b : Int,
   s1 : Fset[Int],
   s2 : Fset[Int],
   z : Int
-) {
+) where {
+  proof_ensure: insert_elements_mem_ok(a, b, s1, s2, z),
+} {
   proof_assert insert_elements_mem_ok(a, b, s1, s2, z)
 }
 
@@ -456,8 +470,9 @@ predicate insert_elements_eq(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {
 }
 
 ///|
-#ensures(insert_elements_eq(a, b, s1, s2))
-lemma insert_elements_eq_lemma(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+lemma insert_elements_eq_lemma(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+  proof_ensure: insert_elements_eq(a, b, s1, s2),
+} {
   proof_assert insert_elements_eq(a, b, s1, s2)
 }
 
@@ -470,10 +485,11 @@ predicate delete_left_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
 }
 
 ///|
-#requires(int_lt(x, y))
-#requires(all_gt(y, s2))
-#ensures(delete_left_eq(x, y, s1, s2))
-lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+  proof_require: int_lt(x, y),
+  proof_require: all_gt(y, s2),
+  proof_ensure: delete_left_eq(x, y, s1, s2),
+} {
 
 }
 
@@ -486,9 +502,10 @@ predicate delete_right_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
 }
 
 ///|
-#requires(int_lt(y, x))
-#requires(all_lt(s1, y))
-#ensures(delete_right_eq(x, y, s1, s2))
-lemma delete_right_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+lemma delete_right_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+  proof_require: int_lt(y, x),
+  proof_require: all_lt(s1, y),
+  proof_ensure: delete_right_eq(x, y, s1, s2),
+} {
 
 }

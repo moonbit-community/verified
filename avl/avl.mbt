@@ -33,15 +33,22 @@ pub fn empty() -> Tree {
 }
 
 ///|
-#requires(avl(l))
-#requires(avl(r))
-#requires(all_lt(elements(l), x))
-#requires(all_gt(x, elements(r)))
-#requires(balanced_heights(l, r))
-#ensures(avl(result))
-#ensures(fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r)))))
-#ensures(mk_height_ok(l, r, result))
-fn mk(l : Tree, x : Int, r : Tree) -> Tree {
+fn mk(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: avl(l),
+  proof_require: avl(r),
+  proof_require: all_lt(elements(l), x),
+  proof_require: all_gt(x, elements(r)),
+  proof_require: balanced_heights(l, r),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => {
+    fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r))))
+  },
+  proof_ensure: result => mk_height_ok(l, r, result),
+} {
   Node(l, x, r, 1 + max2(height(l), height(r)))
 }
 
@@ -61,14 +68,19 @@ pub fn contains(x : Int, t : Tree) -> Bool {
 }
 
 ///|
-#requires(balance_pre(l, x, r))
-#requires(left_heavy(l, r))
-#requires(left_double_case(l))
-#ensures(avl(result))
-#ensures(balance_elements_ok(l, x, r, result))
-#ensures(balance_height_upper_ok(l, r, result))
-#ensures(balance_height_lower_ok(l, r, result))
-fn balance_left_double(l : Tree, x : Int, r : Tree) -> Tree {
+fn balance_left_double(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: balance_pre(l, x, r),
+  proof_require: left_heavy(l, r),
+  proof_require: left_double_case(l),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => balance_elements_ok(l, x, r, result),
+  proof_ensure: result => balance_height_upper_ok(l, r, result),
+  proof_ensure: result => balance_height_lower_ok(l, r, result),
+} {
   match l {
     Empty => panic()
     Node(ll, lx, lr, _) =>
@@ -115,14 +127,19 @@ fn balance_left_double(l : Tree, x : Int, r : Tree) -> Tree {
 }
 
 ///|
-#requires(balance_pre(l, x, r))
-#requires(right_heavy(l, r))
-#requires(right_double_case(r))
-#ensures(avl(result))
-#ensures(balance_elements_ok(l, x, r, result))
-#ensures(balance_height_upper_ok(l, r, result))
-#ensures(balance_height_lower_ok(l, r, result))
-fn balance_right_double(l : Tree, x : Int, r : Tree) -> Tree {
+fn balance_right_double(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: balance_pre(l, x, r),
+  proof_require: right_heavy(l, r),
+  proof_require: right_double_case(r),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => balance_elements_ok(l, x, r, result),
+  proof_ensure: result => balance_height_upper_ok(l, r, result),
+  proof_ensure: result => balance_height_lower_ok(l, r, result),
+} {
   match r {
     Empty => panic()
     Node(rl, rx, rr, _) =>
@@ -177,13 +194,18 @@ fn balance_right_double(l : Tree, x : Int, r : Tree) -> Tree {
 }
 
 ///|
-#requires(balance_pre(l, x, r))
-#ensures(avl(result))
-#ensures(balance_elements_ok(l, x, r, result))
-#ensures(balance_height_exact_ok(l, r, result))
-#ensures(balance_height_upper_ok(l, r, result))
-#ensures(balance_height_lower_ok(l, r, result))
-fn balance(l : Tree, x : Int, r : Tree) -> Tree {
+fn balance(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: balance_pre(l, x, r),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => balance_elements_ok(l, x, r, result),
+  proof_ensure: result => balance_height_exact_ok(l, r, result),
+  proof_ensure: result => balance_height_upper_ok(l, r, result),
+  proof_ensure: result => balance_height_lower_ok(l, r, result),
+} {
   if height(l) > height(r) + 1 {
     proof_assert left_heavy(l, r)
     match l {
@@ -235,11 +257,14 @@ fn balance(l : Tree, x : Int, r : Tree) -> Tree {
 }
 
 ///|
-#proof_decrease(t)
-#requires(avl(t))
-#requires(non_empty(t))
-#ensures(remove_min_ok(t, result))
-fn remove_min(t : Tree) -> (Int, Tree) {
+fn remove_min(
+  t : Tree,
+) -> (Int, Tree) where {
+  proof_decrease: t,
+  proof_require: avl(t),
+  proof_require: non_empty(t),
+  proof_ensure: result => remove_min_ok(t, result),
+} {
   match t {
     Empty => panic()
     Node(l, y, r, _) =>
@@ -265,13 +290,17 @@ fn remove_min(t : Tree) -> (Int, Tree) {
 }
 
 ///|
-#proof_decrease(t)
-#requires(avl(t))
-#ensures(avl(result))
-#ensures(insert_elements_ok(x, t, result))
-#ensures(insert_height_lower_ok(t, result))
-#ensures(insert_height_upper_ok(t, result))
-pub fn insert(x : Int, t : Tree) -> Tree {
+pub fn insert(
+  x : Int,
+  t : Tree,
+) -> Tree where {
+  proof_decrease: t,
+  proof_require: avl(t),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => insert_elements_ok(x, t, result),
+  proof_ensure: result => insert_height_lower_ok(t, result),
+  proof_ensure: result => insert_height_upper_ok(t, result),
+} {
   match t {
     Empty => mk(Empty, x, Empty)
     Node(l, y, r, _) =>
@@ -290,13 +319,17 @@ pub fn insert(x : Int, t : Tree) -> Tree {
 }
 
 ///|
-#proof_decrease(t)
-#requires(avl(t))
-#ensures(avl(result))
-#ensures(delete_elements_ok(x, t, result))
-#ensures(delete_height_lower_ok(t, result))
-#ensures(delete_height_upper_ok(t, result))
-pub fn delete(x : Int, t : Tree) -> Tree {
+pub fn delete(
+  x : Int,
+  t : Tree,
+) -> Tree where {
+  proof_decrease: t,
+  proof_require: avl(t),
+  proof_ensure: result => avl(result),
+  proof_ensure: result => delete_elements_ok(x, t, result),
+  proof_ensure: result => delete_height_lower_ok(t, result),
+  proof_ensure: result => delete_height_upper_ok(t, result),
+} {
   match t {
     Empty => {
       proof_assert delete_elements_ok(x, t, Empty)
