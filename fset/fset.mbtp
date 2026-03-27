@@ -1,0 +1,59 @@
+///|
+#proof_import("set.Fset")
+fn raw_fset_mem(x : Int, s : Fset[Int]) -> Bool = "mem"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_empty() -> Fset[Int] = "empty"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_add(x : Int, s : Fset[Int]) -> Fset[Int] = "add"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_union(s1 : Fset[Int], s2 : Fset[Int]) -> Fset[Int] = "union"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_eq(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "(==)"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_remove(x : Int, s : Fset[Int]) -> Fset[Int] = "remove"
+
+///|
+pub fn Fset::empty() -> Fset[Int] {
+  raw_fset_empty()
+}
+
+///|
+pub fn Fset::mem(self : Fset[Int], x : Int) -> Bool {
+  raw_fset_mem(x, self)
+}
+
+///|
+pub fn Fset::add(self : Fset[Int], x : Int) -> Fset[Int] {
+  raw_fset_add(x, self)
+}
+
+///|
+pub fn Fset::union(self : Fset[Int], other : Fset[Int]) -> Fset[Int] {
+  raw_fset_union(self, other)
+}
+
+///|
+pub fn Fset::eq(self : Fset[Int], other : Fset[Int]) -> Bool {
+  raw_fset_eq(self, other)
+}
+
+///|
+pub fn Fset::remove(self : Fset[Int], x : Int) -> Fset[Int] {
+  raw_fset_remove(x, self)
+}
+
+// Keep free-function wrappers for .mbtp callers until proof files accept method calls.
+///|
+pub fn fset_empty() -> Fset[Int] {
+  raw_fset_empty()
+}

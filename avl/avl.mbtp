@@ -1,43 +1,19 @@
 ///|
-#proof_import("set.Fset")
-fn fset_mem(x : Int, s : Fset[Int]) -> Bool = "mem"
-
-///|
-#proof_import("set.Fset")
-fn fset_empty() -> Fset[Int] = "empty"
-
-///|
-#proof_import("set.Fset")
-fn fset_add(x : Int, s : Fset[Int]) -> Fset[Int] = "add"
-
-///|
-#proof_import("set.Fset")
-fn fset_union(s1 : Fset[Int], s2 : Fset[Int]) -> Fset[Int] = "union"
-
-///|
-#proof_import("set.Fset")
-fn fset_eq(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "(==)"
-
-///|
-#proof_import("set.Fset")
-fn fset_remove(x : Int, s : Fset[Int]) -> Fset[Int] = "remove"
-
-///|
 fn elements(t : Tree) -> Fset[Int] {
   match t {
-    Empty => fset_empty()
-    Node(l, x, r, _) => fset_add(x, fset_union(elements(l), elements(r)))
+    Empty => @fset.fset_empty()
+    Node(l, x, r, _) => elements(l).union(elements(r)).add(x)
   }
 }
 
 ///|
 predicate all_lt(s : Fset[Int], x : Int) {
-  ∀ y : Int, fset_mem(y, s) → y < x
+  ∀ y : Int, s.mem(y) → y < x
 }
 
 ///|
 predicate all_gt(x : Int, s : Fset[Int]) {
-  ∀ y : Int, fset_mem(y, s) → x < y
+  ∀ y : Int, s.mem(y) → x < y
 }
 
 ///|
@@ -103,7 +79,7 @@ predicate right_double_case(r : Tree) {
 
 ///|
 predicate balance_elements_ok(l : Tree, x : Int, r : Tree, result : Tree) {
-  fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r))))
+  elements(result).eq(elements(l).union(elements(r)).add(x))
 }
 
 predicate balance_height_upper_ok(l : Tree, r : Tree, result : Tree) {
@@ -123,7 +99,7 @@ predicate balance_height_exact_ok(l : Tree, r : Tree, result : Tree) {
 
 ///|
 predicate insert_elements_ok(x : Int, t : Tree, result : Tree) {
-  fset_eq(elements(result), fset_add(x, elements(t)))
+  elements(result).eq(elements(t).add(x))
 }
 
 ///|
@@ -141,8 +117,8 @@ predicate remove_min_ok(t : Tree, result : (Int, Tree)) {
   match result {
     (x, t1) =>
       avl(t1) &&
-      fset_mem(x, elements(t)) &&
-      fset_eq(elements(t), fset_add(x, elements(t1))) &&
+      elements(t).mem(x) &&
+      elements(t).eq(elements(t1).add(x)) &&
       elements_subset(t1, t) &&
       all_gt(x, elements(t1)) &&
       height(t1) <= height(t) &&
@@ -152,7 +128,7 @@ predicate remove_min_ok(t : Tree, result : (Int, Tree)) {
 
 ///|
 predicate delete_elements_ok(x : Int, t : Tree, result : Tree) {
-  fset_eq(elements(result), fset_remove(x, elements(t)))
+  elements(result).eq(elements(t).remove(x))
 }
 
 ///|
@@ -192,7 +168,7 @@ lemma height_nonneg_lemma(t : Tree) where {
 
 ///|
 predicate elements_subset(t1 : Tree, t2 : Tree) {
-  ∀ y : Int, fset_mem(y, elements(t1)) → fset_mem(y, elements(t2))
+  ∀ y : Int, elements(t1).mem(y) → elements(t2).mem(y)
 }
 
 ///|
@@ -204,7 +180,7 @@ predicate int_lt(x : Int, y : Int) {
 lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
   proof_require: int_lt(x, y),
   proof_require: all_gt(x, s),
-  proof_ensure: all_gt(x, fset_add(y, s)),
+  proof_ensure: all_gt(x, s.add(y)),
 } {
 
 }
@@ -213,7 +189,7 @@ lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
 lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
   proof_require: all_gt(x, s1),
   proof_require: all_gt(x, s2),
-  proof_ensure: all_gt(x, fset_union(s1, s2)),
+  proof_ensure: all_gt(x, s1.union(s2)),
 } {
   
 }
@@ -231,7 +207,7 @@ lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
 lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
   proof_require: int_lt(y, x),
   proof_require: all_lt(s, x),
-  proof_ensure: all_lt(fset_add(y, s), x),
+  proof_ensure: all_lt(s.add(y), x),
 } {
 
 }
@@ -240,7 +216,7 @@ lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
 lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) where {
   proof_require: all_lt(s1, x),
   proof_require: all_lt(s2, x),
-  proof_ensure: all_lt(fset_union(s1, s2), x),
+  proof_ensure: all_lt(s1.union(s2), x),
 } {
 
 }
@@ -262,8 +238,8 @@ predicate single_rotation_mem_ok(
   s3 : Fset[Int],
   z : Int
 ) {
-  fset_mem(z, fset_add(a, fset_union(s1, fset_add(b, fset_union(s2, s3))))) ==
-  fset_mem(z, fset_add(b, fset_union(fset_add(a, fset_union(s1, s2)), s3)))
+  s1.union(s2.union(s3).add(b)).add(a).mem(z) ==
+  s1.union(s2).add(a).union(s3).add(b).mem(z)
 }
 
 ///|
@@ -287,9 +263,8 @@ predicate single_rotation_eq(
   s2 : Fset[Int],
   s3 : Fset[Int]
 ) {
-  fset_eq(
-    fset_add(a, fset_union(s1, fset_add(b, fset_union(s2, s3)))),
-    fset_add(b, fset_union(fset_add(a, fset_union(s1, s2)), s3))
+  s1.union(s2.union(s3).add(b)).add(a).eq(
+    s1.union(s2).add(a).union(s3).add(b),
   )
 }
 
@@ -317,14 +292,8 @@ predicate double_rotation_mem_lr_ok(
   s4 : Fset[Int],
   z : Int
 ) {
-  fset_mem(
-    z,
-    fset_add(a, fset_union(fset_add(b, fset_union(s1, s2)), fset_add(c, fset_union(s3, s4))))
-  ) ==
-  fset_mem(
-    z,
-    fset_add(c, fset_union(fset_add(b, fset_union(s1, fset_add(a, fset_union(s2, s3)))), s4))
-  )
+  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
+  s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c).mem(z)
 }
 
 ///|
@@ -352,9 +321,8 @@ predicate double_rotation_eq_lr(
   s3 : Fset[Int],
   s4 : Fset[Int]
 ) {
-  fset_eq(
-    fset_add(a, fset_union(fset_add(b, fset_union(s1, s2)), fset_add(c, fset_union(s3, s4)))),
-    fset_add(c, fset_union(fset_add(b, fset_union(s1, fset_add(a, fset_union(s2, s3)))), s4))
+  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
+    s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c),
   )
 }
 
@@ -384,14 +352,8 @@ predicate double_rotation_mem_rl_ok(
   s4 : Fset[Int],
   z : Int
 ) {
-  fset_mem(
-    z,
-    fset_add(a, fset_union(fset_add(b, fset_union(s1, s2)), fset_add(c, fset_union(s3, s4))))
-  ) ==
-  fset_mem(
-    z,
-    fset_add(b, fset_union(s1, fset_add(c, fset_union(fset_add(a, fset_union(s2, s3)), s4))))
-  )
+  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
+  s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b).mem(z)
 }
 
 ///|
@@ -419,9 +381,8 @@ predicate double_rotation_eq_rl(
   s3 : Fset[Int],
   s4 : Fset[Int]
 ) {
-  fset_eq(
-    fset_add(a, fset_union(fset_add(b, fset_union(s1, s2)), fset_add(c, fset_union(s3, s4)))),
-    fset_add(b, fset_union(s1, fset_add(c, fset_union(fset_add(a, fset_union(s2, s3)), s4))))
+  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
+    s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b),
   )
 }
 
@@ -448,8 +409,8 @@ predicate insert_elements_mem_ok(
   s2 : Fset[Int],
   z : Int
 ) {
-  fset_mem(z, fset_add(a, fset_union(fset_add(b, s1), s2))) ==
-  fset_mem(z, fset_add(b, fset_add(a, fset_union(s1, s2))))
+  s1.add(b).union(s2).add(a).mem(z) ==
+  s1.union(s2).add(a).add(b).mem(z)
 }
 
 ///|
@@ -466,7 +427,7 @@ lemma insert_elements_mem(
 }
 
 predicate insert_elements_eq(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {
-  fset_eq(fset_add(a, fset_union(fset_add(b, s1), s2)), fset_add(b, fset_add(a, fset_union(s1, s2))))
+  s1.add(b).union(s2).add(a).eq(s1.union(s2).add(a).add(b))
 }
 
 ///|
@@ -478,10 +439,7 @@ lemma insert_elements_eq_lemma(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int])
 
 ///|
 predicate delete_left_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
-  fset_eq(
-    fset_remove(x, fset_add(y, fset_union(s1, s2))),
-    fset_add(y, fset_union(fset_remove(x, s1), s2))
-  )
+  s1.union(s2).add(y).remove(x).eq(s1.remove(x).union(s2).add(y))
 }
 
 ///|
@@ -495,10 +453,7 @@ lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) whe
 
 ///|
 predicate delete_right_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
-  fset_eq(
-    fset_remove(x, fset_add(y, fset_union(s1, s2))),
-    fset_add(y, fset_union(s1, fset_remove(x, s2)))
-  )
+  s1.union(s2).add(y).remove(x).eq(s1.union(s2.remove(x)).add(y))
 }
 
 ///|

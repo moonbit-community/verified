@@ -13,8 +13,6 @@ pub fn insert(Int, Tree) -> Tree
 // Errors
 
 // Types and methods
-pub type Fset[T]
-
 pub enum Tree {
   Empty
   Node(Tree, Int, Tree, Int)

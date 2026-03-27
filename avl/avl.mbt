@@ -1,12 +1,12 @@
+using @fset {
+  type Fset
+}
+
 ///|
 pub enum Tree {
   Empty
   Node(Tree, Int, Tree, Int)
 }
-
-///|
-#proof_external("set.Fset", "fset")
-pub type Fset[T]
 
 ///|
 #proof_pure
@@ -45,7 +45,7 @@ fn mk(
   proof_require: balanced_heights(l, r),
   proof_ensure: result => avl(result),
   proof_ensure: result => {
-    fset_eq(elements(result), fset_add(x, fset_union(elements(l), elements(r))))
+    elements(result).eq(elements(l).union(elements(r)).add(x))
   },
   proof_ensure: result => mk_height_ok(l, r, result),
 } {
@@ -87,7 +87,7 @@ fn balance_left_double(
       match lr {
         Empty => panic()
         Node(lrl, lrx, lrr, _) => {
-          proof_assert fset_mem(lrx, elements(l))
+          proof_assert elements(l).mem(lrx)
           proof_assert lx < lrx
           proof_assert lrx < x
           proof_assert all_gt(lrx, elements(r))
@@ -97,10 +97,7 @@ fn balance_left_double(
           proof_assert all_gt(lx, elements(lrl))
           proof_assert all_lt(elements(ll), lx) && all_gt(lx, elements(lrl))
           let nl = mk(ll, lx, lrl)
-          proof_assert fset_eq(
-            elements(nl),
-            fset_add(lx, fset_union(elements(ll), elements(lrl))),
-          )
+          proof_assert elements(nl).eq(elements(ll).union(elements(lrl)).add(lx))
           proof_assert height(nl) == 1 + max2(height(ll), height(lrl))
           proof_assert elements_subset(lrr, lr)
           proof_assert all_lt(elements(lrr), x)
@@ -108,17 +105,13 @@ fn balance_left_double(
           proof_assert -1 <= height(lrr) - height(r) &&
             height(lrr) - height(r) <= 1
           let nr = mk(lrr, x, r)
-          proof_assert fset_eq(
-            elements(nr),
-            fset_add(x, fset_union(elements(lrr), elements(r))),
-          )
+          proof_assert elements(nr).eq(elements(lrr).union(elements(r)).add(x))
           proof_assert height(nr) == 1 + max2(height(lrr), height(r))
           proof_assert all_lt(elements(nl), lrx) && all_gt(lrx, elements(nr))
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
-          proof_assert fset_eq(
-            fset_add(lrx, fset_union(elements(nl), elements(nr))),
-            fset_add(x, fset_union(elements(l), elements(r))),
+          proof_assert elements(nl).union(elements(nr)).add(lrx).eq(
+            elements(l).union(elements(r)).add(x),
           )
           mk(nl, lrx, nr)
         }
@@ -146,7 +139,7 @@ fn balance_right_double(
       match rl {
         Empty => panic()
         Node(rll, rlx, rlr, _) => {
-          proof_assert fset_mem(rlx, elements(r))
+          proof_assert elements(r).mem(rlx)
           proof_assert elements_subset(rl, r)
           proof_assert elements_subset(rll, rl)
           proof_assert x < rlx
@@ -158,19 +151,13 @@ fn balance_right_double(
           proof_assert all_gt(x, elements(rl))
           proof_assert all_lt(elements(l), x) && all_gt(x, elements(rll))
           let nl = mk(l, x, rll)
-          proof_assert fset_eq(
-            elements(nl),
-            fset_add(x, fset_union(elements(l), elements(rll))),
-          )
+          proof_assert elements(nl).eq(elements(l).union(elements(rll)).add(x))
           proof_assert elements_subset(rlr, rl)
           proof_assert -1 <= height(rlr) - height(rr) &&
             height(rlr) - height(rr) <= 1
           proof_assert all_lt(elements(rlr), rx) && all_gt(rx, elements(rr))
           let nr = mk(rlr, rx, rr)
-          proof_assert fset_eq(
-            elements(nr),
-            fset_add(rx, fset_union(elements(rlr), elements(rr))),
-          )
+          proof_assert elements(nr).eq(elements(rlr).union(elements(rr)).add(rx))
           proof_assert all_lt(elements(nl), rlx) && all_gt(rlx, elements(nr))
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
@@ -183,9 +170,8 @@ fn balance_right_double(
             elements(rlr),
             elements(rr),
           )
-          proof_assert fset_eq(
-            fset_add(rlx, fset_union(elements(nl), elements(nr))),
-            fset_add(x, fset_union(elements(l), elements(r))),
+          proof_assert elements(nl).union(elements(nr)).add(rlx).eq(
+            elements(l).union(elements(r)).add(x),
           )
           mk(nl, rlx, nr)
         }
@@ -220,9 +206,8 @@ fn balance(
           let nr = mk(lr, x, r)
           proof_assert -1 <= height(ll) - height(nr) &&
             height(ll) - height(nr) <= 1
-          proof_assert fset_eq(
-            fset_add(lx, fset_union(elements(ll), elements(nr))),
-            fset_add(x, fset_union(elements(l), elements(r))),
+          proof_assert elements(ll).union(elements(nr)).add(lx).eq(
+            elements(l).union(elements(r)).add(x),
           )
           mk(ll, lx, nr)
         } else {
@@ -279,9 +264,9 @@ fn remove_min(
           proof_assert all_gt(m, elements(r))
           proof_assert balance_pre(l1, y, r)
           let t1 = balance(l1, y, r)
-          proof_assert all_gt(m, fset_union(elements(l1), elements(r)))
+          proof_assert all_gt(m, elements(l1).union(elements(r)))
           proof_assert all_gt(m, elements(t1))
-          proof_assert fset_eq(elements(t), fset_add(m, elements(t1)))
+          proof_assert elements(t).eq(elements(t1).add(m))
           proof_assert elements_subset(t1, t)
           (m, t1)
         }
@@ -340,20 +325,14 @@ pub fn delete(
         let l1 = delete(x, l)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert fset_eq(
-          elements(t1),
-          fset_add(y, fset_union(fset_remove(x, elements(l)), elements(r))),
-        )
+        proof_assert elements(t1).eq(elements(l).remove(x).union(elements(r)).add(y))
         proof_assert delete_elements_ok(x, t, t1)
         t1
       } else if y < x {
         let r1 = delete(x, r)
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert fset_eq(
-          elements(t1),
-          fset_add(y, fset_union(elements(l), fset_remove(x, elements(r)))),
-        )
+        proof_assert elements(t1).eq(elements(l).union(elements(r).remove(x)).add(y))
         proof_assert delete_elements_ok(x, t, t1)
         t1
       } else {
