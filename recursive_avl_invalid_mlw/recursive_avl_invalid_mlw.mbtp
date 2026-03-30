@@ -1,8 +1,0 @@
-///|
-predicate avl(t : Tree) {
-  match t {
-    Empty => true
-    Node(l) =>
-      avl(l)
-  }
-}
