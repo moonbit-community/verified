@@ -23,6 +23,14 @@ fn raw_fset_eq(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "(==)"
 fn raw_fset_remove(x : Int, s : Fset[Int]) -> Fset[Int] = "remove"
 
 ///|
+#proof_import("set.Fset")
+fn raw_fset_filter(s : Fset[Int], p : (Int) -> Bool) -> Fset[Int] = "filter"
+
+///|
+#proof_import("set.FsetInt")
+fn raw_fset_interval(l : Int, r : Int) -> Fset[Int] = "interval"
+
+///|
 pub fn Fset::empty() -> Fset[Int] {
   raw_fset_empty()
 }
@@ -52,8 +60,17 @@ pub fn Fset::remove(self : Fset[Int], x : Int) -> Fset[Int] {
   raw_fset_remove(x, self)
 }
 
-// Keep free-function wrappers for .mbtp callers until proof files accept method calls.
+///|
+pub fn Fset::filter(self : Fset[Int], p : (Int) -> Bool) -> Fset[Int] {
+  raw_fset_filter(self, p)
+}
+
 ///|
 pub fn fset_empty() -> Fset[Int] {
   raw_fset_empty()
+}
+
+///|
+pub fn fset_interval(l : Int, r : Int) -> Fset[Int] {
+  raw_fset_interval(l, r)
 }

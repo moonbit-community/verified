@@ -1,0 +1,83 @@
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_empty() -> Fmap[Int, Int] = "empty"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_mk(
+  d : Fset[Int],
+  f : (Int) -> Int,
+) -> Fmap[Int, Int] = "mk"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_mem(k : Int, m : Fmap[Int, Int]) -> Bool = "mem"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_add(
+  k : Int,
+  v : Int,
+  m : Fmap[Int, Int],
+) -> Fmap[Int, Int] = "add"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_find(k : Int, m : Fmap[Int, Int]) -> Int = "find"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_remove(k : Int, m : Fmap[Int, Int]) -> Fmap[Int, Int] = "remove"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_eq(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) -> Bool = "(==)"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_size(m : Fmap[Int, Int]) -> Int = "size"
+
+///|
+pub fn Fmap::empty() -> Fmap[Int, Int] {
+  raw_fmap_empty()
+}
+
+///|
+pub fn Fmap::mem(self : Fmap[Int, Int], k : Int) -> Bool {
+  raw_fmap_mem(k, self)
+}
+
+///|
+pub fn Fmap::add(self : Fmap[Int, Int], k : Int, v : Int) -> Fmap[Int, Int] {
+  raw_fmap_add(k, v, self)
+}
+
+///|
+pub fn Fmap::find(self : Fmap[Int, Int], k : Int) -> Int {
+  raw_fmap_find(k, self)
+}
+
+///|
+pub fn Fmap::remove(self : Fmap[Int, Int], k : Int) -> Fmap[Int, Int] {
+  raw_fmap_remove(k, self)
+}
+
+///|
+pub fn Fmap::eq(self : Fmap[Int, Int], other : Fmap[Int, Int]) -> Bool {
+  raw_fmap_eq(self, other)
+}
+
+///|
+pub fn Fmap::size(self : Fmap[Int, Int]) -> Int {
+  raw_fmap_size(self)
+}
+
+///|
+pub fn fmap_empty() -> Fmap[Int, Int] {
+  raw_fmap_empty()
+}
+
+///|
+pub fn fmap_mk(d : Fset[Int], f : (Int) -> Int) -> Fmap[Int, Int] {
+  raw_fmap_mk(d, f)
+}
