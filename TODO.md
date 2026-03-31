@@ -33,19 +33,23 @@ let new_found = if xs[i] == key { i } else { found }
 continue i + 1, new_found
 ```
 
-### `#requires` / `#ensures` only accept predicate calls
+### `proof_require` / `proof_ensure` work best with named predicates
 
-Inline boolean expressions like `#requires(lo <= hi)` cause a syntax error.
-A named predicate must be defined in the `.mbtp` file and referenced by name.
+Inline boolean expressions directly inside contracts are less robust than a
+named predicate in the `.mbtp` file.
 
 ```moonbit
-// ✗ Does not work
-#requires(lo <= hi)
+// Less robust
+pub fn clamp(x : Int, lo : Int, hi : Int) -> Int where {
+  proof_require: lo <= hi,
+} { ... }
 
-// ✓ Works — define predicate in .mbtp
+// Recommended — define predicate in .mbtp
 predicate valid_bounds(lo : Int, hi : Int) { lo <= hi }
 // then in .mbt
-#requires(valid_bounds(lo, hi))
+pub fn clamp(x : Int, lo : Int, hi : Int) -> Int where {
+  proof_require: valid_bounds(lo, hi),
+} { ... }
 ```
 
 ### `∀` (forall) must be at the top level of a predicate body

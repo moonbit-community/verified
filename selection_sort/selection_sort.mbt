@@ -1,6 +1,9 @@
 ///|
-#ensures(sorted_desc(arr))
-pub fn sort(arr : FixedArray[Int]) -> Int {
+pub fn sort(
+  arr : FixedArray[Int],
+) -> Int where {
+  proof_ensure: result => sorted_desc(arr),
+} {
   let n = arr.length()
   for i = 0; i < n; {
     let (ub, l) = for j = i + 1, ub = arr[i], l = i; j < n; {

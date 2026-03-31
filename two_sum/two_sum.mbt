@@ -1,6 +1,10 @@
 ///|
-#ensures(two_sum_result_ok(a, sum, result))
-pub fn first_hit(a : FixedArray[Int], sum : Int) -> (Int, Int)? {
+pub fn first_hit(
+  a : FixedArray[Int],
+  sum : Int,
+) -> (Int, Int)? where {
+  proof_ensure: result => two_sum_result_ok(a, sum, result),
+} {
   for i = 0; i < a.length(); {
     let row_hit = for j = 0; j < a.length(); {
       if a[i] + a[j] == sum {
@@ -32,10 +36,14 @@ pub fn first_hit(a : FixedArray[Int], sum : Int) -> (Int, Int)? {
 }
 
 ///|
-#requires(nonnegative(sum))
-#requires(nonnegative_entries(a))
-#ensures(positive_two_sum_result_ok(a, sum, result))
-pub fn one_loop_positive(a : FixedArray[Int], sum : Int) -> (Int, Int)? {
+pub fn one_loop_positive(
+  a : FixedArray[Int],
+  sum : Int,
+) -> (Int, Int)? where {
+  proof_require: nonnegative(sum),
+  proof_require: nonnegative_entries(a),
+  proof_ensure: result => positive_two_sum_result_ok(a, sum, result),
+} {
   let seen = FixedArray::make(sum + 1, 0)
   for i = 0; i < a.length(); {
     if a[i] <= sum {

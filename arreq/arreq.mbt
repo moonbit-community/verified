@@ -1,7 +1,11 @@
 ///|
-#requires(same_length(xs, ys))
-#ensures(arrays_eq_ok(xs, ys, result))
-pub fn arrays_equal(xs : FixedArray[Int], ys : FixedArray[Int]) -> Int {
+pub fn arrays_equal(
+  xs : FixedArray[Int],
+  ys : FixedArray[Int],
+) -> Int where {
+  proof_require: same_length(xs, ys),
+  proof_ensure: result => arrays_eq_ok(xs, ys, result),
+} {
   for i = 0, ok = 1; i < xs.length(); {
     let new_ok = if xs[i] == ys[i] { ok } else { 0 }
     continue i + 1, new_ok

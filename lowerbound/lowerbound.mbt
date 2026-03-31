@@ -1,7 +1,11 @@
 ///|
-#requires(sorted(xs))
-#ensures(lower_bound_ok(xs, key, result))
-pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {
+pub fn lower_bound(
+  xs : FixedArray[Int],
+  key : Int,
+) -> Int where {
+  proof_require: sorted(xs),
+  proof_ensure: result => lower_bound_ok(xs, key, result),
+} {
   for lo = 0, hi = xs.length(); lo < hi; {
     let mid = lo + (hi - lo) / 2
     if xs[mid] < key {

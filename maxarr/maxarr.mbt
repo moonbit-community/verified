@@ -1,7 +1,10 @@
 ///|
-#requires(nonempty(xs))
-#ensures(is_max_index(xs, result))
-pub fn index_of_max(xs : FixedArray[Int]) -> Int {
+pub fn index_of_max(
+  xs : FixedArray[Int],
+) -> Int where {
+  proof_require: nonempty(xs),
+  proof_ensure: result => is_max_index(xs, result),
+} {
   for i = 1, best = 0; i < xs.length(); {
     let new_best = if xs[i] > xs[best] { i } else { best }
     continue i + 1, new_best

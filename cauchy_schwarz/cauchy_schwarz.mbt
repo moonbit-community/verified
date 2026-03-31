@@ -1,7 +1,11 @@
 ///|
-#requires(same_length(xs, ys))
-#ensures(nonneg(result))
-pub fn cauchy_schwarz_gap(xs : FixedArray[Int], ys : FixedArray[Int]) -> Int {
+pub fn cauchy_schwarz_gap(
+  xs : FixedArray[Int],
+  ys : FixedArray[Int],
+) -> Int where {
+  proof_require: same_length(xs, ys),
+  proof_ensure: result => nonneg(result),
+} {
   for i = 0, x2 = 0, y2 = 0, xy = 0, gap = 0; i < xs.length(); {
     let x = xs[i]
     let y = ys[i]

@@ -23,9 +23,7 @@ fn stack_size(s : MinStack) -> Int {
 }
 
 ///|
-pub fn empty() -> MinStack where {
-  proof_ensure: result => stack_inv(result),
-} {
+pub fn empty() -> MinStack where { proof_ensure: result => stack_inv(result) } {
   Nil
 }
 
@@ -35,7 +33,9 @@ pub fn size(s : MinStack) -> Int {
 }
 
 ///|
-pub fn min_value(s : MinStack) -> Int? where {
+pub fn min_value(
+  s : MinStack,
+) -> Int? where {
   proof_require: stack_inv(s),
   proof_ensure: result => min_value_post(s, result),
 } {
@@ -49,7 +49,10 @@ pub fn min_value(s : MinStack) -> Int? where {
 }
 
 ///|
-pub fn push(s : MinStack, value : Int) -> MinStack where {
+pub fn push(
+  s : MinStack,
+  value : Int,
+) -> MinStack where {
   proof_require: stack_inv(s),
   proof_ensure: result => push_post(s, value, result),
 } {
@@ -63,7 +66,9 @@ pub fn push(s : MinStack, value : Int) -> MinStack where {
 }
 
 ///|
-pub fn pop(s : MinStack) -> (Int, MinStack)? where {
+pub fn pop(
+  s : MinStack,
+) -> (Int, MinStack)? where {
   proof_require: stack_inv(s),
   proof_ensure: result => pop_post(s, result),
 } {

@@ -42,9 +42,10 @@ predicate sorted(xs : FixedArray[Int]) {
 and loop invariants:
 
 ```moonbit
-#requires(sorted(xs))
-#ensures(lower_bound_ok(xs, key, result))
-pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {
+pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int where {
+  proof_require: sorted(xs),
+  proof_ensure: result => lower_bound_ok(xs, key, result),
+} {
   for lo = 0, hi = xs.length(); lo < hi; {
     let mid = lo + (hi - lo) / 2
     if xs[mid] < key {
@@ -55,19 +56,19 @@ pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {
   } nobreak {
     lo
   } where {
-    invariant: 0 <= lo,
-    invariant: lo <= hi,
-    invariant: hi <= xs.length(),
-    invariant: all_less_before(xs, key, lo),
-    invariant: all_geq_from(xs, key, hi),
+    proof_invariant: 0 <= lo,
+    proof_invariant: lo <= hi,
+    proof_invariant: hi <= xs.length(),
+    proof_invariant: all_less_before(xs, key, lo),
+    proof_invariant: all_geq_from(xs, key, hi),
   }
 }
 ```
 
-- `#requires(pred(...))` — precondition (assumed true on entry)
-- `#ensures(pred(..., result))` — postcondition (must hold on exit; `result`
+- `proof_require: pred(...)` — precondition (assumed true on entry)
+- `proof_ensure: result => pred(..., result)` — postcondition (must hold on exit; `result`
   refers to the return value)
-- `where { invariant: expr, ... }` — loop invariants (must hold at every
+- `where { proof_invariant: expr, ... }` — loop invariants (must hold at every
   iteration boundary)
 
 ### 2. Lowering to WhyML
@@ -85,7 +86,7 @@ pub fn lower_bound(xs : FixedArray[Int], key : Int) -> Int {
 | `→` | `->` |
 | `for` loop | `while` loop with `ref` variables |
 | loop invariants | `invariant { ... }` clauses |
-| `#requires` / `#ensures` | `requires { ... }` / `ensures { ... }` |
+| `proof_require` / `proof_ensure` | `requires { ... }` / `ensures { ... }` |
 
 The compiler also auto-generates a **termination variant** for each loop
 (e.g. `variant { hi - lo }` for a loop with condition `lo < hi`), and links
@@ -133,7 +134,7 @@ and a summary of total goals proved.
 
 ## Examples
 
-The project contains 16 example packages at increasing difficulty:
+The project contains a compact set of example packages at increasing difficulty:
 
 ### No loops (branch-only proofs)
 
@@ -155,7 +156,8 @@ The project contains 16 example packages at increasing difficulty:
 
 | Package | What it proves |
 |---------|---------------|
-| `zzok` / `afail` / `invpred` | Binary search: result is -1 or an index where `xs[result] == key` |
+| `binary_search` | Option-returning binary search with strong window invariants |
+| `invpred` | Binary search using a named invariant predicate |
 | `isqrt` | Integer square root via binary search: `r*r <= n < (r+1)*(r+1)` |
 | `div` | Integer division via binary search: `q*b <= a < (q+1)*b` |
 
@@ -176,9 +178,9 @@ See [TODO.md](TODO.md) for detailed writeups. Summary:
 1. **Sequential `continue` assignment** — `continue i + 1, i` sets the second
    variable to the *updated* `i`. Use a `let` binding to capture the old value.
 
-2. **`#requires` / `#ensures` only accept predicate calls** — inline
-   expressions like `#requires(lo <= hi)` are a syntax error. Define a named
-   predicate in `.mbtp`.
+2. **Contracts work best with named predicates** — complex inline boolean
+   expressions are brittle. Define a named predicate in `.mbtp` and reference
+   it from `proof_require` / `proof_ensure`.
 
 3. **`∀` must be at the top level of a predicate body** — cannot be nested
    inside `&&`. Move conditions into the implication consequent instead.

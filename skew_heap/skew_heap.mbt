@@ -19,9 +19,7 @@ fn heap_size(h : Heap) -> Int {
 }
 
 ///|
-pub fn empty() -> Heap where {
-  proof_ensure: result => heap_inv(result),
-} {
+pub fn empty() -> Heap where { proof_ensure: result => heap_inv(result) } {
   Empty
 }
 
@@ -31,7 +29,11 @@ pub fn size(h : Heap) -> Int {
 }
 
 ///|
-fn make_node(value : Int, left : Heap, right : Heap) -> Heap where {
+fn make_node(
+  value : Int,
+  left : Heap,
+  right : Heap,
+) -> Heap where {
   proof_require: heap_inv(left),
   proof_require: heap_inv(right),
   proof_require: all_ge(value, left),
@@ -44,7 +46,9 @@ fn make_node(value : Int, left : Heap, right : Heap) -> Heap where {
 }
 
 ///|
-fn singleton(value : Int) -> Heap where {
+fn singleton(
+  value : Int,
+) -> Heap where {
   proof_ensure: result => singleton_post(value, result),
 } {
   let result = Node(value, Empty, Empty)
@@ -53,7 +57,10 @@ fn singleton(value : Int) -> Heap where {
 }
 
 ///|
-pub fn merge(a : Heap, b : Heap) -> Heap where {
+pub fn merge(
+  a : Heap,
+  b : Heap,
+) -> Heap where {
   proof_decrease: merge_measure(a, b),
   proof_require: heap_inv(a),
   proof_require: heap_inv(b),
@@ -88,7 +95,10 @@ pub fn merge(a : Heap, b : Heap) -> Heap where {
 }
 
 ///|
-pub fn insert(h : Heap, value : Int) -> Heap where {
+pub fn insert(
+  h : Heap,
+  value : Int,
+) -> Heap where {
   proof_require: heap_inv(h),
   proof_ensure: result => insert_post(h, value, result),
 } {
@@ -99,7 +109,9 @@ pub fn insert(h : Heap, value : Int) -> Heap where {
 }
 
 ///|
-pub fn find_min(h : Heap) -> Int? where {
+pub fn find_min(
+  h : Heap,
+) -> Int? where {
   proof_require: heap_inv(h),
   proof_ensure: result => find_min_post(h, result),
 } {
@@ -113,7 +125,9 @@ pub fn find_min(h : Heap) -> Int? where {
 }
 
 ///|
-pub fn delete_min(h : Heap) -> Heap? where {
+pub fn delete_min(
+  h : Heap,
+) -> Heap? where {
   proof_require: heap_inv(h),
   proof_ensure: result => delete_min_post(h, result),
 } {
