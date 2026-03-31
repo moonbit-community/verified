@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "username/moon_prove/selection_sort"
+package "bobzhang/prove/selection_sort"
 
 // Values
 pub fn sort(FixedArray[Int]) -> Int

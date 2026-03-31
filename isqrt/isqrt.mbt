@@ -1,3 +1,4 @@
+///|
 #requires(nonneg(n))
 #ensures(isqrt_ok(n, result))
 pub fn isqrt(n : Int) -> Int {
@@ -11,9 +12,9 @@ pub fn isqrt(n : Int) -> Int {
   } nobreak {
     lo
   } where {
-    invariant: 0 <= lo,
-    invariant: lo < hi,
-    invariant: lo * lo <= n,
-    invariant: n < hi * hi,
+    proof_invariant: 0 <= lo,
+    proof_invariant: lo < hi,
+    proof_invariant: lo * lo <= n,
+    proof_invariant: n < hi * hi,
   }
 }

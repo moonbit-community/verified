@@ -1,3 +1,4 @@
+///|
 #ensures(find_ok(xs, key, result))
 pub fn find(xs : FixedArray[Int], key : Int) -> Int {
   for i = 0, found = -1; i < xs.length(); {
@@ -6,8 +7,8 @@ pub fn find(xs : FixedArray[Int], key : Int) -> Int {
   } nobreak {
     found
   } where {
-    invariant: 0 <= i,
-    invariant: i <= xs.length(),
-    invariant: found == -1 || (in_bounds(xs, found) && xs[found] == key),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= xs.length(),
+    proof_invariant: found == -1 || (in_bounds(xs, found) && xs[found] == key),
   }
 }

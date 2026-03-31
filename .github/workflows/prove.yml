@@ -1,0 +1,87 @@
+name: Prove
+
+on:
+  push:
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prove:
+    env:
+      Z3_VERSION: 4.15.4
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup opam
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: 4.14.2
+
+      - name: Install MoonBit nightly
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s nightly
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Install Z3 4.15.4 (Ubuntu)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            -o "$RUNNER_TEMP/z3.zip" \
+            "https://github.com/Z3Prover/z3/releases/download/z3-${Z3_VERSION}/z3-${Z3_VERSION}-x64-glibc-2.39.zip"
+          unzip -q "$RUNNER_TEMP/z3.zip" -d "$RUNNER_TEMP/z3"
+          Z3PATH="$(find "$RUNNER_TEMP/z3" -type f -name z3 | head -n 1)"
+          echo "$(dirname "$Z3PATH")" >> "$GITHUB_PATH"
+          echo "Z3PATH=$Z3PATH" >> "$GITHUB_ENV"
+
+      - name: Install Z3 (macOS)
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          set -euo pipefail
+          brew install z3
+          echo "Z3PATH=$(command -v z3)" >> "$GITHUB_ENV"
+
+      - name: Install Why3 1.7.2
+        run: |
+          set -euo pipefail
+          opam install -y why3.1.7.2
+          echo "WHY3DATA=$(opam exec -- why3 --print-datadir)" >> "$GITHUB_ENV"
+          echo "WHY3LIB=$(opam exec -- why3 --print-libdir)" >> "$GITHUB_ENV"
+
+      - name: Update MoonBit dependencies
+        run: |
+          set -euo pipefail
+          moon update
+
+      - name: Show tool versions
+        run: |
+          set -euo pipefail
+          moon version --all
+          opam exec -- why3 --version
+          "$Z3PATH" --version
+
+      - name: Bundle core library
+        run: |
+          set -euo pipefail
+          moon -C "$HOME/.moon/lib/core" bundle --all
+
+      - name: Run proofs
+        env:
+          WHY3DATA: ${{ env.WHY3DATA }}
+          WHY3LIB: ${{ env.WHY3LIB }}
+          Z3PATH: ${{ env.Z3PATH }}
+        run: |
+          set -euo pipefail
+          opam exec -- moon prove

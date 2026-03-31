@@ -16,11 +16,11 @@ pub fn sort(arr : FixedArray[Int]) -> Int {
     } nobreak {
       (ub, l)
     } where {
-      invariant: i < j,
-      invariant: j <= n,
-      invariant: max_in_range(arr, i, j, ub),
-      invariant: max_index_in_range(arr, i, j, l),
-      invariant: ub == arr[l],
+      proof_invariant: i < j,
+      proof_invariant: j <= n,
+      proof_invariant: max_in_range(arr, i, j, ub),
+      proof_invariant: max_index_in_range(arr, i, j, l),
+      proof_invariant: ub == arr[l],
     }
     let old_i = arr[i]
     arr[l] = old_i
@@ -29,8 +29,8 @@ pub fn sort(arr : FixedArray[Int]) -> Int {
   } nobreak {
     0
   } where {
-    invariant: 0 <= i,
-    invariant: i <= n,
-    invariant: prefix_dominates_suffix(arr, i),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= n,
+    proof_invariant: prefix_dominates_suffix(arr, i),
   }
 }

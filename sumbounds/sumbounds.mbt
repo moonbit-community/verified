@@ -1,3 +1,4 @@
+///|
 #requires(in_range(xs, lo, hi))
 #ensures(sum_bounded(xs, lo, hi, result))
 pub fn bounded_sum(xs : FixedArray[Int], lo : Int, hi : Int) -> Int {
@@ -7,9 +8,9 @@ pub fn bounded_sum(xs : FixedArray[Int], lo : Int, hi : Int) -> Int {
   } nobreak {
     sum
   } where {
-    invariant: 0 <= i,
-    invariant: i <= xs.length(),
-    invariant: lo * i <= sum,
-    invariant: sum <= hi * i,
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= xs.length(),
+    proof_invariant: lo * i <= sum,
+    proof_invariant: sum <= hi * i,
   }
 }

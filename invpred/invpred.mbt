@@ -1,3 +1,4 @@
+///|
 #requires(sorted(xs))
 #ensures(binary_search_ok(xs, key, result))
 pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {
@@ -15,6 +16,6 @@ pub fn binary_search(xs : FixedArray[Int], key : Int) -> Int {
       -1
     }
   } where {
-    invariant: search_window(xs, i, j),
+    proof_invariant: search_window(xs, i, j),
   }
 }

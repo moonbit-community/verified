@@ -14,18 +14,18 @@ pub fn sort(arr : FixedArray[Int]) -> Int {
     } nobreak {
       i
     } where {
-      invariant: 0 <= t,
-      invariant: t <= n - 1 - i,
-      invariant: i <= n - 1 - t,
-      invariant: suffix_head_dominates(arr, n - 1 - t),
-      invariant: prefix_dominates_suffix(arr, i),
+      proof_invariant: 0 <= t,
+      proof_invariant: t <= n - 1 - i,
+      proof_invariant: i <= n - 1 - t,
+      proof_invariant: suffix_head_dominates(arr, n - 1 - t),
+      proof_invariant: prefix_dominates_suffix(arr, i),
     }
     continue i + 1
   } nobreak {
     0
   } where {
-    invariant: 0 <= i,
-    invariant: i <= n,
-    invariant: prefix_dominates_suffix(arr, i),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= n,
+    proof_invariant: prefix_dominates_suffix(arr, i),
   }
 }

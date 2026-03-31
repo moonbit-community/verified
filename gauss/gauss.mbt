@@ -1,3 +1,4 @@
+///|
 #requires(nonneg(n))
 #ensures(gauss_ok(n, result))
 pub fn sum_to(n : Int) -> Int {
@@ -7,8 +8,8 @@ pub fn sum_to(n : Int) -> Int {
   } nobreak {
     sum
   } where {
-    invariant: 0 <= i,
-    invariant: i <= n,
-    invariant: sum * 2 == i * (i + 1),
+    proof_invariant: 0 <= i,
+    proof_invariant: i <= n,
+    proof_invariant: sum * 2 == i * (i + 1),
   }
 }

@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/prove/fset"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub type Fset[T]
+
+// Type aliases
+
+// Traits
+

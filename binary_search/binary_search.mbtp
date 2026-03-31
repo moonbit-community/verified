@@ -1,0 +1,24 @@
+predicate in_bounds(xs : FixedArray[Int], i : Int) {
+  (0 <= i) && (i < xs.length())
+}
+
+predicate sorted(xs : FixedArray[Int]) {
+  ∀ i : Int, ∀ j : Int,
+    ((in_bounds(xs, i)) && (in_bounds(xs, j)) && (i <= j)) →
+      xs[i] <= xs[j]
+}
+
+predicate all_less_before(xs : FixedArray[Int], key : Int, idx : Int) {
+  ∀ i : Int, ((0 <= i) && (i < idx)) → xs[i] < key
+}
+
+predicate all_greater_from(xs : FixedArray[Int], key : Int, idx : Int) {
+  ∀ i : Int, ((idx <= i) && (i < xs.length())) → key < xs[i]
+}
+
+predicate binary_search_ok(xs : FixedArray[Int], key : Int, result : Option[Int]) {
+  match result {
+    None => ∀ i : Int, in_bounds(xs, i) → xs[i] != key
+    Some(result) => (in_bounds(xs, result)) && (xs[result] == key)
+  }
+}

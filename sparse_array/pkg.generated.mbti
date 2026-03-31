@@ -1,0 +1,36 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/prove/sparse_array"
+
+// Values
+pub fn add(SparseArray, Int, Int) -> SparseArray
+
+pub fn empty() -> SparseArray
+
+pub fn get(SparseArray, Int) -> Int?
+
+pub fn length(SparseArray) -> Int
+
+pub fn remove(SparseArray, Int) -> SparseArray
+
+pub fn replace(SparseArray, Int, Int) -> SparseArray
+
+pub fn singleton(Int, Int) -> SparseArray
+
+// Errors
+
+// Types and methods
+pub struct SparseArray {
+  bitmap : UInt
+  data : FixedArray[Int]
+} derive(Eq)
+pub fn SparseArray::add(Self, Int, Int) -> Self
+pub fn SparseArray::get(Self, Int) -> Int?
+#alias(size, deprecated)
+pub fn SparseArray::length(Self) -> Int
+pub fn SparseArray::remove(Self, Int) -> Self
+pub fn SparseArray::replace(Self, Int, Int) -> Self
+
+// Type aliases
+
+// Traits
+
