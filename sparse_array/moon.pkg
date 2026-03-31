@@ -1,6 +1,6 @@
 import {
-  "bobzhang/prove/bitmap32",
-  "bobzhang/prove/bv32",
-  "bobzhang/prove/fmap",
-  "bobzhang/prove/fset",
+  "moonbit-community/verified/bitmap32",
+  "moonbit-community/verified/bv32",
+  "moonbit-community/verified/fmap",
+  "moonbit-community/verified/fset",
 }
