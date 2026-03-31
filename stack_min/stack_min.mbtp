@@ -1,0 +1,98 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+fn root_once(x : Int, value : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    i == 0 && x == value
+  }, 0, 1)
+}
+
+fn count(s : MinStack, x : Int) -> Int {
+  match s {
+    Nil => 0
+    Cons(value, min0, tail) => count(tail, x) + root_once(x, value)
+  }
+}
+
+///|
+predicate all_ge(x : Int, s : MinStack) {
+  ∀ y : Int, 0 < count(s, y) → x <= y
+}
+
+///|
+predicate non_empty(s : MinStack) {
+  match s {
+    Nil => false
+    Cons(value, min0, tail) => true
+  }
+}
+
+///|
+predicate stack_inv(s : MinStack) {
+  match s {
+    Nil => true
+    Cons(value, stored_min, tail) =>
+      stack_inv(tail) &&
+      0 < count(s, stored_min) &&
+      all_ge(stored_min, s)
+  }
+}
+
+///|
+predicate is_minimum(s : MinStack, x : Int) {
+  0 < count(s, x) && all_ge(x, s)
+}
+
+///|
+predicate min_value_post(s : MinStack, res : Option[Int]) {
+  match res {
+    None => non_empty(s) == false
+    Some(min_result) => is_minimum(s, min_result)
+  }
+}
+
+///|
+predicate push_post(s : MinStack, value : Int, res : MinStack) {
+  stack_inv(res) &&
+  count(res, value) == count(s, value) + 1 &&
+  (∀ y : Int, y != value → count(res, y) == count(s, y))
+}
+
+///|
+predicate pop_post(s : MinStack, res : Option[(Int, MinStack)]) {
+  match res {
+    None => non_empty(s) == false
+    Some((value, tail)) =>
+      stack_inv(tail) &&
+      count(s, value) == count(tail, value) + 1 &&
+      (∀ y : Int, y != value → count(s, y) == count(tail, y))
+  }
+}
+
+///|
+lemma root_once_nonneg(x : Int, value : Int) where {
+  proof_ensure: 0 <= root_once(x, value),
+} {
+}
+
+///|
+lemma count_nonneg(s : MinStack, x : Int) where {
+  proof_decrease: s,
+  proof_ensure: 0 <= count(s, x),
+} {
+  match s {
+    Nil => ()
+    Cons(value0, min0, tail0) => {
+      count_nonneg(tail0, x)
+      proof_assert 0 <= root_once(x, value0)
+    }
+  }
+}
+
+///|
+lemma root_once_self(value : Int) where {
+  proof_ensure: 0 < root_once(value, value),
+} {
+}
