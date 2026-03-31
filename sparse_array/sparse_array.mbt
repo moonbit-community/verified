@@ -52,7 +52,6 @@ pub fn empty() -> SparseArray where {
   proof_ensure: result => empty_abs_ok(result),
 } {
   let result = { bitmap: zero_uint(), data: FixedArray::make(0, 0) }
-  proof_assert empty_data_ok(result)
   proof_assert sparse_ok(result)
   proof_assert domain(result.bitmap).eq(@fset.fset_empty())
   proof_assert abs(result).eq(@fmap.fmap_empty())
@@ -81,7 +80,6 @@ pub fn singleton(
   proof_assert rank_value(result.bitmap, idx, 0) == 0
   proof_assert sparse_ok(result)
   proof_assert domain(result.bitmap).eq(@fset.fset_empty().add(idx))
-  proof_assert rank_value(result.bitmap, idx, 0) == 0
   proof_assert abs(result).mem(idx)
   proof_assert abs(result).find(idx) == value
   proof_assert singleton_abs_ok(result, idx, value)

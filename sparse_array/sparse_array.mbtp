@@ -196,16 +196,6 @@ lemma abs_mem_value(
 }
 
 ///|
-lemma abs_mem_invalid_false(
-  sa : SparseArray,
-  idx : Int,
-) where {
-  proof_require: valid_idx(idx) == false,
-  proof_ensure: abs(sa).mem(idx) == false,
-} {
-}
-
-///|
 lemma abs_find_value(
   sa : SparseArray,
   idx : Int,
@@ -235,39 +225,6 @@ lemma rank_count_bounds(
 } {
   proof_assert prefix_domain(bitmap, idx).subset(domain(bitmap))
   proof_assert rank_value(bitmap, idx, 0) <= count_value(bitmap, 0)
-}
-
-///|
-lemma rank_monotone_value(
-  bitmap : UInt,
-  i : Int,
-  j : Int,
-) where {
-  proof_require: valid_prefix_idx(i),
-  proof_require: valid_prefix_idx(j),
-  proof_require: i <= j,
-  proof_ensure: rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0),
-} {
-  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
-  proof_assert rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0)
-}
-
-///|
-lemma rank_member_before(
-  bitmap : UInt,
-  i : Int,
-  j : Int,
-) where {
-  proof_require: valid_idx(i),
-  proof_require: valid_prefix_idx(j),
-  proof_require: i < j,
-  proof_require: mem_value(bitmap, i),
-  proof_ensure: rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0),
-} {
-  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
-  proof_assert prefix_domain(bitmap, j).mem(i)
-  proof_assert prefix_domain(bitmap, i).mem(i) == false
-  proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
 }
 
 ///|
@@ -332,11 +289,6 @@ predicate empty_abs_ok(_res : SparseArray) {
 predicate singleton_abs_ok(_res : SparseArray, _idx : Int, _value : Int) {
   sparse_ok(_res) &&
   abs(_res).eq(@fmap.fmap_empty().add(_idx, _value))
-}
-
-///|
-predicate singleton_data_ok(_res : SparseArray, _value : Int) {
-  _res.data.length() == 1 && _res.data[0] == _value
 }
 
 ///|
@@ -626,12 +578,6 @@ lemma rank_remove_after(
   proof_assert rank_value(new_bitmap, j, 0) + 1 == rank_value(old_bitmap, j, 0)
 }
 
-///|
-predicate add_data_len_ok(_sa : SparseArray, _res : SparseArray) {
-  _res.data.length() == _sa.data.length() + 1
-}
-
-///|
 predicate add_prefix_ok(
   old_data : FixedArray[Int],
   new_data : FixedArray[Int],
@@ -674,11 +620,6 @@ predicate add_data_ok(
     _value,
     _sa.data.length(),
   )
-}
-
-///|
-predicate replace_data_len_ok(_sa : SparseArray, _res : SparseArray) {
-  _res.data.length() == _sa.data.length()
 }
 
 ///|
@@ -727,16 +668,6 @@ lemma replace_mem_same(
   proof_require: replace_data_ok(_sa, _idx, _value, _res),
   proof_ensure: abs(_res).mem(j) == abs(_sa).mem(j),
 } {
-}
-
-///|
-predicate empty_data_ok(_res : SparseArray) {
-  _res.data.length() == 0
-}
-
-///|
-predicate remove_data_len_ok(_sa : SparseArray, _res : SparseArray) {
-  _res.data.length() + 1 == _sa.data.length()
 }
 
 ///|
@@ -906,7 +837,7 @@ lemma remove_empty_abs_lemma(
   proof_require: abs(_sa).mem(_idx),
   proof_require: singleton_len_ok(_sa),
   proof_require: empty_bitmap(_res.bitmap),
-  proof_require: empty_data_ok(_res),
+  proof_require: _res.data.length() == 0,
   proof_ensure: remove_empty_abs_ok(_sa, _idx, _res),
 } {
   proof_assert remove_empty_abs_ok(_sa, _idx, _res)
