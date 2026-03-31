@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/prove/bitmap32"
+
+// Values
+pub fn bitmap_add(UInt, Int) -> UInt
+
+pub fn bitmap_remove(UInt, Int) -> UInt
+
+pub fn uint_bit0(UInt) -> Bool
+
+pub fn uint_lsr(UInt, Int) -> UInt
+
+pub fn zero_uint() -> UInt
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

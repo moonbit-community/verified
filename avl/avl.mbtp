@@ -31,12 +31,12 @@ predicate non_empty(t : Tree) {
 }
 
 ///|
-predicate avl(t : Tree) {
+predicate avl_inv(t : Tree) {
   match t {
     Empty => true
     Node(l, x, r, h) =>
-      avl(l) &&
-      avl(r) &&
+      avl_inv(l) &&
+      avl_inv(r) &&
       all_lt(elements(l), x) && all_gt(x, elements(r)) &&
       h == 1 + max2(height(l), height(r)) &&
       -1 <= height(l) - height(r) &&
@@ -46,8 +46,8 @@ predicate avl(t : Tree) {
 
 ///|
 predicate balance_pre(l : Tree, x : Int, r : Tree) {
-  avl(l) &&
-  avl(r) &&
+  avl_inv(l) &&
+  avl_inv(r) &&
   all_lt(elements(l), x) && all_gt(x, elements(r)) &&
   -2 <= height(l) - height(r) &&
   height(l) - height(r) <= 2
@@ -78,45 +78,45 @@ predicate right_double_case(r : Tree) {
 }
 
 ///|
-predicate balance_elements_ok(l : Tree, x : Int, r : Tree, result : Tree) {
+predicate balance_elements_post(l : Tree, x : Int, r : Tree, result : Tree) {
   elements(result).eq(elements(l).union(elements(r)).add(x))
 }
 
-predicate balance_height_upper_ok(l : Tree, r : Tree, result : Tree) {
+predicate balance_height_upper_post(l : Tree, r : Tree, result : Tree) {
   height(result) <= 1 + max2(height(l), height(r))
 }
 
 ///|
-predicate balance_height_lower_ok(l : Tree, r : Tree, result : Tree) {
+predicate balance_height_lower_post(l : Tree, r : Tree, result : Tree) {
   max2(height(l), height(r)) <= height(result)
 }
 
 ///|
-predicate balance_height_exact_ok(l : Tree, r : Tree, result : Tree) {
+predicate balance_height_exact_post(l : Tree, r : Tree, result : Tree) {
   balanced_heights(l, r) == false ||
   height(result) == 1 + max2(height(l), height(r))
 }
 
 ///|
-predicate insert_elements_ok(x : Int, t : Tree, result : Tree) {
+predicate insert_elements_post(x : Int, t : Tree, result : Tree) {
   elements(result).eq(elements(t).add(x))
 }
 
 ///|
-predicate insert_height_lower_ok(t : Tree, result : Tree) {
+predicate insert_height_lower_post(t : Tree, result : Tree) {
   height(t) <= height(result)
 }
 
 ///|
-predicate insert_height_upper_ok(t : Tree, result : Tree) {
+predicate insert_height_upper_post(t : Tree, result : Tree) {
   height(result) <= height(t) + 1
 }
 
 ///|
-predicate remove_min_ok(t : Tree, result : (Int, Tree)) {
+predicate remove_min_post(t : Tree, result : (Int, Tree)) {
   match result {
     (x, t1) =>
-      avl(t1) &&
+      avl_inv(t1) &&
       elements(t).mem(x) &&
       elements(t).eq(elements(t1).add(x)) &&
       elements_subset(t1, t) &&
@@ -127,35 +127,35 @@ predicate remove_min_ok(t : Tree, result : (Int, Tree)) {
 }
 
 ///|
-predicate delete_elements_ok(x : Int, t : Tree, result : Tree) {
+predicate delete_elements_post(x : Int, t : Tree, result : Tree) {
   elements(result).eq(elements(t).remove(x))
 }
 
 ///|
-predicate delete_height_lower_ok(t : Tree, result : Tree) {
+predicate delete_height_lower_post(t : Tree, result : Tree) {
   height(t) <= height(result) + 1
 }
 
 ///|
-predicate delete_height_upper_ok(t : Tree, result : Tree) {
+predicate delete_height_upper_post(t : Tree, result : Tree) {
   height(result) <= height(t)
 }
 
 ///|
-predicate mk_height_ok(l : Tree, r : Tree, result : Tree) {
+predicate mk_height_post(l : Tree, r : Tree, result : Tree) {
   height(result) == 1 + max2(height(l), height(r))
 }
 
 ///|
-predicate height_nonneg_ok(t : Tree) {
+predicate height_nonneg_post(t : Tree) {
   0 <= height(t)
 }
 
 ///|
 lemma height_nonneg_lemma(t : Tree) where {
   proof_decrease: t,
-  proof_require: avl(t),
-  proof_ensure: height_nonneg_ok(t),
+  proof_require: avl_inv(t),
+  proof_ensure: height_nonneg_post(t),
 } {
   match t {
     Empty => ()
@@ -230,7 +230,7 @@ lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) where {
 
 }
 
-predicate single_rotation_mem_ok(
+predicate single_rotation_mem_post(
   a : Int,
   b : Int,
   s1 : Fset[Int],
@@ -251,9 +251,9 @@ lemma single_rotation_mem(
   s3 : Fset[Int],
   z : Int
 ) where {
-  proof_ensure: single_rotation_mem_ok(a, b, s1, s2, s3, z),
+  proof_ensure: single_rotation_mem_post(a, b, s1, s2, s3, z),
 } {
-  proof_assert single_rotation_mem_ok(a, b, s1, s2, s3, z)
+  proof_assert single_rotation_mem_post(a, b, s1, s2, s3, z)
 }
 
 predicate single_rotation_eq(
@@ -282,7 +282,7 @@ lemma single_rotation_eq_lemma(
 }
 
 ///|
-predicate double_rotation_mem_lr_ok(
+predicate double_rotation_mem_lr_post(
   a : Int,
   b : Int,
   c : Int,
@@ -307,9 +307,9 @@ lemma double_rotation_mem_lr(
   s4 : Fset[Int],
   z : Int
 ) where {
-  proof_ensure: double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z),
+  proof_ensure: double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z),
 } {
-  proof_assert double_rotation_mem_lr_ok(a, b, c, s1, s2, s3, s4, z)
+  proof_assert double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z)
 }
 
 predicate double_rotation_eq_lr(
@@ -342,7 +342,7 @@ lemma double_rotation_eq_lr_lemma(
 }
 
 ///|
-predicate double_rotation_mem_rl_ok(
+predicate double_rotation_mem_rl_post(
   a : Int,
   b : Int,
   c : Int,
@@ -367,9 +367,9 @@ lemma double_rotation_mem_rl(
   s4 : Fset[Int],
   z : Int
 ) where {
-  proof_ensure: double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z),
+  proof_ensure: double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z),
 } {
-  proof_assert double_rotation_mem_rl_ok(a, b, c, s1, s2, s3, s4, z)
+  proof_assert double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z)
 }
 
 predicate double_rotation_eq_rl(
@@ -402,7 +402,7 @@ lemma double_rotation_eq_rl_lemma(
 }
 
 ///|
-predicate insert_elements_mem_ok(
+predicate insert_elements_mem_post(
   a : Int,
   b : Int,
   s1 : Fset[Int],
@@ -421,9 +421,9 @@ lemma insert_elements_mem(
   s2 : Fset[Int],
   z : Int
 ) where {
-  proof_ensure: insert_elements_mem_ok(a, b, s1, s2, z),
+  proof_ensure: insert_elements_mem_post(a, b, s1, s2, z),
 } {
-  proof_assert insert_elements_mem_ok(a, b, s1, s2, z)
+  proof_assert insert_elements_mem_post(a, b, s1, s2, z)
 }
 
 predicate insert_elements_eq(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {

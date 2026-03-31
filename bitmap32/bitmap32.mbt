@@ -7,7 +7,7 @@ using @fset {type Fset}
 ///|
 pub fn zero_uint() -> UInt where {
   proof_axiomatized: true,
-  proof_ensure: result => empty_bitmap(result),
+  proof_ensure: result => empty_bitmap_inv(result),
 } {
   0U
 }
@@ -19,7 +19,7 @@ pub fn uint_lsr(
 ) -> UInt where {
   proof_axiomatized: true,
   proof_require: valid_idx(idx),
-  proof_ensure: result => uint_lsr_ok(bitmap, idx, result),
+  proof_ensure: result => uint_lsr_post(bitmap, idx, result),
 } {
   bitmap >> idx
 }
@@ -42,7 +42,7 @@ pub fn bitmap_add(
   proof_axiomatized: true,
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx) == false,
-  proof_ensure: result => bitmap_add_ok(bitmap, idx, result),
+  proof_ensure: result => bitmap_add_post(bitmap, idx, result),
 } {
   bitmap | (1U << idx)
 }
@@ -55,7 +55,7 @@ pub fn bitmap_remove(
   proof_axiomatized: true,
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx),
-  proof_ensure: result => bitmap_remove_ok(bitmap, idx, result),
+  proof_ensure: result => bitmap_remove_post(bitmap, idx, result),
 } {
   bitmap & (1U << idx).lnot()
 }

@@ -37,16 +37,16 @@ fn mk(
   x : Int,
   r : Tree,
 ) -> Tree where {
-  proof_require: avl(l),
-  proof_require: avl(r),
+  proof_require: avl_inv(l),
+  proof_require: avl_inv(r),
   proof_require: all_lt(elements(l), x),
   proof_require: all_gt(x, elements(r)),
   proof_require: balanced_heights(l, r),
-  proof_ensure: result => avl(result),
+  proof_ensure: result => avl_inv(result),
   proof_ensure: result => {
     elements(result).eq(elements(l).union(elements(r)).add(x))
   },
-  proof_ensure: result => mk_height_ok(l, r, result),
+  proof_ensure: result => mk_height_post(l, r, result),
 } {
   Node(l, x, r, 1 + max2(height(l), height(r)))
 }
@@ -75,10 +75,10 @@ fn balance_left_double(
   proof_require: balance_pre(l, x, r),
   proof_require: left_heavy(l, r),
   proof_require: left_double_case(l),
-  proof_ensure: result => avl(result),
-  proof_ensure: result => balance_elements_ok(l, x, r, result),
-  proof_ensure: result => balance_height_upper_ok(l, r, result),
-  proof_ensure: result => balance_height_lower_ok(l, r, result),
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => balance_elements_post(l, x, r, result),
+  proof_ensure: result => balance_height_upper_post(l, r, result),
+  proof_ensure: result => balance_height_lower_post(l, r, result),
 } {
   match l {
     Empty => panic()
@@ -130,10 +130,10 @@ fn balance_right_double(
   proof_require: balance_pre(l, x, r),
   proof_require: right_heavy(l, r),
   proof_require: right_double_case(r),
-  proof_ensure: result => avl(result),
-  proof_ensure: result => balance_elements_ok(l, x, r, result),
-  proof_ensure: result => balance_height_upper_ok(l, r, result),
-  proof_ensure: result => balance_height_lower_ok(l, r, result),
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => balance_elements_post(l, x, r, result),
+  proof_ensure: result => balance_height_upper_post(l, r, result),
+  proof_ensure: result => balance_height_lower_post(l, r, result),
 } {
   match r {
     Empty => panic()
@@ -191,11 +191,11 @@ fn balance(
   r : Tree,
 ) -> Tree where {
   proof_require: balance_pre(l, x, r),
-  proof_ensure: result => avl(result),
-  proof_ensure: result => balance_elements_ok(l, x, r, result),
-  proof_ensure: result => balance_height_exact_ok(l, r, result),
-  proof_ensure: result => balance_height_upper_ok(l, r, result),
-  proof_ensure: result => balance_height_lower_ok(l, r, result),
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => balance_elements_post(l, x, r, result),
+  proof_ensure: result => balance_height_exact_post(l, r, result),
+  proof_ensure: result => balance_height_upper_post(l, r, result),
+  proof_ensure: result => balance_height_lower_post(l, r, result),
 } {
   if height(l) > height(r) + 1 {
     proof_assert left_heavy(l, r)
@@ -252,9 +252,9 @@ fn remove_min(
   t : Tree,
 ) -> (Int, Tree) where {
   proof_decrease: t,
-  proof_require: avl(t),
+  proof_require: avl_inv(t),
   proof_require: non_empty(t),
-  proof_ensure: result => remove_min_ok(t, result),
+  proof_ensure: result => remove_min_post(t, result),
 } {
   match t {
     Empty => panic()
@@ -286,11 +286,11 @@ pub fn insert(
   t : Tree,
 ) -> Tree where {
   proof_decrease: t,
-  proof_require: avl(t),
-  proof_ensure: result => avl(result),
-  proof_ensure: result => insert_elements_ok(x, t, result),
-  proof_ensure: result => insert_height_lower_ok(t, result),
-  proof_ensure: result => insert_height_upper_ok(t, result),
+  proof_require: avl_inv(t),
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => insert_elements_post(x, t, result),
+  proof_ensure: result => insert_height_lower_post(t, result),
+  proof_ensure: result => insert_height_upper_post(t, result),
 } {
   match t {
     Empty => mk(Empty, x, Empty)
@@ -315,15 +315,15 @@ pub fn delete(
   t : Tree,
 ) -> Tree where {
   proof_decrease: t,
-  proof_require: avl(t),
-  proof_ensure: result => avl(result),
-  proof_ensure: result => delete_elements_ok(x, t, result),
-  proof_ensure: result => delete_height_lower_ok(t, result),
-  proof_ensure: result => delete_height_upper_ok(t, result),
+  proof_require: avl_inv(t),
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => delete_elements_post(x, t, result),
+  proof_ensure: result => delete_height_lower_post(t, result),
+  proof_ensure: result => delete_height_upper_post(t, result),
 } {
   match t {
     Empty => {
-      proof_assert delete_elements_ok(x, t, Empty)
+      proof_assert delete_elements_post(x, t, Empty)
       Empty
     }
     Node(l, y, r, _) =>
@@ -334,7 +334,7 @@ pub fn delete(
         proof_assert elements(t1).eq(
           elements(l).remove(x).union(elements(r)).add(y),
         )
-        proof_assert delete_elements_ok(x, t, t1)
+        proof_assert delete_elements_post(x, t, t1)
         t1
       } else if y < x {
         let r1 = delete(x, r)
@@ -343,12 +343,12 @@ pub fn delete(
         proof_assert elements(t1).eq(
           elements(l).union(elements(r).remove(x)).add(y),
         )
-        proof_assert delete_elements_ok(x, t, t1)
+        proof_assert delete_elements_post(x, t, t1)
         t1
       } else {
         match r {
           Empty => {
-            proof_assert delete_elements_ok(x, t, l)
+            proof_assert delete_elements_post(x, t, l)
             l
           }
           Node(_, _, _, _) => {
@@ -357,7 +357,7 @@ pub fn delete(
             proof_assert all_lt(elements(l), s)
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
-            proof_assert delete_elements_ok(x, t, t1)
+            proof_assert delete_elements_post(x, t, t1)
             t1
           }
         }

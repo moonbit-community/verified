@@ -26,12 +26,12 @@ pub fn rank_value(bitmap : UInt, idx : Int, _tag : Int) -> Int {
 }
 
 ///|
-pub predicate empty_bitmap(bitmap : UInt) {
+pub predicate empty_bitmap_inv(bitmap : UInt) {
   ∀ i : Int, valid_idx(i) → mem_value(bitmap, i) == false
 }
 
 ///|
-pub predicate bitmap_add_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
+pub predicate bitmap_add_post(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
   valid_idx(idx) &&
   mem_value(new_bitmap, idx) &&
   (∀ i : Int,
@@ -40,7 +40,7 @@ pub predicate bitmap_add_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
 }
 
 ///|
-pub predicate bitmap_remove_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
+pub predicate bitmap_remove_post(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
   valid_idx(idx) &&
   mem_value(new_bitmap, idx) == false &&
   (∀ i : Int,
@@ -49,7 +49,7 @@ pub predicate bitmap_remove_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) 
 }
 
 ///|
-pub predicate uint_lsr_ok(bitmap : UInt, idx : Int, result : UInt) {
+pub predicate uint_lsr_post(bitmap : UInt, idx : Int, result : UInt) {
   ∀ n : Int,
     valid_idx(n) →
       @bv32.uint_to_bv(result).nth(n) == @bv32.uint_to_bv(bitmap).lsr(idx).nth(n)
@@ -68,7 +68,7 @@ pub fn count_value(bitmap : UInt, _tag : Int) -> Int {
 }
 
 ///|
-pub predicate singleton_bitmap_ok(bitmap : UInt, idx : Int) {
+pub predicate singleton_bitmap_inv(bitmap : UInt, idx : Int) {
   valid_idx(idx) &&
   mem_value(bitmap, idx) &&
   (∀ i : Int, valid_idx(i) && i != idx → mem_value(bitmap, i) == false)
@@ -141,7 +141,7 @@ pub lemma rank_step_absent(bitmap : UInt, idx : Int) where {
 
 ///|
 pub lemma empty_domain(bitmap : UInt) where {
-  proof_require: empty_bitmap(bitmap),
+  proof_require: empty_bitmap_inv(bitmap),
   proof_ensure: domain(bitmap).eq(@fset.fset_empty()),
 } {
   proof_assert domain(bitmap).eq(@fset.fset_empty())
@@ -186,7 +186,7 @@ pub lemma rank_distinct_present(bitmap : UInt, i : Int, j : Int) where {
 
 ///|
 pub lemma empty_bitmap_mem_false(bitmap : UInt, idx : Int) where {
-  proof_require: empty_bitmap(bitmap),
+  proof_require: empty_bitmap_inv(bitmap),
   proof_require: valid_idx(idx),
   proof_ensure: mem_value(bitmap, idx) == false,
 } {
@@ -196,7 +196,7 @@ pub lemma empty_bitmap_mem_false(bitmap : UInt, idx : Int) where {
 ///|
 pub lemma bitmap_add_sets_idx(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: mem_value(new_bitmap, idx),
 } {
   proof_assert mem_value(new_bitmap, idx)
@@ -212,7 +212,7 @@ pub lemma bitmap_add_preserves_other(
   proof_require: valid_idx(idx),
   proof_require: valid_idx(i),
   proof_require: i != idx,
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: mem_value(new_bitmap, i) == mem_value(old_bitmap, i),
 } {
   proof_assert mem_value(new_bitmap, i) == mem_value(old_bitmap, i)
@@ -221,16 +221,16 @@ pub lemma bitmap_add_preserves_other(
 ///|
 pub lemma singleton_bitmap_from_empty(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
-  proof_require: empty_bitmap(old_bitmap),
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
-  proof_ensure: singleton_bitmap_ok(new_bitmap, idx),
+  proof_require: empty_bitmap_inv(old_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
+  proof_ensure: singleton_bitmap_inv(new_bitmap, idx),
 } {
-  proof_assert singleton_bitmap_ok(new_bitmap, idx)
+  proof_assert singleton_bitmap_inv(new_bitmap, idx)
 }
 
 ///|
 pub lemma singleton_mem_is_idx(bitmap : UInt, idx : Int, i : Int) where {
-  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_require: valid_idx(i),
   proof_require: mem_value(bitmap, i),
   proof_ensure: i == idx,
@@ -240,7 +240,7 @@ pub lemma singleton_mem_is_idx(bitmap : UInt, idx : Int, i : Int) where {
 
 ///|
 pub lemma singleton_rank_zero(bitmap : UInt, idx : Int) where {
-  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_ensure: rank_value(bitmap, idx, 0) == 0,
 } {
   proof_assert prefix_domain(bitmap, idx).eq(@fset.fset_empty())
@@ -249,7 +249,7 @@ pub lemma singleton_rank_zero(bitmap : UInt, idx : Int) where {
 
 ///|
 pub lemma singleton_count_one(bitmap : UInt, idx : Int) where {
-  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_ensure: count_value(bitmap, 0) == 1,
 } {
   proof_assert domain(bitmap).eq(@fset.fset_empty().add(idx))
@@ -259,7 +259,7 @@ pub lemma singleton_count_one(bitmap : UInt, idx : Int) where {
 
 ///|
 pub lemma singleton_domain(bitmap : UInt, idx : Int) where {
-  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_ensure: domain(bitmap).eq(@fset.fset_empty().add(idx)),
 } {
   proof_assert ∀ i : Int,
@@ -287,7 +287,7 @@ pub lemma fset_remove_cardinal_present_local(s : Fset[Int], x : Int) where {
 pub lemma domain_add_eq(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx) == false,
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).add(idx)),
 } {
   proof_assert ∀ i : Int,
@@ -299,7 +299,7 @@ pub lemma domain_add_eq(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
 pub lemma count_add_one(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx) == false,
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: count_value(new_bitmap, 0) == count_value(old_bitmap, 0) + 1,
 } {
   proof_assert domain(new_bitmap).eq(domain(old_bitmap).add(idx))
@@ -314,7 +314,7 @@ pub lemma rank_add_before(old_bitmap : UInt, idx : Int, new_bitmap : UInt, j : I
   proof_require: valid_idx(idx),
   proof_require: valid_prefix_idx(j),
   proof_require: j <= idx,
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0),
 } {
   proof_assert ∀ i : Int,
@@ -329,7 +329,7 @@ pub lemma rank_add_after(old_bitmap : UInt, idx : Int, new_bitmap : UInt, j : In
   proof_require: valid_prefix_idx(j),
   proof_require: idx < j,
   proof_require: mem_value(old_bitmap, idx) == false,
-  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0) + 1,
 } {
   proof_assert ∀ i : Int,
@@ -345,7 +345,7 @@ pub lemma rank_add_after(old_bitmap : UInt, idx : Int, new_bitmap : UInt, j : In
 pub lemma domain_remove_eq(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx),
-  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
   proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).remove(idx)),
 } {
   proof_assert ∀ i : Int,
@@ -357,7 +357,7 @@ pub lemma domain_remove_eq(old_bitmap : UInt, idx : Int, new_bitmap : UInt) wher
 pub lemma count_remove_one(old_bitmap : UInt, idx : Int, new_bitmap : UInt) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx),
-  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
   proof_ensure: count_value(new_bitmap, 0) + 1 == count_value(old_bitmap, 0),
 } {
   proof_assert domain(new_bitmap).eq(domain(old_bitmap).remove(idx))
@@ -372,7 +372,7 @@ pub lemma rank_remove_before(old_bitmap : UInt, idx : Int, new_bitmap : UInt, j 
   proof_require: valid_idx(idx),
   proof_require: valid_prefix_idx(j),
   proof_require: j <= idx,
-  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
   proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0),
 } {
   proof_assert ∀ i : Int,
@@ -387,7 +387,7 @@ pub lemma rank_remove_after(old_bitmap : UInt, idx : Int, new_bitmap : UInt, j :
   proof_require: valid_prefix_idx(j),
   proof_require: idx < j,
   proof_require: mem_value(old_bitmap, idx),
-  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
   proof_ensure: rank_value(new_bitmap, j, 0) + 1 == rank_value(old_bitmap, j, 0),
 } {
   proof_assert ∀ i : Int,
