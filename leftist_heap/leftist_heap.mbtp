@@ -1,0 +1,270 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+fn size_model(h : Heap) -> Int {
+  match h {
+    Empty => 0
+    Node(v0, r0, left, right) => 1 + size_model(left) + size_model(right)
+  }
+}
+
+///|
+fn merge_measure(a : Heap, b : Heap) -> Int {
+  size_model(a) + size_model(b)
+}
+
+fn root_once(x : Int, value : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    i == 0 && x == value
+  }, 0, 1)
+}
+
+fn count(h : Heap, x : Int) -> Int {
+  match h {
+    Empty => 0
+    Node(value, rank0, left, right) =>
+      count(left, x) + count(right, x) + root_once(x, value)
+  }
+}
+
+///|
+predicate all_ge(x : Int, h : Heap) {
+  ∀ y : Int, 0 < count(h, y) → x <= y
+}
+
+///|
+predicate non_empty(h : Heap) {
+  match h {
+    Empty => false
+    Node(v0, r0, l0, r1) => true
+  }
+}
+
+///|
+predicate heap_inv(h : Heap) {
+  match h {
+    Empty => true
+    Node(value, stored_rank, left, right) =>
+      heap_inv(left) &&
+      heap_inv(right) &&
+      all_ge(value, left) &&
+      all_ge(value, right) &&
+      rank(left) >= rank(right) &&
+      stored_rank == rank(right) + 1
+  }
+}
+
+///|
+predicate counts_sum(a : Heap, b : Heap, res : Heap) {
+  ∀ y : Int, count(res, y) == count(a, y) + count(b, y)
+}
+
+///|
+predicate is_minimum(h : Heap, x : Int) {
+  0 < count(h, x) && all_ge(x, h)
+}
+
+///|
+predicate make_node_post(value : Int, left : Heap, right : Heap, res : Heap) {
+  heap_inv(res) &&
+  non_empty(res) &&
+  size_model(res) == size_model(left) + size_model(right) + 1 &&
+  count(res, value) == count(left, value) + count(right, value) + 1 &&
+  (∀ y : Int,
+    y != value →
+      count(res, y) == count(left, y) + count(right, y)) &&
+  rank(res) == min2(rank(left), rank(right)) + 1
+}
+
+///|
+predicate merge_post(a : Heap, b : Heap, res : Heap) {
+  heap_inv(res) &&
+  counts_sum(a, b, res) &&
+  size_model(res) == size_model(a) + size_model(b)
+}
+
+///|
+predicate singleton_post(value : Int, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == 1 &&
+  count(res, value) == 1 &&
+  (∀ y : Int, y != value → count(res, y) == 0)
+}
+
+///|
+predicate insert_post(h : Heap, value : Int, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == size_model(h) + 1 &&
+  count(res, value) == count(h, value) + 1 &&
+  (∀ y : Int, y != value → count(res, y) == count(h, y))
+}
+
+///|
+predicate find_min_post(h : Heap, res : Option[Int]) {
+  match res {
+    None => non_empty(h) == false
+    Some(value) => is_minimum(h, value)
+  }
+}
+
+///|
+predicate delete_min_post(h : Heap, res : Option[Heap]) {
+  match res {
+    None => non_empty(h) == false
+    Some(h1) =>
+      match h {
+        Empty => false
+        Node(value, rank0, left0, right0) =>
+          heap_inv(h1) &&
+          size_model(h1) + 1 == size_model(h) &&
+          count(h, value) == count(h1, value) + 1 &&
+          (∀ y : Int, y != value → count(h, y) == count(h1, y)) &&
+          all_ge(value, h1)
+      }
+  }
+}
+
+///|
+predicate root_minimum_post(h : Heap) {
+  match h {
+    Empty => true
+    Node(value, rank0, left0, right0) => is_minimum(h, value)
+  }
+}
+
+///|
+lemma all_ge_weaken(x : Int, y : Int, h : Heap) where {
+  proof_require: x <= y,
+  proof_require: all_ge(y, h),
+  proof_ensure: all_ge(x, h),
+} {
+}
+
+///|
+lemma all_ge_counts_sum(x : Int, a : Heap, b : Heap, res : Heap) where {
+  proof_require: counts_sum(a, b, res),
+  proof_require: all_ge(x, a),
+  proof_require: all_ge(x, b),
+  proof_ensure: all_ge(x, res),
+} {
+}
+
+///|
+lemma size_model_nonneg(h : Heap) where {
+  proof_decrease: h,
+  proof_ensure: 0 <= size_model(h),
+} {
+  match h {
+    Empty => ()
+    Node(value0, rank0, left0, right0) => {
+      size_model_nonneg(left0)
+      size_model_nonneg(right0)
+    }
+  }
+}
+
+///|
+lemma count_nonneg(h : Heap, x : Int) where {
+  proof_decrease: h,
+  proof_ensure: 0 <= count(h, x),
+} {
+  match h {
+    Empty => ()
+    Node(value0, rank0, left0, right0) => {
+      count_nonneg(left0, x)
+      count_nonneg(right0, x)
+      proof_assert 0 <= root_once(x, value0)
+    }
+  }
+}
+
+///|
+lemma root_once_nonneg(x : Int, value : Int) where {
+  proof_ensure: 0 <= root_once(x, value),
+} {
+}
+
+///|
+lemma root_once_self(value : Int) where {
+  proof_ensure: 0 < root_once(value, value),
+} {
+}
+
+///|
+lemma merge_measure_nonneg(a : Heap, b : Heap) where {
+  proof_ensure: 0 <= merge_measure(a, b),
+} {
+}
+
+///|
+lemma merge_measure_left_decrease(
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+  b : Heap,
+) where {
+  proof_ensure:
+    merge_measure(right, b) < merge_measure(raw_node(value, stored_rank, left, right), b),
+} {
+}
+
+///|
+lemma merge_measure_right_decrease(
+  a : Heap,
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+) where {
+  proof_ensure:
+    merge_measure(a, right) < merge_measure(a, raw_node(value, stored_rank, left, right)),
+} {
+}
+
+///|
+lemma root_count_positive(
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+) where {
+  proof_ensure: 0 < count(raw_node(value, stored_rank, left, right), value),
+} {
+  proof_assert 0 <= count(left, value)
+  proof_assert 0 <= count(right, value)
+  proof_assert 0 < root_once(value, value)
+  proof_assert count(raw_node(value, stored_rank, left, right), value) ==
+    count(left, value) + count(right, value) + root_once(value, value)
+  proof_assert 0 < count(raw_node(value, stored_rank, left, right), value)
+}
+
+///|
+lemma all_ge_raw_node(
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+) where {
+  proof_require: all_ge(value, left),
+  proof_require: all_ge(value, right),
+  proof_ensure: all_ge(value, raw_node(value, stored_rank, left, right)),
+} {
+}
+
+///|
+lemma root_is_minimum(h : Heap) where {
+  proof_require: heap_inv(h),
+  proof_require: non_empty(h),
+  proof_ensure: root_minimum_post(h),
+} {
+  match h {
+    Empty => ()
+    Node(value, stored_rank, left, right) => {
+      proof_assert 0 < count(h, value)
+      proof_assert all_ge(value, h)
+    }
+  }
+}
