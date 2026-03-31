@@ -461,6 +461,20 @@ lemma singleton_domain(
 }
 
 ///|
+lemma fset_add_cardinal_absent_local(s : Fset[Int], x : Int) where {
+  proof_require: s.mem(x) == false,
+  proof_ensure: s.add(x).cardinal() == s.cardinal() + 1,
+} {
+}
+
+///|
+lemma fset_remove_cardinal_present_local(s : Fset[Int], x : Int) where {
+  proof_require: s.mem(x),
+  proof_ensure: s.remove(x).cardinal() + 1 == s.cardinal(),
+} {
+}
+
+///|
 lemma domain_add_eq(
   old_bitmap : UInt,
   idx : Int,
