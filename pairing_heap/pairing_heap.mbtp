@@ -1,0 +1,281 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+fn root_once(x : Int, value : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    i == 0 && x == value
+  }, 0, 1)
+}
+
+///|
+fn size_model(h : Heap) -> Int {
+  match h {
+    Empty => 0
+    Node(v0, children, n0) => 1 + list_size_model(children)
+  }
+}
+
+///|
+fn list_size_model(xs : ChildList) -> Int {
+  match xs {
+    Nil => 0
+    Cons(head, tail) => size_model(head) + list_size_model(tail)
+  }
+}
+
+///|
+fn list_length_model(xs : ChildList) -> Int {
+  match xs {
+    Nil => 0
+    Cons(head, tail) => 1 + list_length_model(tail)
+  }
+}
+
+///|
+fn count(h : Heap, x : Int) -> Int {
+  match h {
+    Empty => 0
+    Node(value, children, n0) => list_count(children, x) + root_once(x, value)
+  }
+}
+
+///|
+fn list_count(xs : ChildList, x : Int) -> Int {
+  match xs {
+    Nil => 0
+    Cons(head, tail) => count(head, x) + list_count(tail, x)
+  }
+}
+
+///|
+predicate counts_list(xs : ChildList, h : Heap) {
+  ∀ y : Int, count(h, y) == list_count(xs, y)
+}
+
+///|
+predicate all_ge(x : Int, h : Heap) {
+  ∀ y : Int, 0 < count(h, y) → x <= y
+}
+
+///|
+predicate all_ge_list(x : Int, xs : ChildList) {
+  ∀ y : Int, 0 < list_count(xs, y) → x <= y
+}
+
+///|
+predicate non_empty(h : Heap) {
+  match h {
+    Empty => false
+    Node(v0, children0, n0) => true
+  }
+}
+
+///|
+predicate heap_inv(h : Heap) {
+  match h {
+    Empty => true
+    Node(value, children, stored_size) =>
+      list_inv(children) &&
+      all_ge_list(value, children) &&
+      stored_size == 1 + list_size_model(children)
+  }
+}
+
+///|
+predicate list_inv(xs : ChildList) {
+  match xs {
+    Nil => true
+    Cons(head, tail) => heap_inv(head) && non_empty(head) && list_inv(tail)
+  }
+}
+
+///|
+predicate is_minimum(h : Heap, x : Int) {
+  0 < count(h, x) && all_ge(x, h)
+}
+
+///|
+predicate singleton_post(value : Int, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == 1 &&
+  count(res, value) == 1 &&
+  (∀ y : Int, y != value → count(res, y) == 0)
+}
+
+///|
+predicate merge_post(a : Heap, b : Heap, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == size_model(a) + size_model(b) &&
+  (∀ y : Int, count(res, y) == count(a, y) + count(b, y))
+}
+
+///|
+predicate merge_pairs_post(xs : ChildList, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == list_size_model(xs) &&
+  (∀ y : Int, count(res, y) == list_count(xs, y))
+}
+
+///|
+predicate insert_post(h : Heap, value : Int, res : Heap) {
+  heap_inv(res) &&
+  size_model(res) == size_model(h) + 1 &&
+  count(res, value) == count(h, value) + 1 &&
+  (∀ y : Int, y != value → count(res, y) == count(h, y))
+}
+
+///|
+predicate find_min_post(h : Heap, res : Option[Int]) {
+  match res {
+    None => non_empty(h) == false
+    Some(value) => is_minimum(h, value)
+  }
+}
+
+///|
+predicate delete_min_post(h : Heap, res : Option[Heap]) {
+  match res {
+    None => non_empty(h) == false
+    Some(h1) =>
+      match h {
+        Empty => false
+        Node(value, children0, n0) =>
+          heap_inv(h1) &&
+          size_model(h1) + 1 == size_model(h) &&
+          count(h, value) == count(h1, value) + 1 &&
+          (∀ y : Int, y != value → count(h, y) == count(h1, y)) &&
+          all_ge(value, h1)
+      }
+  }
+}
+
+///|
+predicate root_minimum_post(h : Heap) {
+  match h {
+    Empty => true
+    Node(value, children0, n0) => is_minimum(h, value)
+  }
+}
+
+///|
+predicate root_count_positive_post(h : Heap) {
+  match h {
+    Empty => true
+    Node(value, children0, n0) => 0 < count(h, value)
+  }
+}
+
+///|
+lemma root_once_nonneg(x : Int, value : Int) where {
+  proof_ensure: 0 <= root_once(x, value),
+} {
+}
+
+///|
+lemma root_once_self(value : Int) where {
+  proof_ensure: 0 < root_once(value, value),
+} {
+}
+
+///|
+lemma count_nonneg(h : Heap, x : Int) where {
+  proof_decrease: h,
+  proof_ensure: 0 <= count(h, x),
+} {
+  match h {
+    Empty => ()
+    Node(value, children, n0) => {
+      list_count_nonneg(children, x)
+      root_once_nonneg(x, value)
+    }
+  }
+}
+
+///|
+lemma list_count_nonneg(xs : ChildList, x : Int) where {
+  proof_decrease: xs,
+  proof_ensure: 0 <= list_count(xs, x),
+} {
+  match xs {
+    Nil => ()
+    Cons(head, tail) => {
+      count_nonneg(head, x)
+      list_count_nonneg(tail, x)
+    }
+  }
+}
+
+///|
+lemma list_length_nonneg(xs : ChildList) where {
+  proof_decrease: xs,
+  proof_ensure: 0 <= list_length_model(xs),
+} {
+  match xs {
+    Nil => ()
+    Cons(head, tail) => {
+      list_length_nonneg(tail)
+    }
+  }
+}
+
+///|
+lemma list_count_cons(xs : ChildList, h : Heap, y : Int) where {
+  proof_ensure: list_count(raw_cons(h, xs), y) == count(h, y) + list_count(xs, y),
+} {
+}
+
+///|
+lemma list_size_cons(xs : ChildList, h : Heap) where {
+  proof_ensure: list_size_model(raw_cons(h, xs)) == size_model(h) + list_size_model(xs),
+} {
+}
+
+///|
+lemma all_ge_list_cons(x : Int, h : Heap, xs : ChildList) where {
+  proof_require: all_ge(x, h),
+  proof_require: all_ge_list(x, xs),
+  proof_ensure: all_ge_list(x, raw_cons(h, xs)),
+} {
+}
+
+///|
+lemma all_ge_list_to_heap(x : Int, value : Int, children : ChildList, stored_size : Int) where {
+  proof_require: x <= value,
+  proof_require: all_ge_list(x, children),
+  proof_ensure: all_ge(x, raw_node(value, children, stored_size)),
+} {
+}
+
+///|
+lemma list_inv_cons(h : Heap, xs : ChildList) where {
+  proof_require: heap_inv(h),
+  proof_require: non_empty(h),
+  proof_require: list_inv(xs),
+  proof_ensure: list_inv(raw_cons(h, xs)),
+} {
+}
+
+///|
+lemma all_ge_list_merge_pairs(xs : ChildList, x : Int, h : Heap) where {
+  proof_require: merge_pairs_post(xs, h),
+  proof_require: all_ge_list(x, xs),
+  proof_ensure: all_ge(x, h),
+} {
+}
+
+///|
+lemma root_count_positive(h : Heap) where {
+  proof_require: heap_inv(h),
+  proof_ensure: root_count_positive_post(h),
+} {
+  match h {
+    Empty => ()
+    Node(value, children, n0) => {
+      list_count_nonneg(children, value)
+      root_once_self(value)
+      proof_assert 0 < count(h, value)
+    }
+  }
+}
