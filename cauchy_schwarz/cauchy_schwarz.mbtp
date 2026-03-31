@@ -5,3 +5,19 @@ predicate same_length(xs : FixedArray[Int], ys : FixedArray[Int]) {
 predicate nonneg(result : Int) {
   result >= 0
 }
+
+///|
+lemma cauchy_step_nonneg(
+  x2 : Int,
+  y2 : Int,
+  xy : Int,
+  x : Int,
+  y : Int,
+) where {
+  proof_require: 0 <= x2,
+  proof_require: 0 <= y2,
+  proof_require: xy * xy <= x2 * y2,
+  proof_ensure:
+    0 <= (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y),
+} {
+}

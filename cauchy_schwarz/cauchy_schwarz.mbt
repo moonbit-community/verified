@@ -13,6 +13,7 @@ pub fn cauchy_schwarz_gap(
     let new_y2 = y2 + y * y
     let new_xy = xy + x * y
     let new_gap = new_x2 * new_y2 - new_xy * new_xy
+    proof_assert 0 <= new_gap
     continue i + 1, new_x2, new_y2, new_xy, new_gap
   } nobreak {
     gap
