@@ -1,0 +1,35 @@
+///|
+#proof_import("bv.BV32")
+fn raw_uint_to_bv(x : UInt) -> BV32 = "of_int"
+
+///|
+#proof_import("bv.BV32")
+fn raw_nth(x : BV32, idx : Int) -> Bool = "nth"
+
+///|
+#proof_import("bv.BV32")
+fn raw_lsr(x : BV32, s : Int) -> BV32 = "lsr"
+
+///|
+pub fn uint_to_bv(x : UInt) -> BV32 {
+  raw_uint_to_bv(x)
+}
+
+///|
+pub fn BV32::nth(self : BV32, idx : Int) -> Bool {
+  raw_nth(self, idx)
+}
+
+///|
+pub fn BV32::lsr(self : BV32, s : Int) -> BV32 {
+  raw_lsr(self, s)
+}
+
+///|
+lemma lsr_nth_zero(x : BV32, idx : Int) where {
+  proof_require: 0 <= idx,
+  proof_require: idx < 32,
+  proof_ensure: x.lsr(idx).nth(0) == x.nth(idx),
+} {
+  proof_assert x.lsr(idx).nth(0) == x.nth(idx)
+}

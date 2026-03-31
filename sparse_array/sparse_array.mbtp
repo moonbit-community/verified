@@ -1,0 +1,947 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+#proof_import("fmap.Fmap")
+fn raw_fmap_size(m : Fmap[Int, Int]) -> Int = "size"
+
+///|
+predicate valid_idx(idx : Int) {
+  0 <= idx && idx < 32
+}
+
+///|
+predicate valid_prefix_idx(idx : Int) {
+  0 <= idx && idx <= 32
+}
+
+///|
+fn mem_value(bitmap : UInt, idx : Int) -> Bool {
+  @bv32.uint_to_bv(bitmap).nth(idx)
+}
+
+///|
+fn prefix_domain(bitmap : UInt, idx : Int) -> Fset[Int] {
+  @fset.fset_interval(0, idx).filter(fn (i : Int) {
+    mem_value(bitmap, i)
+  })
+}
+
+///|
+fn rank_value(bitmap : UInt, idx : Int, _tag : Int) -> Int {
+  prefix_domain(bitmap, idx).cardinal()
+}
+
+///|
+predicate empty_bitmap(bitmap : UInt) {
+  ∀ i : Int, valid_idx(i) → mem_value(bitmap, i) == false
+}
+
+///|
+predicate bitmap_add_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
+  valid_idx(idx) &&
+  mem_value(new_bitmap, idx) &&
+  (∀ i : Int,
+    valid_idx(i) && i != idx →
+      mem_value(new_bitmap, i) == mem_value(old_bitmap, i))
+}
+
+///|
+predicate bitmap_remove_ok(old_bitmap : UInt, idx : Int, new_bitmap : UInt) {
+  valid_idx(idx) &&
+  mem_value(new_bitmap, idx) == false &&
+  (∀ i : Int,
+    valid_idx(i) && i != idx →
+      mem_value(new_bitmap, i) == mem_value(old_bitmap, i))
+}
+
+///|
+predicate uint_lsr_ok(bitmap : UInt, idx : Int, result : UInt) {
+  ∀ n : Int,
+    valid_idx(n) →
+      @bv32.uint_to_bv(result).nth(n) == @bv32.uint_to_bv(bitmap).lsr(idx).nth(n)
+}
+
+///|
+fn domain(bitmap : UInt) -> Fset[Int] {
+  @fset.fset_interval(0, 32).filter(fn (i : Int) {
+    mem_value(bitmap, i)
+  })
+}
+
+///|
+fn count_value(bitmap : UInt, _tag : Int) -> Int {
+  domain(bitmap).cardinal()
+}
+
+///|
+lemma domain_count_value(
+  bitmap : UInt,
+) where {
+  proof_ensure: domain(bitmap).cardinal() == count_value(bitmap, 0),
+} {
+  proof_assert domain(bitmap).cardinal() == count_value(bitmap, 0)
+}
+
+///|
+lemma prefix_domain_subset(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_prefix_idx(idx),
+  proof_ensure: prefix_domain(bitmap, idx).subset(domain(bitmap)),
+} {
+  proof_assert prefix_domain(bitmap, idx).subset(domain(bitmap))
+}
+
+///|
+lemma prefix_domain_monotone(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_prefix_idx(i),
+  proof_require: valid_prefix_idx(j),
+  proof_require: i <= j,
+  proof_ensure: prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j)),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+}
+
+///|
+lemma prefix_domain_step_present(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(bitmap, idx),
+  proof_ensure: prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx)),
+} {
+  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx))
+}
+
+///|
+lemma prefix_domain_step_absent(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(bitmap, idx) == false,
+  proof_ensure: prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx)),
+} {
+  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx))
+}
+
+///|
+lemma rank_step_present(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(bitmap, idx),
+  proof_ensure:
+    rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0) + 1,
+} {
+  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx))
+  proof_assert prefix_domain(bitmap, idx).mem(idx) == false
+  proof_assert rank_value(bitmap, idx + 1, 0) == prefix_domain(bitmap, idx).add(idx).cardinal()
+  proof_assert prefix_domain(bitmap, idx).add(idx).cardinal() == rank_value(bitmap, idx, 0) + 1
+}
+
+///|
+lemma rank_step_absent(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(bitmap, idx) == false,
+  proof_ensure:
+    rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0),
+} {
+  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx))
+  proof_assert rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0)
+}
+
+///|
+lemma empty_domain(
+  bitmap : UInt,
+) where {
+  proof_require: empty_bitmap(bitmap),
+  proof_ensure: domain(bitmap).eq(@fset.fset_empty()),
+} {
+  proof_assert domain(bitmap).eq(@fset.fset_empty())
+}
+
+fn abs(sa : SparseArray) -> Fmap[Int, Int] {
+  @fmap.fmap_mk(domain(sa.bitmap), fn (i : Int) {
+    sa.data[rank_value(sa.bitmap, i, 0)]
+  })
+}
+
+///|
+predicate fmap_eq_hyp_local(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) {
+  (∀ k : Int, m1.mem(k) == m2.mem(k)) &&
+  (∀ k : Int, m1.mem(k) → m1.find(k) == m2.find(k))
+}
+
+///|
+lemma abs_mem_value(
+  sa : SparseArray,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_ensure: abs(sa).mem(idx) == mem_value(sa.bitmap, idx),
+} {
+}
+
+///|
+lemma abs_mem_invalid_false(
+  sa : SparseArray,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx) == false,
+  proof_ensure: abs(sa).mem(idx) == false,
+} {
+}
+
+///|
+lemma abs_find_value(
+  sa : SparseArray,
+  idx : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: abs(sa).mem(idx),
+  proof_ensure: abs(sa).find(idx) == sa.data[rank_value(sa.bitmap, idx, 0)],
+} {
+}
+
+///|
+lemma abs_size_domain(
+  sa : SparseArray,
+) where {
+  proof_ensure: raw_fmap_size(abs(sa)) == domain(sa.bitmap).cardinal(),
+} {
+}
+
+///|
+lemma rank_count_bounds(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: valid_prefix_idx(idx),
+  proof_ensure: 0 <= rank_value(bitmap, idx, 0),
+  proof_ensure: rank_value(bitmap, idx, 0) <= count_value(bitmap, 0),
+} {
+  proof_assert prefix_domain(bitmap, idx).subset(domain(bitmap))
+  proof_assert rank_value(bitmap, idx, 0) <= count_value(bitmap, 0)
+}
+
+///|
+lemma rank_monotone_value(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_prefix_idx(i),
+  proof_require: valid_prefix_idx(j),
+  proof_require: i <= j,
+  proof_ensure: rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+  proof_assert rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0)
+}
+
+///|
+lemma rank_member_before(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_idx(i),
+  proof_require: valid_prefix_idx(j),
+  proof_require: i < j,
+  proof_require: mem_value(bitmap, i),
+  proof_ensure: rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+  proof_assert prefix_domain(bitmap, j).mem(i)
+  proof_assert prefix_domain(bitmap, i).mem(i) == false
+  proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+}
+
+///|
+lemma rank_strict_before(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_idx(i),
+  proof_require: valid_idx(j),
+  proof_require: i < j,
+  proof_require: mem_value(bitmap, i),
+  proof_require: mem_value(bitmap, j),
+  proof_ensure: rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+  proof_assert prefix_domain(bitmap, j).mem(i)
+  proof_assert prefix_domain(bitmap, i).mem(i) == false
+  proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+}
+
+///|
+lemma rank_distinct_present(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_idx(i),
+  proof_require: valid_idx(j),
+  proof_require: mem_value(bitmap, i),
+  proof_require: mem_value(bitmap, j),
+  proof_require: i != j,
+  proof_ensure: rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0),
+} {
+  proof_assert rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0)
+}
+
+///|
+predicate sparse_ok(sa : SparseArray) {
+  sa.data.length() == count_value(sa.bitmap, 0) &&
+  (∀ i : Int,
+    valid_idx(i) && mem_value(sa.bitmap, i) →
+      0 <= rank_value(sa.bitmap, i, 0) &&
+      rank_value(sa.bitmap, i, 0) < sa.data.length())
+}
+
+///|
+predicate get_ok(sa : SparseArray, idx : Int, result : Option[Int]) {
+  match result {
+    None => abs(sa).mem(idx) == false
+    Some(value) =>
+      abs(sa).mem(idx) && value == abs(sa).find(idx)
+  }
+}
+
+///|
+predicate empty_abs_ok(_res : SparseArray) {
+  sparse_ok(_res) && abs(_res).eq(@fmap.fmap_empty())
+}
+
+///|
+predicate singleton_abs_ok(_res : SparseArray, _idx : Int, _value : Int) {
+  sparse_ok(_res) &&
+  abs(_res).eq(@fmap.fmap_empty().add(_idx, _value))
+}
+
+///|
+predicate singleton_data_ok(_res : SparseArray, _value : Int) {
+  _res.data.length() == 1 && _res.data[0] == _value
+}
+
+///|
+predicate singleton_len_ok(_res : SparseArray) {
+  _res.data.length() == 1
+}
+
+///|
+predicate singleton_bitmap_ok(bitmap : UInt, idx : Int) {
+  valid_idx(idx) &&
+  mem_value(bitmap, idx) &&
+  (∀ i : Int, valid_idx(i) && i != idx → mem_value(bitmap, i) == false)
+}
+
+///|
+lemma empty_bitmap_mem_false(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: empty_bitmap(bitmap),
+  proof_require: valid_idx(idx),
+  proof_ensure: mem_value(bitmap, idx) == false,
+} {
+  proof_assert mem_value(bitmap, idx) == false
+}
+
+///|
+lemma bitmap_add_sets_idx(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: mem_value(new_bitmap, idx),
+} {
+  proof_assert mem_value(new_bitmap, idx)
+}
+
+///|
+lemma bitmap_add_preserves_other(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+  i : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: valid_idx(i),
+  proof_require: i != idx,
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: mem_value(new_bitmap, i) == mem_value(old_bitmap, i),
+} {
+  proof_assert mem_value(new_bitmap, i) == mem_value(old_bitmap, i)
+}
+
+///|
+lemma singleton_bitmap_from_empty(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: empty_bitmap(old_bitmap),
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: singleton_bitmap_ok(new_bitmap, idx),
+} {
+  proof_assert singleton_bitmap_ok(new_bitmap, idx)
+}
+
+///|
+lemma singleton_mem_is_idx(
+  bitmap : UInt,
+  idx : Int,
+  i : Int,
+) where {
+  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_require: valid_idx(i),
+  proof_require: mem_value(bitmap, i),
+  proof_ensure: i == idx,
+} {
+  proof_assert i == idx
+}
+
+///|
+lemma singleton_rank_zero(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_ensure: rank_value(bitmap, idx, 0) == 0,
+} {
+  proof_assert prefix_domain(bitmap, idx).eq(@fset.fset_empty())
+  proof_assert rank_value(bitmap, idx, 0) == 0
+}
+
+///|
+lemma singleton_count_one(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_ensure: count_value(bitmap, 0) == 1,
+} {
+  proof_assert domain(bitmap).eq(@fset.fset_empty().add(idx))
+  proof_assert count_value(bitmap, 0) == @fset.fset_empty().add(idx).cardinal()
+  proof_assert count_value(bitmap, 0) == 1
+}
+
+///|
+lemma singleton_domain(
+  bitmap : UInt,
+  idx : Int,
+) where {
+  proof_require: singleton_bitmap_ok(bitmap, idx),
+  proof_ensure: domain(bitmap).eq(@fset.fset_empty().add(idx)),
+} {
+  proof_assert ∀ i : Int,
+    domain(bitmap).mem(i) == (i == idx)
+  proof_assert ∀ i : Int,
+    @fset.fset_empty().add(idx).mem(i) == (i == idx)
+  proof_assert domain(bitmap).eq(@fset.fset_empty().add(idx))
+}
+
+///|
+lemma domain_add_eq(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(old_bitmap, idx) == false,
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).add(idx)),
+} {
+  proof_assert ∀ i : Int,
+    domain(new_bitmap).mem(i) == domain(old_bitmap).add(idx).mem(i)
+  proof_assert domain(new_bitmap).eq(domain(old_bitmap).add(idx))
+}
+
+///|
+lemma count_add_one(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(old_bitmap, idx) == false,
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: count_value(new_bitmap, 0) == count_value(old_bitmap, 0) + 1,
+} {
+  proof_assert domain(new_bitmap).eq(domain(old_bitmap).add(idx))
+  proof_assert domain(old_bitmap).mem(idx) == false
+  proof_assert domain(new_bitmap).cardinal() == domain(old_bitmap).add(idx).cardinal()
+  proof_assert domain(old_bitmap).add(idx).cardinal() == domain(old_bitmap).cardinal() + 1
+  proof_assert count_value(new_bitmap, 0) == count_value(old_bitmap, 0) + 1
+}
+
+///|
+lemma rank_add_before(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+  j : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: valid_prefix_idx(j),
+  proof_require: j <= idx,
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0),
+} {
+  proof_assert ∀ i : Int,
+    prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).mem(i)
+  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j))
+  proof_assert rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0)
+}
+
+///|
+lemma rank_add_after(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+  j : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: valid_prefix_idx(j),
+  proof_require: idx < j,
+  proof_require: mem_value(old_bitmap, idx) == false,
+  proof_require: bitmap_add_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0) + 1,
+} {
+  proof_assert ∀ i : Int,
+    prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).add(idx).mem(i)
+  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j).add(idx))
+  proof_assert prefix_domain(old_bitmap, j).mem(idx) == false
+  proof_assert rank_value(new_bitmap, j, 0) == prefix_domain(old_bitmap, j).add(idx).cardinal()
+  proof_assert prefix_domain(old_bitmap, j).add(idx).cardinal() == rank_value(old_bitmap, j, 0) + 1
+  proof_assert rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0) + 1
+}
+
+///|
+lemma domain_remove_eq(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(old_bitmap, idx),
+  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).remove(idx)),
+} {
+  proof_assert ∀ i : Int,
+    domain(new_bitmap).mem(i) == domain(old_bitmap).remove(idx).mem(i)
+  proof_assert domain(new_bitmap).eq(domain(old_bitmap).remove(idx))
+}
+
+///|
+lemma count_remove_one(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: mem_value(old_bitmap, idx),
+  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: count_value(new_bitmap, 0) + 1 == count_value(old_bitmap, 0),
+} {
+  proof_assert domain(new_bitmap).eq(domain(old_bitmap).remove(idx))
+  proof_assert domain(old_bitmap).mem(idx)
+  proof_assert domain(new_bitmap).cardinal() == domain(old_bitmap).remove(idx).cardinal()
+  proof_assert domain(old_bitmap).remove(idx).cardinal() + 1 == domain(old_bitmap).cardinal()
+  proof_assert count_value(new_bitmap, 0) + 1 == count_value(old_bitmap, 0)
+}
+
+///|
+lemma rank_remove_before(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+  j : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: valid_prefix_idx(j),
+  proof_require: j <= idx,
+  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0),
+} {
+  proof_assert ∀ i : Int,
+    prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).mem(i)
+  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j))
+  proof_assert rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0)
+}
+
+///|
+lemma rank_remove_after(
+  old_bitmap : UInt,
+  idx : Int,
+  new_bitmap : UInt,
+  j : Int,
+) where {
+  proof_require: valid_idx(idx),
+  proof_require: valid_prefix_idx(j),
+  proof_require: idx < j,
+  proof_require: mem_value(old_bitmap, idx),
+  proof_require: bitmap_remove_ok(old_bitmap, idx, new_bitmap),
+  proof_ensure: rank_value(new_bitmap, j, 0) + 1 == rank_value(old_bitmap, j, 0),
+} {
+  proof_assert ∀ i : Int,
+    prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).remove(idx).mem(i)
+  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j).remove(idx))
+  proof_assert prefix_domain(old_bitmap, j).mem(idx)
+  proof_assert rank_value(new_bitmap, j, 0) == prefix_domain(old_bitmap, j).remove(idx).cardinal()
+  proof_assert prefix_domain(old_bitmap, j).remove(idx).cardinal() + 1 == rank_value(old_bitmap, j, 0)
+  proof_assert rank_value(new_bitmap, j, 0) + 1 == rank_value(old_bitmap, j, 0)
+}
+
+///|
+predicate add_data_len_ok(_sa : SparseArray, _res : SparseArray) {
+  _res.data.length() == _sa.data.length() + 1
+}
+
+///|
+predicate add_prefix_ok(
+  old_data : FixedArray[Int],
+  new_data : FixedArray[Int],
+  pos : Int,
+  upto : Int,
+) {
+  0 <= upto &&
+  upto <= pos &&
+  new_data.length() == old_data.length() + 1 &&
+  (∀ k : Int, 0 <= k && k < upto → new_data[k] == old_data[k])
+}
+
+///|
+predicate add_fill_ok(
+  old_data : FixedArray[Int],
+  new_data : FixedArray[Int],
+  pos : Int,
+  value : Int,
+  upto : Int,
+) {
+  pos <= upto &&
+  upto <= old_data.length() &&
+  new_data.length() == old_data.length() + 1 &&
+  new_data[pos] == value &&
+  (∀ k : Int, 0 <= k && k < pos → new_data[k] == old_data[k]) &&
+  (∀ k : Int, pos <= k && k < upto → new_data[k + 1] == old_data[k])
+}
+
+///|
+predicate add_data_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) {
+  add_fill_ok(
+    _sa.data,
+    _res.data,
+    rank_value(_sa.bitmap, _idx, 0),
+    _value,
+    _sa.data.length(),
+  )
+}
+
+///|
+predicate replace_data_len_ok(_sa : SparseArray, _res : SparseArray) {
+  _res.data.length() == _sa.data.length()
+}
+
+///|
+predicate replace_prefix_ok(
+  old_data : FixedArray[Int],
+  new_data : FixedArray[Int],
+  pos : Int,
+  value : Int,
+  upto : Int,
+) {
+  0 <= upto &&
+  upto <= old_data.length() &&
+  new_data.length() == old_data.length() &&
+  new_data[pos] == value &&
+  (∀ k : Int,
+    0 <= k && k < upto && k != pos →
+      new_data[k] == old_data[k])
+}
+
+///|
+predicate replace_data_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) {
+  _res.bitmap == _sa.bitmap &&
+  replace_prefix_ok(
+    _sa.data,
+    _res.data,
+    rank_value(_sa.bitmap, _idx, 0),
+    _value,
+    _sa.data.length(),
+  )
+}
+
+///|
+lemma replace_mem_same(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+  j : Int,
+) where {
+  proof_require: valid_idx(j),
+  proof_require: replace_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: abs(_res).mem(j) == abs(_sa).mem(j),
+} {
+}
+
+///|
+predicate empty_data_ok(_res : SparseArray) {
+  _res.data.length() == 0
+}
+
+///|
+predicate remove_data_len_ok(_sa : SparseArray, _res : SparseArray) {
+  _res.data.length() + 1 == _sa.data.length()
+}
+
+///|
+predicate remove_prefix_ok(
+  old_data : FixedArray[Int],
+  new_data : FixedArray[Int],
+  pos : Int,
+  upto : Int,
+) {
+  0 <= upto &&
+  upto <= pos &&
+  new_data.length() + 1 == old_data.length() &&
+  (∀ k : Int, 0 <= k && k < upto → new_data[k] == old_data[k])
+}
+
+///|
+predicate remove_fill_ok(
+  old_data : FixedArray[Int],
+  new_data : FixedArray[Int],
+  pos : Int,
+  upto : Int,
+) {
+  pos <= upto &&
+  upto <= new_data.length() &&
+  new_data.length() + 1 == old_data.length() &&
+  (∀ k : Int, 0 <= k && k < pos → new_data[k] == old_data[k]) &&
+  (∀ k : Int, pos <= k && k < upto → new_data[k] == old_data[k + 1])
+}
+
+///|
+predicate remove_data_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _res : SparseArray,
+) {
+  remove_fill_ok(
+    _sa.data,
+    _res.data,
+    rank_value(_sa.bitmap, _idx, 0),
+    _res.data.length(),
+  )
+}
+
+///|
+predicate add_abs_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) {
+  sparse_ok(_res) && abs(_res).eq(abs(_sa).add(_idx, _value))
+}
+
+///|
+lemma add_abs_lemma(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: abs(_sa).mem(_idx) == false,
+  proof_require: bitmap_add_ok(_sa.bitmap, _idx, _res.bitmap),
+  proof_require: add_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: add_abs_ok(_sa, _idx, _value, _res),
+} {
+  proof_assert sparse_ok(_res)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) == abs(_sa).add(_idx, _value).mem(j)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) →
+      abs(_res).find(j) == abs(_sa).add(_idx, _value).find(j)
+  proof_assert fmap_eq_hyp_local(abs(_res), abs(_sa).add(_idx, _value))
+  proof_assert abs(_res).eq(abs(_sa).add(_idx, _value))
+  proof_assert add_abs_ok(_sa, _idx, _value, _res)
+}
+
+///|
+predicate replace_abs_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) {
+  sparse_ok(_res) && abs(_res).eq(abs(_sa).add(_idx, _value))
+}
+
+///|
+lemma replace_find_self(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: abs(_sa).mem(_idx),
+  proof_require: replace_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: abs(_res).find(_idx) == _value,
+} {
+  proof_assert abs(_res).find(_idx) == _value
+}
+
+///|
+lemma replace_find_other(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+  j : Int,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: valid_idx(j),
+  proof_require: abs(_sa).mem(_idx),
+  proof_require: abs(_sa).mem(j),
+  proof_require: j != _idx,
+  proof_require: replace_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: abs(_res).find(j) == abs(_sa).find(j),
+} {
+  proof_assert rank_value(_sa.bitmap, j, 0) != rank_value(_sa.bitmap, _idx, 0)
+  proof_assert abs(_res).find(j) == abs(_sa).find(j)
+}
+
+///|
+lemma replace_abs_lemma(
+  _sa : SparseArray,
+  _idx : Int,
+  _value : Int,
+  _res : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: abs(_sa).mem(_idx),
+  proof_require: replace_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: replace_abs_ok(_sa, _idx, _value, _res),
+} {
+  proof_assert sparse_ok(_res)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) == abs(_sa).add(_idx, _value).mem(j)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) →
+      abs(_res).find(j) == abs(_sa).add(_idx, _value).find(j)
+  proof_assert fmap_eq_hyp_local(abs(_res), abs(_sa).add(_idx, _value))
+  proof_assert abs(_res).eq(abs(_sa).add(_idx, _value))
+  proof_assert replace_abs_ok(_sa, _idx, _value, _res)
+}
+
+///|
+predicate remove_empty_abs_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _res : SparseArray,
+) {
+  sparse_ok(_res) && abs(_res).eq(abs(_sa).remove(_idx))
+}
+
+///|
+lemma remove_empty_abs_lemma(
+  _sa : SparseArray,
+  _idx : Int,
+  _res : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: abs(_sa).mem(_idx),
+  proof_require: singleton_len_ok(_sa),
+  proof_require: empty_bitmap(_res.bitmap),
+  proof_require: empty_data_ok(_res),
+  proof_ensure: remove_empty_abs_ok(_sa, _idx, _res),
+} {
+  proof_assert remove_empty_abs_ok(_sa, _idx, _res)
+}
+
+///|
+predicate remove_abs_ok(
+  _sa : SparseArray,
+  _idx : Int,
+  _res : SparseArray,
+) {
+  sparse_ok(_res) && abs(_res).eq(abs(_sa).remove(_idx))
+}
+
+///|
+lemma remove_abs_lemma(
+  _sa : SparseArray,
+  _idx : Int,
+  _res : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: abs(_sa).mem(_idx),
+  proof_require: singleton_len_ok(_sa) == false,
+  proof_require: bitmap_remove_ok(_sa.bitmap, _idx, _res.bitmap),
+  proof_require: remove_data_ok(_sa, _idx, _res),
+  proof_ensure: remove_abs_ok(_sa, _idx, _res),
+} {
+  proof_assert sparse_ok(_res)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) == abs(_sa).remove(_idx).mem(j)
+  proof_assert ∀ j : Int,
+    abs(_res).mem(j) →
+      abs(_res).find(j) == abs(_sa).remove(_idx).find(j)
+  proof_assert fmap_eq_hyp_local(abs(_res), abs(_sa).remove(_idx))
+  proof_assert abs(_res).eq(abs(_sa).remove(_idx))
+  proof_assert remove_abs_ok(_sa, _idx, _res)
+}
+
+///|
+predicate length_abs_ok(_sa : SparseArray) {
+  _sa.data.length() == raw_fmap_size(abs(_sa))
+}
+
+///|
+lemma length_abs_lemma(
+  _sa : SparseArray,
+) where {
+  proof_require: sparse_ok(_sa),
+  proof_ensure: length_abs_ok(_sa),
+} {
+}

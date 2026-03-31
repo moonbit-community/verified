@@ -27,6 +27,14 @@ fn raw_fset_remove(x : Int, s : Fset[Int]) -> Fset[Int] = "remove"
 fn raw_fset_filter(s : Fset[Int], p : (Int) -> Bool) -> Fset[Int] = "filter"
 
 ///|
+#proof_import("set.Fset")
+fn raw_fset_subset(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "subset"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_cardinal(s : Fset[Int]) -> Int = "cardinal"
+
+///|
 #proof_import("set.FsetInt")
 fn raw_fset_interval(l : Int, r : Int) -> Fset[Int] = "interval"
 
@@ -66,6 +74,16 @@ pub fn Fset::filter(self : Fset[Int], p : (Int) -> Bool) -> Fset[Int] {
 }
 
 ///|
+pub fn Fset::subset(self : Fset[Int], other : Fset[Int]) -> Bool {
+  raw_fset_subset(self, other)
+}
+
+///|
+pub fn Fset::cardinal(self : Fset[Int]) -> Int {
+  raw_fset_cardinal(self)
+}
+
+///|
 pub fn fset_empty() -> Fset[Int] {
   raw_fset_empty()
 }
@@ -73,4 +91,18 @@ pub fn fset_empty() -> Fset[Int] {
 ///|
 pub fn fset_interval(l : Int, r : Int) -> Fset[Int] {
   raw_fset_interval(l, r)
+}
+
+///|
+lemma fset_add_cardinal_absent(s : Fset[Int], x : Int) where {
+  proof_require: s.mem(x) == false,
+  proof_ensure: s.add(x).cardinal() == s.cardinal() + 1,
+} {
+}
+
+///|
+lemma fset_remove_cardinal_present(s : Fset[Int], x : Int) where {
+  proof_require: s.mem(x),
+  proof_ensure: s.remove(x).cardinal() + 1 == s.cardinal(),
+} {
 }
