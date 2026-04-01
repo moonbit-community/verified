@@ -90,6 +90,8 @@ fn balance_left_double(
           proof_assert lx < lrx
           proof_assert lrx < x
           proof_assert all_gt(lrx, elements(r))
+          proof_assert elements_subset(lr, l)
+          proof_assert all_lt(elements(lr), x)
           proof_assert -1 <= height(ll) - height(lrl) &&
             height(ll) - height(lrl) <= 1
           proof_assert elements_subset(lrl, lr)
@@ -204,6 +206,8 @@ fn balance_left_single(
       proof_assert elements(l).eq(elements(ll).union(elements(lr)).add(lx))
       proof_assert lx < x
       proof_assert all_gt(lx, elements(r))
+      proof_assert elements_subset(lr, l)
+      proof_assert all_lt(elements(lr), x)
       proof_assert -1 <= height(lr) - height(r) &&
         height(lr) - height(r) <= 1
       proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
@@ -247,6 +251,8 @@ fn balance_right_single(
       proof_assert elements(r).eq(elements(rl).union(elements(rr)).add(rx))
       proof_assert x < rx
       proof_assert all_lt(elements(l), rx)
+      proof_assert elements_subset(rl, r)
+      proof_assert all_gt(x, elements(rl))
       proof_assert -1 <= height(l) - height(rl) &&
         height(l) - height(rl) <= 1
       proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
@@ -334,14 +340,27 @@ fn remove_min(
         }
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
+          proof_assert remove_min_post(l, (m, l1))
+          proof_assert avl_inv(l1)
+          proof_assert elements(l).mem(m)
+          proof_assert elements(l).eq(elements(l1).add(m))
+          proof_assert elements_subset(l1, l)
+          proof_assert all_gt(m, elements(l1))
+          proof_assert elements_subset(l, t)
+          proof_assert elements_subset(l1, t)
           proof_assert m < y
           proof_assert all_gt(m, elements(r))
           proof_assert balance_pre(l1, y, r)
           let t1 = balance(l1, y, r)
           proof_assert all_gt(m, elements(l1).union(elements(r)))
           proof_assert all_gt(m, elements(t1))
+          proof_assert height(l1) <= height(l)
+          proof_assert height(l) <= height(l1) + 1
+          proof_assert height(t1) <= height(t)
+          proof_assert height(t) <= height(t1) + 1
           proof_assert elements(t).eq(elements(t1).add(m))
           proof_assert elements_subset(t1, t)
+          proof_assert remove_min_post(t, (m, t1))
           (m, t1)
         }
       }

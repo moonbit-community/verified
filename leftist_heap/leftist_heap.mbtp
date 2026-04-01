@@ -255,6 +255,38 @@ lemma all_ge_raw_node(
 }
 
 ///|
+lemma merge_post_make_node_left(
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+  other : Heap,
+  merged : Heap,
+  res : Heap,
+) where {
+  proof_require: merge_post(right, other, merged),
+  proof_require: make_node_post(value, left, merged, res),
+  proof_ensure: merge_post(raw_node(value, stored_rank, left, right), other, res),
+} {
+}
+
+///|
+lemma merge_post_make_node_right(
+  other : Heap,
+  value : Int,
+  stored_rank : Int,
+  left : Heap,
+  right : Heap,
+  merged : Heap,
+  res : Heap,
+) where {
+  proof_require: merge_post(other, right, merged),
+  proof_require: make_node_post(value, left, merged, res),
+  proof_ensure: merge_post(other, raw_node(value, stored_rank, left, right), res),
+} {
+}
+
+///|
 lemma root_is_minimum(h : Heap) where {
   proof_require: heap_inv(h),
   proof_require: non_empty(h),

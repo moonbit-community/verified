@@ -172,6 +172,30 @@ predicate elements_subset(t1 : Tree, t2 : Tree) {
 }
 
 ///|
+lemma elements_subset_all_lt(t1 : Tree, t2 : Tree, x : Int) where {
+  proof_require: elements_subset(t1, t2),
+  proof_require: all_lt(elements(t2), x),
+  proof_ensure: all_lt(elements(t1), x),
+} {
+}
+
+///|
+lemma elements_subset_all_gt(x : Int, t1 : Tree, t2 : Tree) where {
+  proof_require: elements_subset(t1, t2),
+  proof_require: all_gt(x, elements(t2)),
+  proof_ensure: all_gt(x, elements(t1)),
+} {
+}
+
+///|
+lemma elements_subset_trans(t1 : Tree, t2 : Tree, t3 : Tree) where {
+  proof_require: elements_subset(t1, t2),
+  proof_require: elements_subset(t2, t3),
+  proof_ensure: elements_subset(t1, t3),
+} {
+}
+
+///|
 predicate int_lt(x : Int, y : Int) {
   x < y
 }

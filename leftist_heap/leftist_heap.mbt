@@ -103,16 +103,20 @@ pub fn merge(
     (Node(va, _, la, ra), Node(vb, _, lb, rb)) =>
       if va <= vb {
         let merged = merge(ra, b)
+        proof_assert merge_post(ra, b, merged)
         proof_assert all_ge(va, b)
         proof_assert all_ge(va, merged)
         let result = make_node(va, la, merged)
+        proof_assert make_node_post(va, la, merged, result)
         proof_assert merge_post(a, b, result)
         result
       } else {
         let merged = merge(a, rb)
+        proof_assert merge_post(a, rb, merged)
         proof_assert all_ge(vb, a)
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, lb, merged)
+        proof_assert make_node_post(vb, lb, merged, result)
         proof_assert merge_post(a, b, result)
         result
       }
