@@ -185,6 +185,92 @@ fn balance_right_double(
 }
 
 ///|
+fn balance_left_single(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: balance_pre(l, x, r),
+  proof_require: left_heavy(l, r),
+  proof_require: left_double_case(l) == false,
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => balance_elements_post(l, x, r, result),
+  proof_ensure: result => balance_height_upper_post(l, r, result),
+  proof_ensure: result => balance_height_lower_post(l, r, result),
+} {
+  match l {
+    Empty => panic()
+    Node(ll, lx, lr, _) => {
+      proof_assert elements(l).eq(elements(ll).union(elements(lr)).add(lx))
+      proof_assert lx < x
+      proof_assert all_gt(lx, elements(r))
+      proof_assert -1 <= height(lr) - height(r) &&
+        height(lr) - height(r) <= 1
+      proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
+      let nr = mk(lr, x, r)
+      proof_assert elements(nr).eq(elements(lr).union(elements(r)).add(x))
+      proof_assert -1 <= height(ll) - height(nr) &&
+        height(ll) - height(nr) <= 1
+      proof_assert single_rotation_eq(
+        lx,
+        x,
+        elements(ll),
+        elements(lr),
+        elements(r),
+      )
+      proof_assert elements(ll)
+        .union(elements(nr))
+        .add(lx)
+        .eq(elements(l).union(elements(r)).add(x))
+      mk(ll, lx, nr)
+    }
+  }
+}
+
+///|
+fn balance_right_single(
+  l : Tree,
+  x : Int,
+  r : Tree,
+) -> Tree where {
+  proof_require: balance_pre(l, x, r),
+  proof_require: right_heavy(l, r),
+  proof_require: right_double_case(r) == false,
+  proof_ensure: result => avl_inv(result),
+  proof_ensure: result => balance_elements_post(l, x, r, result),
+  proof_ensure: result => balance_height_upper_post(l, r, result),
+  proof_ensure: result => balance_height_lower_post(l, r, result),
+} {
+  match r {
+    Empty => panic()
+    Node(rl, rx, rr, _) => {
+      proof_assert elements(r).eq(elements(rl).union(elements(rr)).add(rx))
+      proof_assert x < rx
+      proof_assert all_lt(elements(l), rx)
+      proof_assert -1 <= height(l) - height(rl) &&
+        height(l) - height(rl) <= 1
+      proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
+      let nl = mk(l, x, rl)
+      proof_assert elements(nl).eq(elements(l).union(elements(rl)).add(x))
+      proof_assert -1 <= height(nl) - height(rr) &&
+        height(nl) - height(rr) <= 1
+      proof_assert single_rotation_eq(
+        x,
+        rx,
+        elements(l),
+        elements(rl),
+        elements(rr),
+      )
+      proof_assert elements(nl)
+        .union(elements(rr))
+        .add(rx)
+        .eq(elements(l).union(elements(r)).add(x))
+      mk(nl, rx, rr)
+    }
+  }
+}
+
+///|
 fn balance(
   l : Tree,
   x : Int,
@@ -201,21 +287,10 @@ fn balance(
     proof_assert left_heavy(l, r)
     match l {
       Empty => panic()
-      Node(ll, lx, lr, _) =>
+      Node(ll, _lx, lr, _) =>
         if height(ll) >= height(lr) {
-          proof_assert lx < x
-          proof_assert all_gt(lx, elements(r))
-          proof_assert -1 <= height(lr) - height(r) &&
-            height(lr) - height(r) <= 1
-          proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
-          let nr = mk(lr, x, r)
-          proof_assert -1 <= height(ll) - height(nr) &&
-            height(ll) - height(nr) <= 1
-          proof_assert elements(ll)
-            .union(elements(nr))
-            .add(lx)
-            .eq(elements(l).union(elements(r)).add(x))
-          mk(ll, lx, nr)
+          proof_assert left_double_case(l) == false
+          balance_left_single(l, x, r)
         } else {
           proof_assert left_double_case(l)
           balance_left_double(l, x, r)
@@ -225,17 +300,10 @@ fn balance(
     proof_assert right_heavy(l, r)
     match r {
       Empty => panic()
-      Node(rl, rx, rr, _) =>
+      Node(rl, _rx, rr, _) =>
         if height(rr) >= height(rl) {
-          proof_assert x < rx
-          proof_assert all_lt(elements(l), rx)
-          proof_assert -1 <= height(l) - height(rl) &&
-            height(l) - height(rl) <= 1
-          proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
-          let nl = mk(l, x, rl)
-          proof_assert -1 <= height(nl) - height(rr) &&
-            height(nl) - height(rr) <= 1
-          mk(nl, rx, rr)
+          proof_assert right_double_case(r) == false
+          balance_right_single(l, x, r)
         } else {
           proof_assert right_double_case(r)
           balance_right_double(l, x, r)
