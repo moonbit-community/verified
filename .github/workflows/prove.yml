@@ -12,13 +12,15 @@ concurrency:
 jobs:
   prove:
     env:
-      Z3_VERSION: 4.15.4
+      ALTERGO_VERSION: 2.6.2
+      CVC5_VERSION: 1.3.1
+      Z3_VERSION: 4.15.3
     strategy:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
-          - macos-latest
+          - ubuntu-24.04
+          - macos-15
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -34,31 +36,53 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s nightly
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Install Z3 4.15.4 (Ubuntu)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install Why3 1.7.2 and Alt-Ergo 2.6.2
+        run: |
+          set -euo pipefail
+          opam install -y why3.1.7.2 alt-ergo.${ALTERGO_VERSION}
+          echo "WHY3DATA=$(opam exec -- why3 --print-datadir)" >> "$GITHUB_ENV"
+          echo "WHY3LIB=$(opam exec -- why3 --print-libdir)" >> "$GITHUB_ENV"
+          echo "ALTERGOPATH=$(opam exec -- sh -lc 'command -v alt-ergo')" >> "$GITHUB_ENV"
+
+      - name: Install Z3 4.15.3 (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           set -euo pipefail
           curl -fsSL \
             -o "$RUNNER_TEMP/z3.zip" \
             "https://github.com/Z3Prover/z3/releases/download/z3-${Z3_VERSION}/z3-${Z3_VERSION}-x64-glibc-2.39.zip"
           unzip -q "$RUNNER_TEMP/z3.zip" -d "$RUNNER_TEMP/z3"
-          Z3PATH="$(find "$RUNNER_TEMP/z3" -type f -name z3 | head -n 1)"
-          echo "$(dirname "$Z3PATH")" >> "$GITHUB_PATH"
-          echo "Z3PATH=$Z3PATH" >> "$GITHUB_ENV"
+          echo "Z3PATH=$(find "$RUNNER_TEMP/z3" -type f -name z3 | head -n 1)" >> "$GITHUB_ENV"
 
-      - name: Install Z3 (macOS)
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Install Z3 4.15.3 (macOS)
+        if: ${{ startsWith(matrix.os, 'macos') }}
         run: |
           set -euo pipefail
-          brew install z3
-          echo "Z3PATH=$(command -v z3)" >> "$GITHUB_ENV"
+          curl -fsSL \
+            -o "$RUNNER_TEMP/z3.zip" \
+            "https://github.com/Z3Prover/z3/releases/download/z3-${Z3_VERSION}/z3-${Z3_VERSION}-x64-osx-13.7.6.zip"
+          unzip -q "$RUNNER_TEMP/z3.zip" -d "$RUNNER_TEMP/z3"
+          echo "Z3PATH=$(find "$RUNNER_TEMP/z3" -type f -name z3 | head -n 1)" >> "$GITHUB_ENV"
 
-      - name: Install Why3 1.7.2
+      - name: Install CVC5 1.3.1 (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           set -euo pipefail
-          opam install -y why3.1.7.2
-          echo "WHY3DATA=$(opam exec -- why3 --print-datadir)" >> "$GITHUB_ENV"
-          echo "WHY3LIB=$(opam exec -- why3 --print-libdir)" >> "$GITHUB_ENV"
+          curl -fsSL \
+            -o "$RUNNER_TEMP/cvc5.zip" \
+            "https://github.com/cvc5/cvc5/releases/download/cvc5-${CVC5_VERSION}/cvc5-Linux-x86_64-static-gpl.zip"
+          unzip -q "$RUNNER_TEMP/cvc5.zip" -d "$RUNNER_TEMP/cvc5"
+          echo "CVC5PATH=$(find "$RUNNER_TEMP/cvc5" -type f -name cvc5 | head -n 1)" >> "$GITHUB_ENV"
+
+      - name: Install CVC5 1.3.1 (macOS)
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            -o "$RUNNER_TEMP/cvc5.zip" \
+            "https://github.com/cvc5/cvc5/releases/download/cvc5-${CVC5_VERSION}/cvc5-macOS-x86_64-static-gpl.zip"
+          unzip -q "$RUNNER_TEMP/cvc5.zip" -d "$RUNNER_TEMP/cvc5"
+          echo "CVC5PATH=$(find "$RUNNER_TEMP/cvc5" -type f -name cvc5 | head -n 1)" >> "$GITHUB_ENV"
 
       - name: Update MoonBit dependencies
         run: |
@@ -70,7 +94,9 @@ jobs:
           set -euo pipefail
           moon version --all
           opam exec -- why3 --version
-          "$Z3PATH" --version
+          "$ALTERGOPATH" --version | grep -F "${ALTERGO_VERSION}"
+          "$CVC5PATH" --version | grep -F "version ${CVC5_VERSION}"
+          "$Z3PATH" --version | grep -F "${Z3_VERSION}"
 
       - name: Bundle core library
         run: |
@@ -79,9 +105,21 @@ jobs:
 
       - name: Run proofs
         env:
+          ALTERGOPATH: ${{ env.ALTERGOPATH }}
+          CVC5PATH: ${{ env.CVC5PATH }}
           WHY3DATA: ${{ env.WHY3DATA }}
           WHY3LIB: ${{ env.WHY3LIB }}
           Z3PATH: ${{ env.Z3PATH }}
         run: |
           set -euo pipefail
           opam exec -- moon prove
+
+      - name: Upload proof reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-reports-${{ matrix.os }}
+          path: |
+            _build/verif/**/*.proof.json
+            _build/verif/**/*.mlw
+            _build/verif/why3.conf
