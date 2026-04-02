@@ -7,6 +7,20 @@ predicate nonneg(result : Int) {
 }
 
 ///|
+lemma square_nonneg(z : Int) where {
+  proof_ensure: 0 <= z * z,
+} {
+}
+
+///|
+lemma nonneg_of_pos_mul(a : Int, b : Int) where {
+  proof_require: 0 < a,
+  proof_require: 0 <= a * b,
+  proof_ensure: 0 <= b,
+} {
+}
+
+///|
 lemma cauchy_step_nonneg(
   x2 : Int,
   y2 : Int,
@@ -20,4 +34,34 @@ lemma cauchy_step_nonneg(
   proof_ensure:
     0 <= (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y),
 } {
+  if x2 == 0 {
+    square_nonneg(xy)
+    square_nonneg(x)
+    proof_assert x2 * y2 == 0
+    proof_assert xy * xy <= 0
+    proof_assert xy * xy == 0
+    proof_assert 0 <= x * x
+    proof_assert 0 <= x * x * y2
+    proof_assert
+      (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y) ==
+      x * x * y2
+    proof_assert 0 <= (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y)
+  } else {
+    square_nonneg(x2 * y - xy * x)
+    square_nonneg(x)
+    proof_assert 0 < x2
+    proof_assert 0 <= x2 * y2 - xy * xy
+    proof_assert 0 <= x * x
+    proof_assert 0 <= x2 + x * x
+    proof_assert 0 <= (x2 * y2 - xy * xy) * (x2 + x * x)
+    proof_assert
+      x2 * ((x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y)) ==
+      (x2 * y2 - xy * xy) * (x2 + x * x) + (x2 * y - xy * x) * (x2 * y - xy * x)
+    proof_assert 0 <= x2 * ((x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y))
+    nonneg_of_pos_mul(
+      x2,
+      (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y),
+    )
+    proof_assert 0 <= (x2 + x * x) * (y2 + y * y) - (xy + x * y) * (xy + x * y)
+  }
 }
