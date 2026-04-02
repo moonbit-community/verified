@@ -48,7 +48,9 @@ pub fn size(h : Heap) -> Int {
 ///|
 /// A singleton heap is the atomic proof case: one root, no children, and size
 /// exactly one.
-fn singleton(value : Int) -> Heap where {
+fn singleton(
+  value : Int,
+) -> Heap where {
   proof_ensure: result => singleton_post(value, result),
 } {
   let result = Node(value, Nil, 1)
@@ -60,7 +62,10 @@ fn singleton(value : Int) -> Heap where {
 /// Merge keeps the smaller root and attaches the other heap as a new child.
 /// That is why the size equation is exact and the child-list invariant stays
 /// local: the losing heap is already valid and non-empty.
-pub fn merge(a : Heap, b : Heap) -> Heap where {
+pub fn merge(
+  a : Heap,
+  b : Heap,
+) -> Heap where {
   proof_require: heap_inv(a),
   proof_require: heap_inv(b),
   proof_ensure: result => merge_post(a, b, result),
@@ -91,7 +96,9 @@ pub fn merge(a : Heap, b : Heap) -> Heap where {
 /// `merge_pairs_list` is the recursive pairing phase from delete-min. The
 /// decrease metric is the number of children, and the two-child case shrinks it
 /// by merging a pair first and then folding the rest back in.
-fn merge_pairs_list(xs : ChildList) -> Heap where {
+fn merge_pairs_list(
+  xs : ChildList,
+) -> Heap where {
   proof_decrease: list_length_model(xs),
   proof_require: list_inv(xs),
   proof_ensure: result => merge_pairs_post(xs, result),
@@ -122,7 +129,10 @@ fn merge_pairs_list(xs : ChildList) -> Heap where {
 ///|
 /// Insertion is just merge with a singleton heap, so the proof reduces to the
 /// merge proof plus the singleton base case.
-pub fn insert(h : Heap, value : Int) -> Heap where {
+pub fn insert(
+  h : Heap,
+  value : Int,
+) -> Heap where {
   proof_require: heap_inv(h),
   proof_ensure: result => insert_post(h, value, result),
 } {
@@ -136,7 +146,9 @@ pub fn insert(h : Heap, value : Int) -> Heap where {
 /// The minimum is the root value when the heap is non-empty. The proof first
 /// rules out the empty case via the root-count fact, then returns that cached
 /// root.
-pub fn find_min(h : Heap) -> Int? where {
+pub fn find_min(
+  h : Heap,
+) -> Int? where {
   proof_require: heap_inv(h),
   proof_ensure: result => find_min_post(h, result),
 } {
@@ -155,7 +167,9 @@ pub fn find_min(h : Heap) -> Int? where {
 /// Deleting the minimum removes the root and then pairwise-merges the children.
 /// The child-list invariant is exactly what lets the merged forest remain a
 /// valid heap.
-pub fn delete_min(h : Heap) -> Heap? where {
+pub fn delete_min(
+  h : Heap,
+) -> Heap? where {
   proof_require: heap_inv(h),
   proof_ensure: result => delete_min_post(h, result),
 } {
