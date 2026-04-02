@@ -1,0 +1,47 @@
+name: publish-package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    # Use macos-latest or windows-latest if you want to publish to those platforms
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install-ubuntu
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+      - name: install-windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser; irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
+          "C:\Users\runneradmin\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      # Add -C if your moon.mod.json or moon.pkg.json is not in the root directory
+      - name: prepublish check
+        run: |
+          moon check
+          moon test
+
+      - name: publish
+        env:
+          SECRET: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "Error: MOONCAKES_MOONBIT_COMMUNITY_TOKEN secret is not set."
+            echo "Please contact an admin to grant access to this secret."
+            exit 1
+          fi
+          echo "$SECRET" > ~/.moon/credentials.json
+          moon publish
+          rm ~/.moon/credentials.json
