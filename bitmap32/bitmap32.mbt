@@ -5,6 +5,8 @@ using @bv32 {type BV32}
 using @fset {type Fset}
 
 ///|
+/// These helpers are axiomatized at the proof level: the executable code is tiny, while the
+/// comments below record the invariants each bitwise transformation must satisfy.
 pub fn zero_uint() -> UInt where {
   proof_axiomatized: true,
   proof_ensure: result => empty_bitmap_inv(result),
@@ -13,6 +15,7 @@ pub fn zero_uint() -> UInt where {
 }
 
 ///|
+/// Shifting is only admissible for a valid index; the postcondition tracks the moved bit.
 pub fn uint_lsr(
   bitmap : UInt,
   idx : Int,
@@ -25,6 +28,7 @@ pub fn uint_lsr(
 }
 
 ///|
+/// This bridges the low bit of an integer with the bitvector view used by the proof model.
 pub fn uint_bit0(
   x : UInt,
 ) -> Bool where {
@@ -35,6 +39,8 @@ pub fn uint_bit0(
 }
 
 ///|
+/// Adding a value sets a previously empty bit, so the missing-membership precondition is
+/// exactly what makes the bitmap invariant stable.
 pub fn bitmap_add(
   bitmap : UInt,
   idx : Int,
@@ -48,6 +54,8 @@ pub fn bitmap_add(
 }
 
 ///|
+/// Removal is the dual case: the bit must already be present so clearing it preserves the
+/// abstract set/bitmap correspondence.
 pub fn bitmap_remove(
   bitmap : UInt,
   idx : Int,
