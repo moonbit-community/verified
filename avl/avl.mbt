@@ -238,13 +238,11 @@ fn balance_left_single(
       proof_assert all_gt(lx, elements(r))
       proof_assert elements_subset(lr, l)
       proof_assert all_lt(elements(lr), x)
-      proof_assert -1 <= height(lr) - height(r) &&
-        height(lr) - height(r) <= 1
+      proof_assert -1 <= height(lr) - height(r) && height(lr) - height(r) <= 1
       proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
       let nr = mk(lr, x, r)
       proof_assert elements(nr).eq(elements(lr).union(elements(r)).add(x))
-      proof_assert -1 <= height(ll) - height(nr) &&
-        height(ll) - height(nr) <= 1
+      proof_assert -1 <= height(ll) - height(nr) && height(ll) - height(nr) <= 1
       proof_assert single_rotation_eq(
         lx,
         x,
@@ -289,13 +287,11 @@ fn balance_right_single(
       proof_assert all_lt(elements(l), rx)
       proof_assert elements_subset(rl, r)
       proof_assert all_gt(x, elements(rl))
-      proof_assert -1 <= height(l) - height(rl) &&
-        height(l) - height(rl) <= 1
+      proof_assert -1 <= height(l) - height(rl) && height(l) - height(rl) <= 1
       proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
       let nl = mk(l, x, rl)
       proof_assert elements(nl).eq(elements(l).union(elements(rl)).add(x))
-      proof_assert -1 <= height(nl) - height(rr) &&
-        height(nl) - height(rr) <= 1
+      proof_assert -1 <= height(nl) - height(rr) && height(nl) - height(rr) <= 1
       proof_assert single_rotation_eq(
         x,
         rx,
