@@ -1,9 +1,7 @@
 name: Prove
 
 on:
-  push:
   pull_request:
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
