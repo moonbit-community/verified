@@ -20,7 +20,7 @@ pub fn div(
     proof_invariant: lo < hi,
     proof_invariant: lo * b <= a,
     proof_invariant: a < hi * b,
-    proof_reasoning: (
+    reasoning: (
       #| This is the same bracketing pattern as binary search, but over possible
       #| quotients. `lo` is always a feasible quotient because `lo * b <= a`,
       #| while `hi` is always too large because `a < hi * b`.

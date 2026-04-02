@@ -16,7 +16,7 @@ pub fn index_of_max(
     proof_invariant: 0 <= best,
     proof_invariant: best < i,
     proof_invariant: max_in_prefix(xs, best, i),
-    proof_reasoning: (
+    reasoning: (
       #| `best` is always an index of a maximal element in the processed prefix
       #| `xs[0 .. i)`. The bounds invariants keep that witness index valid.
       #|

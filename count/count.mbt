@@ -17,7 +17,7 @@ pub fn count_nonneg(
     proof_invariant: i <= xs.length(),
     proof_invariant: 0 <= count,
     proof_invariant: count <= i,
-    proof_reasoning: (
+    reasoning: (
       #| This proof only tracks bounds on the accumulator, not an exact counting
       #| predicate. At each loop boundary, `count` is known to be nonnegative
       #| and no larger than the processed prefix length `i`.

@@ -22,7 +22,7 @@ pub fn sort(
       proof_invariant: i <= n - 1 - t,
       proof_invariant: suffix_head_dominates(arr, n - 1 - t),
       proof_invariant: prefix_dominates_suffix(arr, i),
-      proof_reasoning: (
+      reasoning: (
         #| This pass scans the unsorted suffix from right to left. The frontier
         #| index is `j = n - 1 - t`, and `suffix_head_dominates(arr, j)` means
         #| the element currently at that frontier dominates every element to its
@@ -48,7 +48,7 @@ pub fn sort(
     proof_invariant: 0 <= i,
     proof_invariant: i <= n,
     proof_invariant: prefix_dominates_suffix(arr, i),
-    proof_reasoning: (
+    reasoning: (
       #| After `i` outer iterations, the prefix `arr[0 .. i)` already contains
       #| the `i` largest elements, each dominating every element to its right.
       #|

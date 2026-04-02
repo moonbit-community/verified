@@ -20,7 +20,7 @@ pub fn first_hit(
       proof_invariant: no_two_sum_before_i(a, sum, i),
       proof_invariant: no_two_sum_before_j(a, sum, i, j),
       proof_yield: res => first_hit_row_ok(a, sum, i, res),
-      proof_reasoning: (
+      reasoning: (
         #| This inner loop exhaustively searches row `i`: before each iteration,
         #| `no_two_sum_before_j(a, sum, i, j)` states that no partner in
         #| `[0, j)` works with `a[i]`.
@@ -48,7 +48,7 @@ pub fn first_hit(
     proof_invariant: i <= a.length(),
     proof_invariant: no_two_sum_before_i(a, sum, i),
     proof_yield: res => two_sum_result_ok(a, sum, res),
-    proof_reasoning: (
+    reasoning: (
       #| The outer loop scans candidate first indices row by row. The invariant
       #| `no_two_sum_before_i(a, sum, i)` means every row `< i` has already been
       #| proved to contain no solution.
@@ -104,7 +104,7 @@ pub fn one_loop_positive(
     proof_invariant: seen_complete(seen, a, i),
     proof_invariant: seen_sound(seen, a, i),
     proof_yield: res => positive_two_sum_result_ok(a, sum, res),
-    proof_reasoning: (
+    reasoning: (
       #| `seen` is a lookup table over values in `[0, sum]`, stored with a
       #| one-based encoding so that `0` can mean “not seen yet”.
       #|
