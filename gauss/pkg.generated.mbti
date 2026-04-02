@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/gauss"
+package "moonbit-community/verified/gauss"
 
 // Values
 pub fn sum_to(Int) -> Int

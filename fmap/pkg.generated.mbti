@@ -1,12 +1,12 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "moonbit-community/verified/lowerbound"
+package "moonbit-community/verified/fmap"
 
 // Values
-pub fn lower_bound(FixedArray[Int], Int) -> Int
 
 // Errors
 
 // Types and methods
+pub type Fmap[K, V]
 
 // Type aliases
 

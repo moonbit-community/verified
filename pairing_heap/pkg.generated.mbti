@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/pairing_heap"
+
+// Values
+pub fn delete_min(Heap) -> Heap?
+
+pub fn empty() -> Heap
+
+pub fn find_min(Heap) -> Int?
+
+pub fn insert(Heap, Int) -> Heap
+
+pub fn merge(Heap, Heap) -> Heap
+
+pub fn size(Heap) -> Int
+
+// Errors
+
+// Types and methods
+pub enum ChildList {
+  Nil
+  Cons(Heap, ChildList)
+} derive(Show)
+
+pub enum Heap {
+  Empty
+  Node(Int, ChildList, Int)
+} derive(Show)
+
+// Type aliases
+
+// Traits
+

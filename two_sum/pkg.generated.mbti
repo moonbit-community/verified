@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/two_sum"
+package "moonbit-community/verified/two_sum"
 
 // Values
 pub fn first_hit(FixedArray[Int], Int) -> (Int, Int)?

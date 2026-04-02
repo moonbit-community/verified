@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/sumbounds"
+package "moonbit-community/verified/sumbounds"
 
 // Values
 pub fn bounded_sum(FixedArray[Int], Int, Int) -> Int

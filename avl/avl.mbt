@@ -52,9 +52,7 @@ fn mk(
   proof_require: all_gt(x, r.model()),
   proof_require: balanced_heights(l, r),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => {
-    result.model().eq(l.model().union(r.model()).add(x))
-  },
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
   proof_ensure: result => mk_height_post(l, r, result),
 } {
   Node(l, x, r, 1 + max2(height(l), height(r)))
@@ -115,9 +113,7 @@ fn balance_left_double(
           proof_assert all_gt(lx, lrl.model())
           proof_assert all_lt(ll.model(), lx) && all_gt(lx, lrl.model())
           let nl = mk(ll, lx, lrl)
-          proof_assert nl.model().eq(
-            ll.model().union(lrl.model()).add(lx),
-          )
+          proof_assert nl.model().eq(ll.model().union(lrl.model()).add(lx))
           proof_assert height(nl) == 1 + max2(height(ll), height(lrl))
           proof_assert elements_subset(lrr, lr)
           proof_assert all_lt(lrr.model(), x)
@@ -185,9 +181,7 @@ fn balance_right_double(
             height(rlr) - height(rr) <= 1
           proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
-          proof_assert nr.model().eq(
-            rlr.model().union(rr.model()).add(rx),
-          )
+          proof_assert nr.model().eq(rlr.model().union(rr.model()).add(rx))
           proof_assert all_lt(nl.model(), rlx) && all_gt(rlx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
@@ -240,20 +234,12 @@ fn balance_left_single(
       proof_assert all_gt(lx, r.model())
       proof_assert elements_subset(lr, l)
       proof_assert all_lt(lr.model(), x)
-      proof_assert -1 <= height(lr) - height(r) &&
-        height(lr) - height(r) <= 1
+      proof_assert -1 <= height(lr) - height(r) && height(lr) - height(r) <= 1
       proof_assert all_lt(lr.model(), x) && all_gt(x, r.model())
       let nr = mk(lr, x, r)
       proof_assert nr.model().eq(lr.model().union(r.model()).add(x))
-      proof_assert -1 <= height(ll) - height(nr) &&
-        height(ll) - height(nr) <= 1
-      proof_assert single_rotation_eq(
-        lx,
-        x,
-        ll.model(),
-        lr.model(),
-        r.model(),
-      )
+      proof_assert -1 <= height(ll) - height(nr) && height(ll) - height(nr) <= 1
+      proof_assert single_rotation_eq(lx, x, ll.model(), lr.model(), r.model())
       proof_assert ll
         .model()
         .union(nr.model())
@@ -292,20 +278,12 @@ fn balance_right_single(
       proof_assert all_lt(l.model(), rx)
       proof_assert elements_subset(rl, r)
       proof_assert all_gt(x, rl.model())
-      proof_assert -1 <= height(l) - height(rl) &&
-        height(l) - height(rl) <= 1
+      proof_assert -1 <= height(l) - height(rl) && height(l) - height(rl) <= 1
       proof_assert all_lt(l.model(), x) && all_gt(x, rl.model())
       let nl = mk(l, x, rl)
       proof_assert nl.model().eq(l.model().union(rl.model()).add(x))
-      proof_assert -1 <= height(nl) - height(rr) &&
-        height(nl) - height(rr) <= 1
-      proof_assert single_rotation_eq(
-        x,
-        rx,
-        l.model(),
-        rl.model(),
-        rr.model(),
-      )
+      proof_assert -1 <= height(nl) - height(rr) && height(nl) - height(rr) <= 1
+      proof_assert single_rotation_eq(x, rx, l.model(), rl.model(), rr.model())
       proof_assert nl
         .model()
         .union(rr.model())
@@ -488,18 +466,14 @@ pub fn delete(
         let l1 = delete(x, l)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert t1.model().eq(
-          l.model().remove(x).union(r.model()).add(y),
-        )
+        proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
         proof_assert delete_elements_post(x, t, t1)
         t1
       } else if y < x {
         let r1 = delete(x, r)
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert t1.model().eq(
-          l.model().union(r.model().remove(x)).add(y),
-        )
+        proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
         proof_assert delete_elements_post(x, t, t1)
         t1
       } else {

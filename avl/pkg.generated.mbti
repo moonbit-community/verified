@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/avl"
+package "moonbit-community/verified/avl"
 
 // Values
 pub fn contains(Int, Tree) -> Bool

@@ -8,6 +8,7 @@ pub enum MinStack {
   Cons(Int, Int, MinStack)
 } derive(Show)
 
+///|
 fn stack_size(s : MinStack) -> Int {
   match s {
     Nil => 0

@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/bitmap32"
+package "moonbit-community/verified/bitmap32"
 
 // Values
 pub fn bitmap_add(UInt, Int) -> UInt

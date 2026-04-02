@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/invpred"
+package "moonbit-community/verified/invpred"
 
 // Values
 pub fn binary_search(FixedArray[Int], Int) -> Int

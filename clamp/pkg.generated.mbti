@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/clamp"
+package "moonbit-community/verified/clamp"
 
 // Values
 pub fn clamp(Int, Int, Int) -> Int

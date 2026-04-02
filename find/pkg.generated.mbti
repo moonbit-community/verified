@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/find"
+package "moonbit-community/verified/find"
 
 // Values
 pub fn find(FixedArray[Int], Int) -> Int

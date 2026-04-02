@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/abs"
+package "moonbit-community/verified/abs"
 
 // Values
 pub fn abs(Int) -> Int
