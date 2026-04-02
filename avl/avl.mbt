@@ -220,7 +220,7 @@ fn balance_left_single(
 ) -> Tree where {
   proof_require: balance_pre(l, x, r),
   proof_require: left_heavy(l, r),
-  proof_require: left_double_case(l) == false,
+  proof_require: !left_double_case(l),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => balance_elements_post(l, x, r, result),
   proof_ensure: result => balance_height_upper_post(l, r, result),
@@ -264,7 +264,7 @@ fn balance_right_single(
 ) -> Tree where {
   proof_require: balance_pre(l, x, r),
   proof_require: right_heavy(l, r),
-  proof_require: right_double_case(r) == false,
+  proof_require: !right_double_case(r),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => balance_elements_post(l, x, r, result),
   proof_ensure: result => balance_height_upper_post(l, r, result),
@@ -320,7 +320,7 @@ fn balance(
       Empty => panic()
       Node(ll, _lx, lr, _) =>
         if height(ll) >= height(lr) {
-          proof_assert left_double_case(l) == false
+          proof_assert !left_double_case(l)
           balance_left_single(l, x, r)
         } else {
           proof_assert left_double_case(l)
@@ -333,7 +333,7 @@ fn balance(
       Empty => panic()
       Node(rl, _rx, rr, _) =>
         if height(rr) >= height(rl) {
-          proof_assert right_double_case(r) == false
+          proof_assert !right_double_case(r)
           balance_right_single(l, x, r)
         } else {
           proof_assert right_double_case(r)

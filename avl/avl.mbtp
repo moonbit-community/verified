@@ -93,7 +93,7 @@ predicate balance_height_lower_post(l : Tree, r : Tree, result : Tree) {
 
 ///|
 predicate balance_height_exact_post(l : Tree, r : Tree, result : Tree) {
-  balanced_heights(l, r) == false ||
+  !balanced_heights(l, r) ||
   height(result) == 1 + max2(height(l), height(r))
 }
 
