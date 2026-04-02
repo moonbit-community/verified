@@ -78,41 +78,6 @@ predicate right_double_case(r : Tree) {
 }
 
 ///|
-predicate balance_elements_post(l : Tree, x : Int, r : Tree, result : Tree) {
-  result.model().eq(l.model().union(r.model()).add(x))
-}
-
-predicate balance_height_upper_post(l : Tree, r : Tree, result : Tree) {
-  height(result) <= 1 + max2(height(l), height(r))
-}
-
-///|
-predicate balance_height_lower_post(l : Tree, r : Tree, result : Tree) {
-  max2(height(l), height(r)) <= height(result)
-}
-
-///|
-predicate balance_height_exact_post(l : Tree, r : Tree, result : Tree) {
-  !balanced_heights(l, r) ||
-  height(result) == 1 + max2(height(l), height(r))
-}
-
-///|
-predicate insert_elements_post(x : Int, t : Tree, result : Tree) {
-  result.model().eq(t.model().add(x))
-}
-
-///|
-predicate insert_height_lower_post(t : Tree, result : Tree) {
-  height(t) <= height(result)
-}
-
-///|
-predicate insert_height_upper_post(t : Tree, result : Tree) {
-  height(result) <= height(t) + 1
-}
-
-///|
 predicate remove_min_post(t : Tree, result : (Int, Tree)) {
   match result {
     (x, t1) =>
@@ -127,35 +92,10 @@ predicate remove_min_post(t : Tree, result : (Int, Tree)) {
 }
 
 ///|
-predicate delete_elements_post(x : Int, t : Tree, result : Tree) {
-  result.model().eq(t.model().remove(x))
-}
-
-///|
-predicate delete_height_lower_post(t : Tree, result : Tree) {
-  height(t) <= height(result) + 1
-}
-
-///|
-predicate delete_height_upper_post(t : Tree, result : Tree) {
-  height(result) <= height(t)
-}
-
-///|
-predicate mk_height_post(l : Tree, r : Tree, result : Tree) {
-  height(result) == 1 + max2(height(l), height(r))
-}
-
-///|
-predicate height_nonneg_post(t : Tree) {
-  0 <= height(t)
-}
-
-///|
 lemma height_nonneg_lemma(t : Tree) where {
   proof_decrease: t,
   proof_require: avl_inv(t),
-  proof_ensure: height_nonneg_post(t),
+  proof_ensure: 0 <= height(t),
 } {
   match t {
     Empty => ()
@@ -196,13 +136,8 @@ lemma elements_subset_trans(t1 : Tree, t2 : Tree, t3 : Tree) where {
 }
 
 ///|
-predicate int_lt(x : Int, y : Int) {
-  x < y
-}
-
-///|
 lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
-  proof_require: int_lt(x, y),
+  proof_require: x < y,
   proof_require: all_gt(x, s),
   proof_ensure: all_gt(x, s.add(y)),
 } {
@@ -220,7 +155,7 @@ lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
 
 ///|
 lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
-  proof_require: int_lt(x, y),
+  proof_require: x < y,
   proof_require: all_gt(y, s),
   proof_ensure: all_gt(x, s),
 } {
@@ -229,7 +164,7 @@ lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
 
 ///|
 lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
-  proof_require: int_lt(y, x),
+  proof_require: y < x,
   proof_require: all_lt(s, x),
   proof_ensure: all_lt(s.add(y), x),
 } {
@@ -248,7 +183,7 @@ lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) where {
 ///|
 lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) where {
   proof_require: all_lt(s, x),
-  proof_require: int_lt(x, y),
+  proof_require: x < y,
   proof_ensure: all_lt(s, y),
 } {
 
@@ -468,7 +403,7 @@ predicate delete_left_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
 
 ///|
 lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
-  proof_require: int_lt(x, y),
+  proof_require: x < y,
   proof_require: all_gt(y, s2),
   proof_ensure: delete_left_eq(x, y, s1, s2),
 } {
@@ -482,7 +417,7 @@ predicate delete_right_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
 
 ///|
 lemma delete_right_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
-  proof_require: int_lt(y, x),
+  proof_require: y < x,
   proof_require: all_lt(s1, y),
   proof_ensure: delete_right_eq(x, y, s1, s2),
 } {

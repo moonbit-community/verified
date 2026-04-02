@@ -53,7 +53,7 @@ fn mk(
   proof_require: balanced_heights(l, r),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => mk_height_post(l, r, result),
+  proof_ensure: result => height(result) == 1 + max2(height(l), height(r)),
 } {
   Node(l, x, r, 1 + max2(height(l), height(r)))
 }
@@ -91,9 +91,9 @@ fn balance_left_double(
   proof_require: left_heavy(l, r),
   proof_require: left_double_case(l),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => balance_elements_post(l, x, r, result),
-  proof_ensure: result => balance_height_upper_post(l, r, result),
-  proof_ensure: result => balance_height_lower_post(l, r, result),
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
+  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   match l {
     Empty => panic()
@@ -153,9 +153,9 @@ fn balance_right_double(
   proof_require: right_heavy(l, r),
   proof_require: right_double_case(r),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => balance_elements_post(l, x, r, result),
-  proof_ensure: result => balance_height_upper_post(l, r, result),
-  proof_ensure: result => balance_height_lower_post(l, r, result),
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
+  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   match r {
     Empty => panic()
@@ -222,9 +222,9 @@ fn balance_left_single(
   proof_require: left_heavy(l, r),
   proof_require: !left_double_case(l),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => balance_elements_post(l, x, r, result),
-  proof_ensure: result => balance_height_upper_post(l, r, result),
-  proof_ensure: result => balance_height_lower_post(l, r, result),
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
+  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   match l {
     Empty => panic()
@@ -266,9 +266,9 @@ fn balance_right_single(
   proof_require: right_heavy(l, r),
   proof_require: !right_double_case(r),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => balance_elements_post(l, x, r, result),
-  proof_ensure: result => balance_height_upper_post(l, r, result),
-  proof_ensure: result => balance_height_lower_post(l, r, result),
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
+  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   match r {
     Empty => panic()
@@ -309,10 +309,12 @@ fn balance(
 ) -> Tree where {
   proof_require: balance_pre(l, x, r),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => balance_elements_post(l, x, r, result),
-  proof_ensure: result => balance_height_exact_post(l, r, result),
-  proof_ensure: result => balance_height_upper_post(l, r, result),
-  proof_ensure: result => balance_height_lower_post(l, r, result),
+  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result =>
+    !balanced_heights(l, r) ||
+    height(result) == 1 + max2(height(l), height(r)),
+  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
+  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   if height(l) > height(r) + 1 {
     proof_assert left_heavy(l, r)
@@ -415,9 +417,9 @@ pub fn insert(
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => insert_elements_post(x, t, result),
-  proof_ensure: result => insert_height_lower_post(t, result),
-  proof_ensure: result => insert_height_upper_post(t, result),
+  proof_ensure: result => result.model().eq(t.model().add(x)),
+  proof_ensure: result => height(t) <= height(result),
+  proof_ensure: result => height(result) <= height(t) + 1,
 } {
   match t {
     Empty => mk(Empty, x, Empty)
@@ -452,13 +454,13 @@ pub fn delete(
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_ensure: result => avl_inv(result),
-  proof_ensure: result => delete_elements_post(x, t, result),
-  proof_ensure: result => delete_height_lower_post(t, result),
-  proof_ensure: result => delete_height_upper_post(t, result),
+  proof_ensure: result => result.model().eq(t.model().remove(x)),
+  proof_ensure: result => height(t) <= height(result) + 1,
+  proof_ensure: result => height(result) <= height(t),
 } {
   match t {
     Empty => {
-      proof_assert delete_elements_post(x, t, Empty)
+      proof_assert Empty.model().eq(t.model().remove(x))
       Empty
     }
     Node(l, y, r, _) =>
@@ -467,19 +469,19 @@ pub fn delete(
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
         proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
-        proof_assert delete_elements_post(x, t, t1)
+        proof_assert t1.model().eq(t.model().remove(x))
         t1
       } else if y < x {
         let r1 = delete(x, r)
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
         proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
-        proof_assert delete_elements_post(x, t, t1)
+        proof_assert t1.model().eq(t.model().remove(x))
         t1
       } else {
         match r {
           Empty => {
-            proof_assert delete_elements_post(x, t, l)
+            proof_assert l.model().eq(t.model().remove(x))
             l
           }
           Node(_, _, _, _) => {
@@ -488,7 +490,7 @@ pub fn delete(
             proof_assert all_lt(l.model(), s)
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
-            proof_assert delete_elements_post(x, t, t1)
+            proof_assert t1.model().eq(t.model().remove(x))
             t1
           }
         }
