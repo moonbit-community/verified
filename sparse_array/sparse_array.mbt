@@ -42,6 +42,20 @@ fn bitmap_rank(
     proof_invariant: 0 <= j,
     proof_invariant: j <= idx,
     proof_invariant: acc == rank_value(bitmap, j, 0),
+    reasoning: (
+      #| `acc` is the concrete running count of set bits in the prefix
+      #| `[0, j)`, while `rank_value(bitmap, j, 0)` is the abstract set-based
+      #| definition of the same quantity.
+      #|
+      #| The invariant equates those two views. Each iteration inspects bit `j`
+      #| and either leaves the count unchanged or increments it by one. The
+      #| explicit `proof_assert` bridges that step to the abstract rank at `j + 1`.
+      #|
+      #| The measure `idx - j` decreases because `j` advances by one.
+      #|
+      #| At exit `j == idx`, so the concrete counter `acc` equals the desired
+      #| prefix rank.
+    ),
   }
 }
 
@@ -128,6 +142,19 @@ pub fn SparseArray::add(
     proof_invariant: 0 <= i,
     proof_invariant: i <= pos,
     proof_invariant: add_prefix_ok(old_data, new_data, pos, i),
+    reasoning: (
+      #| This loop copies the unchanged prefix `[0, pos)` into the larger array.
+      #| `add_prefix_ok` records exactly which prefix entries already agree with
+      #| the old data while reserving one extra slot for insertion.
+      #|
+      #| Each step copies one more element verbatim, so the copied prefix grows
+      #| from length `i` to length `i + 1`.
+      #|
+      #| The measure `pos - i` decreases monotonically.
+      #|
+      #| At exit, every index before `pos` has been copied and the insertion slot
+      #| is ready to be filled.
+    ),
   }
   new_data[pos] = value
   proof_assert add_fill_ok(old_data, new_data, pos, value, pos)
@@ -138,6 +165,20 @@ pub fn SparseArray::add(
     proof_invariant: pos <= i,
     proof_invariant: i <= old_len,
     proof_invariant: add_fill_ok(old_data, new_data, pos, value, i),
+    reasoning: (
+      #| After writing `new_data[pos] = value`, the remaining task is to shift
+      #| the old suffix `[pos, old_len)` one position to the right.
+      #|
+      #| `add_fill_ok` states that the prefix before `pos` is already copied, the
+      #| inserted value is fixed at `pos`, and the old suffix has been shifted
+      #| correctly for the processed range `[pos, i)`.
+      #|
+      #| Each iteration extends that shifted range by copying `old_data[i]` into
+      #| `new_data[i + 1]`.
+      #|
+      #| The measure `old_len - i` decreases, and at exit the whole suffix has
+      #| been shifted, yielding the data-layout part of `add_post`.
+    ),
   }
   let result = { bitmap: bitmap_add(self.bitmap, idx), data: new_data }
   proof_assert add_data_ok(self, idx, value, result)
@@ -174,6 +215,21 @@ pub fn SparseArray::replace(
     proof_invariant: 0 <= i,
     proof_invariant: i <= old_len,
     proof_invariant: replace_prefix_ok(old_data, new_data, pos, value, i),
+    reasoning: (
+      #| Replacement keeps the bitmap and array length unchanged; only the slot
+      #| at `pos` should differ. We initialize `new_data[pos]` with `value`
+      #| before the loop and then copy every other position from the old array.
+      #|
+      #| `replace_prefix_ok` captures that all processed indices except `pos`
+      #| already agree with `old_data`, while the distinguished slot keeps the
+      #| new value.
+      #|
+      #| Each iteration extends the copied prefix by one index, either writing a
+      #| copy or skipping `pos`.
+      #|
+      #| The measure `old_len - i` decreases, and at exit every position has the
+      #| intended value, giving `replace_data_ok`.
+    ),
   }
   let result = { bitmap: self.bitmap, data: new_data }
   proof_assert replace_data_ok(self, idx, value, result)
@@ -208,6 +264,17 @@ pub fn SparseArray::remove(
       proof_invariant: 0 <= i,
       proof_invariant: i <= pos,
       proof_invariant: remove_prefix_ok(old_data, new_data, pos, i),
+      reasoning: (
+        #| Removing an entry first copies the untouched prefix `[0, pos)` into
+        #| the smaller array. `remove_prefix_ok` records that the copied prefix is
+        #| already identical to the old one.
+        #|
+        #| Each iteration copies one more prefix cell, so the processed range
+        #| grows from `i` to `i + 1`.
+        #|
+        #| The measure `pos - i` decreases to zero, leaving the removal point
+        #| ready for suffix compaction.
+      ),
     }
     proof_assert remove_fill_ok(old_data, new_data, pos, pos)
     for i = pos; i < old_len - 1; {
@@ -217,6 +284,18 @@ pub fn SparseArray::remove(
       proof_invariant: pos <= i,
       proof_invariant: i <= old_len - 1,
       proof_invariant: remove_fill_ok(old_data, new_data, pos, i),
+      reasoning: (
+        #| This second loop closes the gap left by the removed entry. For the
+        #| processed range `[pos, i)`, `remove_fill_ok` says every new slot `k`
+        #| already contains the old value from `k + 1`.
+        #|
+        #| Each iteration extends that shifted suffix by one more element via the
+        #| assignment `new_data[i] = old_data[i + 1]`.
+        #|
+        #| The measure `(old_len - 1) - i` decreases, and at exit the entire tail
+        #| has been compacted left by one position, which is exactly
+        #| `remove_data_ok`.
+      ),
     }
     let result = { bitmap: bitmap_remove(self.bitmap, idx), data: new_data }
     proof_assert remove_data_ok(self, idx, result)
