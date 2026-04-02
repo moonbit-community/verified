@@ -3,6 +3,9 @@ name: publish-package
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-24.04
@@ -31,6 +34,8 @@ jobs:
           moon test
 
       - name: Publish
+        # Keep the registry secret scoped to the actual publish step so the
+        # validation steps run without credential access.
         env:
           SECRET: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
         shell: bash
@@ -42,7 +47,13 @@ jobs:
             exit 1
           fi
 
+          # MoonBit expects credentials at this path. We create the directory
+          # and file with owner-only permissions, write the secret via stdout
+          # redirection so it never appears in the job log, and always remove
+          # the file on exit. On GitHub-hosted runners this is an ephemeral VM,
+          # so removing the file bounds its lifetime to this step.
           install -m 700 -d ~/.moon
+          install -m 600 /dev/null ~/.moon/credentials.json
           trap 'rm -f ~/.moon/credentials.json' EXIT
-          printf '%s\n' "$SECRET" > ~/.moon/credentials.json
+          printf '%s' "$SECRET" > ~/.moon/credentials.json
           moon publish
