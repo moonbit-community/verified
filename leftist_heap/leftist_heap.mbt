@@ -1,4 +1,7 @@
 ///|
+/// A leftist heap stores a rank alongside each node, where the stored rank is
+/// the null-path length of the right spine. The invariant combines the heap
+/// ordering with the rank constraint that makes merges cheap.
 pub enum Heap {
   Empty
   Node(Int, Int, Heap, Heap)
@@ -48,6 +51,9 @@ pub fn size(h : Heap) -> Int {
 }
 
 ///|
+/// `make_node` is where the leftist property is restored. It chooses the child
+/// arrangement so that the smaller-rank subtree stays on the right, then stores
+/// `min(rank(left), rank(right)) + 1` as the node rank.
 fn make_node(
   value : Int,
   left : Heap,
@@ -71,6 +77,8 @@ fn make_node(
 }
 
 ///|
+/// A singleton heap has rank 1 and empty children, so it satisfies the
+/// invariant without any balancing work.
 fn singleton(
   value : Int,
 ) -> Heap where {
@@ -82,6 +90,10 @@ fn singleton(
 }
 
 ///|
+/// Merge mirrors the skew-heap proof but adds the rank side condition. The
+/// recursive call always follows the right subtree of the chosen root, which is
+/// what keeps the measure decreasing and lets `make_node` rebuild the leftist
+/// shape afterward.
 pub fn merge(
   a : Heap,
   b : Heap,
@@ -124,6 +136,8 @@ pub fn merge(
 }
 
 ///|
+/// Insertion is still just merge with a singleton, so the heap-order and rank
+/// proof obligations are inherited from the merge step.
 pub fn insert(
   h : Heap,
   value : Int,
@@ -138,6 +152,8 @@ pub fn insert(
 }
 
 ///|
+/// The minimum is always stored at the root, so `find_min` only reads that
+/// value after the invariant rules out the empty case.
 pub fn find_min(
   h : Heap,
 ) -> Int? where {
@@ -154,6 +170,9 @@ pub fn find_min(
 }
 
 ///|
+/// Deleting the minimum discards the root and merges the two children. The
+/// rank invariant is preserved because the merge result is rewrapped through
+/// `make_node` inside the recursive merge proof.
 pub fn delete_min(
   h : Heap,
 ) -> Heap? where {
