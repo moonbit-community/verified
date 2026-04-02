@@ -1,4 +1,6 @@
 ///|
+/// `valid_bounds(lo, hi)` is the only precondition; once it holds, each branch returns a
+/// value that already satisfies the clamped-range postcondition.
 pub fn clamp(
   x : Int,
   lo : Int,
