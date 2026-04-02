@@ -1,8 +1,3 @@
-///|
-#proof_import("int.NumOf")
-fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
-
-///|
 #proof_import("fmap.Fmap")
 fn raw_fmap_size(m : Fmap[Int, Int]) -> Int = "size"
 

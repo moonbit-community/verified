@@ -6,7 +6,7 @@ fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
 fn size_model(h : Heap) -> Int {
   match h {
     Empty => 0
-    Node(v0, left, right) => 1 + size_model(left) + size_model(right)
+    Node(_value, left, right) => 1 + size_model(left) + size_model(right)
   }
 }
 
@@ -38,7 +38,7 @@ predicate all_ge(x : Int, h : Heap) {
 predicate non_empty(h : Heap) {
   match h {
     Empty => false
-    Node(v0, l0, r0) => true
+    Node(_value, _left, _right) => true
   }
 }
 
@@ -111,7 +111,7 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
     Some(h1) =>
       match h {
         Empty => false
-        Node(value, left0, right0) =>
+        Node(value, _left, _right) =>
           heap_inv(h1) &&
           size_model(h1) + 1 == size_model(h) &&
           count(h, value) == count(h1, value) + 1 &&
@@ -125,7 +125,7 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
 predicate root_minimum_post(h : Heap) {
   match h {
     Empty => true
-    Node(value, left0, right0) => is_minimum(h, value)
+    Node(value, _left, _right) => is_minimum(h, value)
   }
 }
 
@@ -145,7 +145,7 @@ lemma size_model_nonneg(h : Heap) where {
 } {
   match h {
     Empty => ()
-    Node(v0, left0, right0) => {
+    Node(_value, left0, right0) => {
       size_model_nonneg(left0)
       size_model_nonneg(right0)
     }
@@ -227,7 +227,7 @@ lemma root_is_minimum(h : Heap) where {
 } {
   match h {
     Empty => ()
-    Node(value, left, right) => {
+    Node(value, _left, _right) => {
       proof_assert 0 < count(h, value)
       proof_assert all_ge(value, h)
     }

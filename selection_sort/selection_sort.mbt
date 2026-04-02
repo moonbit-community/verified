@@ -2,7 +2,7 @@
 pub fn sort(
   arr : FixedArray[Int],
 ) -> Int where {
-  proof_ensure: result => sorted_desc(arr),
+  proof_ensure: result => result == 0 && sorted_desc(arr),
 } {
   let n = arr.length()
   for i = 0; i < n; {

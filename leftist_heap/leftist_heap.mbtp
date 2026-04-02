@@ -6,7 +6,7 @@ fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
 fn size_model(h : Heap) -> Int {
   match h {
     Empty => 0
-    Node(v0, r0, left, right) => 1 + size_model(left) + size_model(right)
+    Node(_value, _rank, left, right) => 1 + size_model(left) + size_model(right)
   }
 }
 
@@ -24,7 +24,7 @@ fn root_once(x : Int, value : Int) -> Int {
 fn count(h : Heap, x : Int) -> Int {
   match h {
     Empty => 0
-    Node(value, rank0, left, right) =>
+    Node(value, _rank, left, right) =>
       count(left, x) + count(right, x) + root_once(x, value)
   }
 }
@@ -38,7 +38,7 @@ predicate all_ge(x : Int, h : Heap) {
 predicate non_empty(h : Heap) {
   match h {
     Empty => false
-    Node(v0, r0, l0, r1) => true
+    Node(_value, _rank, _left, _right) => true
   }
 }
 
@@ -116,7 +116,7 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
     Some(h1) =>
       match h {
         Empty => false
-        Node(value, rank0, left0, right0) =>
+        Node(value, _rank, _left, _right) =>
           heap_inv(h1) &&
           size_model(h1) + 1 == size_model(h) &&
           count(h, value) == count(h1, value) + 1 &&
@@ -130,7 +130,7 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
 predicate root_minimum_post(h : Heap) {
   match h {
     Empty => true
-    Node(value, rank0, left0, right0) => is_minimum(h, value)
+    Node(value, _rank, _left, _right) => is_minimum(h, value)
   }
 }
 
@@ -158,7 +158,7 @@ lemma size_model_nonneg(h : Heap) where {
 } {
   match h {
     Empty => ()
-    Node(value0, rank0, left0, right0) => {
+    Node(_value, _rank, left0, right0) => {
       size_model_nonneg(left0)
       size_model_nonneg(right0)
     }
@@ -172,7 +172,7 @@ lemma count_nonneg(h : Heap, x : Int) where {
 } {
   match h {
     Empty => ()
-    Node(value0, rank0, left0, right0) => {
+    Node(value0, _rank, left0, right0) => {
       count_nonneg(left0, x)
       count_nonneg(right0, x)
       proof_assert 0 <= root_once(x, value0)
@@ -294,7 +294,7 @@ lemma root_is_minimum(h : Heap) where {
 } {
   match h {
     Empty => ()
-    Node(value, stored_rank, left, right) => {
+    Node(value, _rank, _left, _right) => {
       proof_assert 0 < count(h, value)
       proof_assert all_ge(value, h)
     }
