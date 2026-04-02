@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/arreq"
+package "moonbit-community/verified/arreq"
 
 // Values
 pub fn arrays_equal(FixedArray[Int], FixedArray[Int]) -> Int

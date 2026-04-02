@@ -9,16 +9,6 @@ pub enum MinStack {
 } derive(Show)
 
 ///|
-#proof_pure
-fn min2(a : Int, b : Int) -> Int {
-  if a < b {
-    a
-  } else {
-    b
-  }
-}
-
-///|
 fn stack_size(s : MinStack) -> Int {
   match s {
     Nil => 0

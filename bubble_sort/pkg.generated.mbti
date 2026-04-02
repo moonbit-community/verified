@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/bubble_sort"
+package "moonbit-community/verified/bubble_sort"
 
 // Values
 pub fn sort(FixedArray[Int]) -> Int

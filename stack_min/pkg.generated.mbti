@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/stack_min"
+
+// Values
+pub fn empty() -> MinStack
+
+pub fn from_array(ArrayView[Int]) -> MinStack
+
+pub fn min_value(MinStack) -> Int?
+
+pub fn pop(MinStack) -> (Int, MinStack)?
+
+pub fn push(MinStack, Int) -> MinStack
+
+pub fn size(MinStack) -> Int
+
+// Errors
+
+// Types and methods
+pub enum MinStack {
+  Nil
+  Cons(Int, Int, MinStack)
+} derive(Show)
+
+// Type aliases
+
+// Traits
+

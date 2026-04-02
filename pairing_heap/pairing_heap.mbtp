@@ -13,7 +13,7 @@ fn root_once(x : Int, value : Int) -> Int {
 fn size_model(h : Heap) -> Int {
   match h {
     Empty => 0
-    Node(v0, children, n0) => 1 + list_size_model(children)
+    Node(_value, children, _size) => 1 + list_size_model(children)
   }
 }
 
@@ -29,7 +29,7 @@ fn list_size_model(xs : ChildList) -> Int {
 fn list_length_model(xs : ChildList) -> Int {
   match xs {
     Nil => 0
-    Cons(head, tail) => 1 + list_length_model(tail)
+    Cons(_, tail) => 1 + list_length_model(tail)
   }
 }
 
@@ -37,7 +37,7 @@ fn list_length_model(xs : ChildList) -> Int {
 fn count(h : Heap, x : Int) -> Int {
   match h {
     Empty => 0
-    Node(value, children, n0) => list_count(children, x) + root_once(x, value)
+    Node(value, children, _size) => list_count(children, x) + root_once(x, value)
   }
 }
 
@@ -47,11 +47,6 @@ fn list_count(xs : ChildList, x : Int) -> Int {
     Nil => 0
     Cons(head, tail) => count(head, x) + list_count(tail, x)
   }
-}
-
-///|
-predicate counts_list(xs : ChildList, h : Heap) {
-  ∀ y : Int, count(h, y) == list_count(xs, y)
 }
 
 ///|
@@ -68,7 +63,7 @@ predicate all_ge_list(x : Int, xs : ChildList) {
 predicate non_empty(h : Heap) {
   match h {
     Empty => false
-    Node(v0, children0, n0) => true
+    Node(_value, _children, _size) => true
   }
 }
 
@@ -141,7 +136,7 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
     Some(h1) =>
       match h {
         Empty => false
-        Node(value, children0, n0) =>
+        Node(value, _children, _size) =>
           heap_inv(h1) &&
           size_model(h1) + 1 == size_model(h) &&
           count(h, value) == count(h1, value) + 1 &&
@@ -152,18 +147,10 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
 }
 
 ///|
-predicate root_minimum_post(h : Heap) {
-  match h {
-    Empty => true
-    Node(value, children0, n0) => is_minimum(h, value)
-  }
-}
-
-///|
 predicate root_count_positive_post(h : Heap) {
   match h {
     Empty => true
-    Node(value, children0, n0) => 0 < count(h, value)
+    Node(value, _children, _size) => 0 < count(h, value)
   }
 }
 
@@ -186,7 +173,7 @@ lemma count_nonneg(h : Heap, x : Int) where {
 } {
   match h {
     Empty => ()
-    Node(value, children, n0) => {
+    Node(value, children, _size) => {
       list_count_nonneg(children, x)
       root_once_nonneg(x, value)
     }
@@ -214,7 +201,7 @@ lemma list_length_nonneg(xs : ChildList) where {
 } {
   match xs {
     Nil => ()
-    Cons(head, tail) => {
+    Cons(_, tail) => {
       list_length_nonneg(tail)
     }
   }
@@ -272,7 +259,7 @@ lemma root_count_positive(h : Heap) where {
 } {
   match h {
     Empty => ()
-    Node(value, children, n0) => {
+    Node(value, children, _size) => {
       list_count_nonneg(children, value)
       root_once_self(value)
       proof_assert 0 < count(h, value)

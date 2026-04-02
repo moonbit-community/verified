@@ -21,7 +21,7 @@ pub fn binary_search(
     }
   } where {
     proof_invariant: search_window(xs, i, j),
-    proof_reasoning: (
+    reasoning: (
       #| This loop narrows a bounded search window for a candidate index.
       #| The machine-checked invariant is intentionally lightweight:
       #| `search_window(xs, i, j)` records only the structural facts

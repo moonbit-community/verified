@@ -17,7 +17,7 @@ pub fn bounded_sum(
     proof_invariant: i <= xs.length(),
     proof_invariant: lo * i <= sum,
     proof_invariant: sum <= hi * i,
-    proof_reasoning: (
+    reasoning: (
       #| After processing the first `i` elements, `sum` is the prefix total and
       #| is sandwiched between the extremal totals `lo * i` and `hi * i`.
       #|

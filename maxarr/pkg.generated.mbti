@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/maxarr"
+package "moonbit-community/verified/maxarr"
 
 // Values
 pub fn index_of_max(FixedArray[Int]) -> Int

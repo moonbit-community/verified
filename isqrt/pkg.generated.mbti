@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/isqrt"
+package "moonbit-community/verified/isqrt"
 
 // Values
 pub fn isqrt(Int) -> Int

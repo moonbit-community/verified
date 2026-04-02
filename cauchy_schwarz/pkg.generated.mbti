@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/cauchy_schwarz"
+package "moonbit-community/verified/cauchy_schwarz"
 
 // Values
 pub fn cauchy_schwarz_gap(FixedArray[Int], FixedArray[Int]) -> Int

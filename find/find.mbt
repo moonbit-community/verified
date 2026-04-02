@@ -14,7 +14,7 @@ pub fn find(
     proof_invariant: 0 <= i,
     proof_invariant: i <= xs.length(),
     proof_invariant: found == -1 || (in_bounds(xs, found) && xs[found] == key),
-    proof_reasoning: (
+    reasoning: (
       #| `found` is either the sentinel `-1` meaning “no witness recorded yet”
       #| or a concrete in-bounds index whose array entry equals `key`.
       #| The invariant deliberately proves soundness of the witness, not

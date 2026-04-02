@@ -42,7 +42,7 @@ fn bitmap_rank(
     proof_invariant: 0 <= j,
     proof_invariant: j <= idx,
     proof_invariant: acc == rank_value(bitmap, j, 0),
-    proof_reasoning: (
+    reasoning: (
       #| `acc` is the concrete running count of set bits in the prefix
       #| `[0, j)`, while `rank_value(bitmap, j, 0)` is the abstract set-based
       #| definition of the same quantity.
@@ -142,7 +142,7 @@ pub fn SparseArray::add(
     proof_invariant: 0 <= i,
     proof_invariant: i <= pos,
     proof_invariant: add_prefix_ok(old_data, new_data, pos, i),
-    proof_reasoning: (
+    reasoning: (
       #| This loop copies the unchanged prefix `[0, pos)` into the larger array.
       #| `add_prefix_ok` records exactly which prefix entries already agree with
       #| the old data while reserving one extra slot for insertion.
@@ -165,7 +165,7 @@ pub fn SparseArray::add(
     proof_invariant: pos <= i,
     proof_invariant: i <= old_len,
     proof_invariant: add_fill_ok(old_data, new_data, pos, value, i),
-    proof_reasoning: (
+    reasoning: (
       #| After writing `new_data[pos] = value`, the remaining task is to shift
       #| the old suffix `[pos, old_len)` one position to the right.
       #|
@@ -215,7 +215,7 @@ pub fn SparseArray::replace(
     proof_invariant: 0 <= i,
     proof_invariant: i <= old_len,
     proof_invariant: replace_prefix_ok(old_data, new_data, pos, value, i),
-    proof_reasoning: (
+    reasoning: (
       #| Replacement keeps the bitmap and array length unchanged; only the slot
       #| at `pos` should differ. We initialize `new_data[pos]` with `value`
       #| before the loop and then copy every other position from the old array.
@@ -264,7 +264,7 @@ pub fn SparseArray::remove(
       proof_invariant: 0 <= i,
       proof_invariant: i <= pos,
       proof_invariant: remove_prefix_ok(old_data, new_data, pos, i),
-      proof_reasoning: (
+      reasoning: (
         #| Removing an entry first copies the untouched prefix `[0, pos)` into
         #| the smaller array. `remove_prefix_ok` records that the copied prefix is
         #| already identical to the old one.
@@ -284,7 +284,7 @@ pub fn SparseArray::remove(
       proof_invariant: pos <= i,
       proof_invariant: i <= old_len - 1,
       proof_invariant: remove_fill_ok(old_data, new_data, pos, i),
-      proof_reasoning: (
+      reasoning: (
         #| This second loop closes the gap left by the removed entry. For the
         #| processed range `[pos, i)`, `remove_fill_ok` says every new slot `k`
         #| already contains the old value from `k + 1`.

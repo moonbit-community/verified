@@ -12,7 +12,7 @@ fn root_once(x : Int, value : Int) -> Int {
 fn count(s : MinStack, x : Int) -> Int {
   match s {
     Nil => 0
-    Cons(value, min0, tail) => count(tail, x) + root_once(x, value)
+    Cons(value, _min, tail) => count(tail, x) + root_once(x, value)
   }
 }
 
@@ -25,7 +25,7 @@ predicate all_ge(x : Int, s : MinStack) {
 predicate non_empty(s : MinStack) {
   match s {
     Nil => false
-    Cons(value, min0, tail) => true
+    Cons(_value, _min, _tail) => true
   }
 }
 
@@ -33,7 +33,7 @@ predicate non_empty(s : MinStack) {
 predicate stack_inv(s : MinStack) {
   match s {
     Nil => true
-    Cons(value, stored_min, tail) =>
+    Cons(_value, stored_min, tail) =>
       stack_inv(tail) &&
       0 < count(s, stored_min) &&
       all_ge(stored_min, s)
@@ -84,7 +84,7 @@ lemma count_nonneg(s : MinStack, x : Int) where {
 } {
   match s {
     Nil => ()
-    Cons(value0, min0, tail0) => {
+    Cons(value0, _min, tail0) => {
       count_nonneg(tail0, x)
       proof_assert 0 <= root_once(x, value0)
     }

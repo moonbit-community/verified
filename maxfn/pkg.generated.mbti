@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/maxfn"
+package "moonbit-community/verified/maxfn"
 
 // Values
 pub fn max(Int, Int) -> Int

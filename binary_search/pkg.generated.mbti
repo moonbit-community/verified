@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/binary_search"
+package "moonbit-community/verified/binary_search"
 
 // Values
 pub fn binary_search(FixedArray[Int], Int) -> Int?

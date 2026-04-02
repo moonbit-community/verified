@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/count"
+package "moonbit-community/verified/count"
 
 // Values
 pub fn count_nonneg(FixedArray[Int]) -> Int

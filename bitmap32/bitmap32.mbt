@@ -1,7 +1,4 @@
 ///|
-using @bv32 {type BV32}
-
-///|
 using @fset {type Fset}
 
 ///|

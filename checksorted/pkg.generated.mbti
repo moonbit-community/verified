@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/prove/checksorted"
+package "moonbit-community/verified/checksorted"
 
 // Values
 pub fn check_sorted(FixedArray[Int]) -> Int

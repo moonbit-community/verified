@@ -1,8 +1,8 @@
 ///|
-fn elements(t : Tree) -> Fset[Int] {
-  match t {
+fn Tree::model(self : Tree) -> Fset[Int] {
+  match self {
     Empty => @fset.fset_empty()
-    Node(l, x, r, _) => elements(l).union(elements(r)).add(x)
+    Node(l, x, r, _) => l.model().union(r.model()).add(x)
   }
 }
 
@@ -37,7 +37,7 @@ predicate avl_inv(t : Tree) {
     Node(l, x, r, h) =>
       avl_inv(l) &&
       avl_inv(r) &&
-      all_lt(elements(l), x) && all_gt(x, elements(r)) &&
+      all_lt(l.model(), x) && all_gt(x, r.model()) &&
       h == 1 + max2(height(l), height(r)) &&
       -1 <= height(l) - height(r) &&
       height(l) - height(r) <= 1
@@ -48,7 +48,7 @@ predicate avl_inv(t : Tree) {
 predicate balance_pre(l : Tree, x : Int, r : Tree) {
   avl_inv(l) &&
   avl_inv(r) &&
-  all_lt(elements(l), x) && all_gt(x, elements(r)) &&
+  all_lt(l.model(), x) && all_gt(x, r.model()) &&
   -2 <= height(l) - height(r) &&
   height(l) - height(r) <= 2
 }
@@ -79,7 +79,7 @@ predicate right_double_case(r : Tree) {
 
 ///|
 predicate balance_elements_post(l : Tree, x : Int, r : Tree, result : Tree) {
-  elements(result).eq(elements(l).union(elements(r)).add(x))
+  result.model().eq(l.model().union(r.model()).add(x))
 }
 
 predicate balance_height_upper_post(l : Tree, r : Tree, result : Tree) {
@@ -99,7 +99,7 @@ predicate balance_height_exact_post(l : Tree, r : Tree, result : Tree) {
 
 ///|
 predicate insert_elements_post(x : Int, t : Tree, result : Tree) {
-  elements(result).eq(elements(t).add(x))
+  result.model().eq(t.model().add(x))
 }
 
 ///|
@@ -117,10 +117,10 @@ predicate remove_min_post(t : Tree, result : (Int, Tree)) {
   match result {
     (x, t1) =>
       avl_inv(t1) &&
-      elements(t).mem(x) &&
-      elements(t).eq(elements(t1).add(x)) &&
+      t.model().mem(x) &&
+      t.model().eq(t1.model().add(x)) &&
       elements_subset(t1, t) &&
-      all_gt(x, elements(t1)) &&
+      all_gt(x, t1.model()) &&
       height(t1) <= height(t) &&
       height(t) <= height(t1) + 1
   }
@@ -128,7 +128,7 @@ predicate remove_min_post(t : Tree, result : (Int, Tree)) {
 
 ///|
 predicate delete_elements_post(x : Int, t : Tree, result : Tree) {
-  elements(result).eq(elements(t).remove(x))
+  result.model().eq(t.model().remove(x))
 }
 
 ///|
@@ -168,22 +168,22 @@ lemma height_nonneg_lemma(t : Tree) where {
 
 ///|
 predicate elements_subset(t1 : Tree, t2 : Tree) {
-  ∀ y : Int, elements(t1).mem(y) → elements(t2).mem(y)
+  ∀ y : Int, t1.model().mem(y) → t2.model().mem(y)
 }
 
 ///|
 lemma elements_subset_all_lt(t1 : Tree, t2 : Tree, x : Int) where {
   proof_require: elements_subset(t1, t2),
-  proof_require: all_lt(elements(t2), x),
-  proof_ensure: all_lt(elements(t1), x),
+  proof_require: all_lt(t2.model(), x),
+  proof_ensure: all_lt(t1.model(), x),
 } {
 }
 
 ///|
 lemma elements_subset_all_gt(x : Int, t1 : Tree, t2 : Tree) where {
   proof_require: elements_subset(t1, t2),
-  proof_require: all_gt(x, elements(t2)),
-  proof_ensure: all_gt(x, elements(t1)),
+  proof_require: all_gt(x, t2.model()),
+  proof_ensure: all_gt(x, t1.model()),
 } {
 }
 
