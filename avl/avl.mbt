@@ -48,12 +48,12 @@ fn mk(
 ) -> Tree where {
   proof_require: avl_inv(l),
   proof_require: avl_inv(r),
-  proof_require: all_lt(elements(l), x),
-  proof_require: all_gt(x, elements(r)),
+  proof_require: all_lt(l.model(), x),
+  proof_require: all_gt(x, r.model()),
   proof_require: balanced_heights(l, r),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => {
-    elements(result).eq(elements(l).union(elements(r)).add(x))
+    result.model().eq(l.model().union(r.model()).add(x))
   },
   proof_ensure: result => mk_height_post(l, r, result),
 } {
@@ -103,37 +103,38 @@ fn balance_left_double(
       match lr {
         Empty => panic()
         Node(lrl, lrx, lrr, _) => {
-          proof_assert elements(l).mem(lrx)
+          proof_assert l.model().mem(lrx)
           proof_assert lx < lrx
           proof_assert lrx < x
-          proof_assert all_gt(lrx, elements(r))
+          proof_assert all_gt(lrx, r.model())
           proof_assert elements_subset(lr, l)
-          proof_assert all_lt(elements(lr), x)
+          proof_assert all_lt(lr.model(), x)
           proof_assert -1 <= height(ll) - height(lrl) &&
             height(ll) - height(lrl) <= 1
           proof_assert elements_subset(lrl, lr)
-          proof_assert all_gt(lx, elements(lrl))
-          proof_assert all_lt(elements(ll), lx) && all_gt(lx, elements(lrl))
+          proof_assert all_gt(lx, lrl.model())
+          proof_assert all_lt(ll.model(), lx) && all_gt(lx, lrl.model())
           let nl = mk(ll, lx, lrl)
-          proof_assert elements(nl).eq(
-            elements(ll).union(elements(lrl)).add(lx),
+          proof_assert nl.model().eq(
+            ll.model().union(lrl.model()).add(lx),
           )
           proof_assert height(nl) == 1 + max2(height(ll), height(lrl))
           proof_assert elements_subset(lrr, lr)
-          proof_assert all_lt(elements(lrr), x)
-          proof_assert all_gt(x, elements(r))
+          proof_assert all_lt(lrr.model(), x)
+          proof_assert all_gt(x, r.model())
           proof_assert -1 <= height(lrr) - height(r) &&
             height(lrr) - height(r) <= 1
           let nr = mk(lrr, x, r)
-          proof_assert elements(nr).eq(elements(lrr).union(elements(r)).add(x))
+          proof_assert nr.model().eq(lrr.model().union(r.model()).add(x))
           proof_assert height(nr) == 1 + max2(height(lrr), height(r))
-          proof_assert all_lt(elements(nl), lrx) && all_gt(lrx, elements(nr))
+          proof_assert all_lt(nl.model(), lrx) && all_gt(lrx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
-          proof_assert elements(nl)
-            .union(elements(nr))
+          proof_assert nl
+            .model()
+            .union(nr.model())
             .add(lrx)
-            .eq(elements(l).union(elements(r)).add(x))
+            .eq(l.model().union(r.model()).add(x))
           mk(nl, lrx, nr)
         }
       }
@@ -166,43 +167,44 @@ fn balance_right_double(
       match rl {
         Empty => panic()
         Node(rll, rlx, rlr, _) => {
-          proof_assert elements(r).mem(rlx)
+          proof_assert r.model().mem(rlx)
           proof_assert elements_subset(rl, r)
           proof_assert elements_subset(rll, rl)
           proof_assert x < rlx
           proof_assert rlx < rx
-          proof_assert all_lt(elements(l), rlx)
-          proof_assert all_gt(rlx, elements(rr))
+          proof_assert all_lt(l.model(), rlx)
+          proof_assert all_gt(rlx, rr.model())
           proof_assert -1 <= height(l) - height(rll) &&
             height(l) - height(rll) <= 1
-          proof_assert all_gt(x, elements(rl))
-          proof_assert all_lt(elements(l), x) && all_gt(x, elements(rll))
+          proof_assert all_gt(x, rl.model())
+          proof_assert all_lt(l.model(), x) && all_gt(x, rll.model())
           let nl = mk(l, x, rll)
-          proof_assert elements(nl).eq(elements(l).union(elements(rll)).add(x))
+          proof_assert nl.model().eq(l.model().union(rll.model()).add(x))
           proof_assert elements_subset(rlr, rl)
           proof_assert -1 <= height(rlr) - height(rr) &&
             height(rlr) - height(rr) <= 1
-          proof_assert all_lt(elements(rlr), rx) && all_gt(rx, elements(rr))
+          proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
-          proof_assert elements(nr).eq(
-            elements(rlr).union(elements(rr)).add(rx),
+          proof_assert nr.model().eq(
+            rlr.model().union(rr.model()).add(rx),
           )
-          proof_assert all_lt(elements(nl), rlx) && all_gt(rlx, elements(nr))
+          proof_assert all_lt(nl.model(), rlx) && all_gt(rlx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
           proof_assert double_rotation_eq_rl(
             x,
             rlx,
             rx,
-            elements(l),
-            elements(rll),
-            elements(rlr),
-            elements(rr),
+            l.model(),
+            rll.model(),
+            rlr.model(),
+            rr.model(),
           )
-          proof_assert elements(nl)
-            .union(elements(nr))
+          proof_assert nl
+            .model()
+            .union(nr.model())
             .add(rlx)
-            .eq(elements(l).union(elements(r)).add(x))
+            .eq(l.model().union(r.model()).add(x))
           mk(nl, rlx, nr)
         }
       }
@@ -233,27 +235,30 @@ fn balance_left_single(
   match l {
     Empty => panic()
     Node(ll, lx, lr, _) => {
-      proof_assert elements(l).eq(elements(ll).union(elements(lr)).add(lx))
+      proof_assert l.model().eq(ll.model().union(lr.model()).add(lx))
       proof_assert lx < x
-      proof_assert all_gt(lx, elements(r))
+      proof_assert all_gt(lx, r.model())
       proof_assert elements_subset(lr, l)
-      proof_assert all_lt(elements(lr), x)
-      proof_assert -1 <= height(lr) - height(r) && height(lr) - height(r) <= 1
-      proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
+      proof_assert all_lt(lr.model(), x)
+      proof_assert -1 <= height(lr) - height(r) &&
+        height(lr) - height(r) <= 1
+      proof_assert all_lt(lr.model(), x) && all_gt(x, r.model())
       let nr = mk(lr, x, r)
-      proof_assert elements(nr).eq(elements(lr).union(elements(r)).add(x))
-      proof_assert -1 <= height(ll) - height(nr) && height(ll) - height(nr) <= 1
+      proof_assert nr.model().eq(lr.model().union(r.model()).add(x))
+      proof_assert -1 <= height(ll) - height(nr) &&
+        height(ll) - height(nr) <= 1
       proof_assert single_rotation_eq(
         lx,
         x,
-        elements(ll),
-        elements(lr),
-        elements(r),
+        ll.model(),
+        lr.model(),
+        r.model(),
       )
-      proof_assert elements(ll)
-        .union(elements(nr))
+      proof_assert ll
+        .model()
+        .union(nr.model())
         .add(lx)
-        .eq(elements(l).union(elements(r)).add(x))
+        .eq(l.model().union(r.model()).add(x))
       mk(ll, lx, nr)
     }
   }
@@ -282,27 +287,30 @@ fn balance_right_single(
   match r {
     Empty => panic()
     Node(rl, rx, rr, _) => {
-      proof_assert elements(r).eq(elements(rl).union(elements(rr)).add(rx))
+      proof_assert r.model().eq(rl.model().union(rr.model()).add(rx))
       proof_assert x < rx
-      proof_assert all_lt(elements(l), rx)
+      proof_assert all_lt(l.model(), rx)
       proof_assert elements_subset(rl, r)
-      proof_assert all_gt(x, elements(rl))
-      proof_assert -1 <= height(l) - height(rl) && height(l) - height(rl) <= 1
-      proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
+      proof_assert all_gt(x, rl.model())
+      proof_assert -1 <= height(l) - height(rl) &&
+        height(l) - height(rl) <= 1
+      proof_assert all_lt(l.model(), x) && all_gt(x, rl.model())
       let nl = mk(l, x, rl)
-      proof_assert elements(nl).eq(elements(l).union(elements(rl)).add(x))
-      proof_assert -1 <= height(nl) - height(rr) && height(nl) - height(rr) <= 1
+      proof_assert nl.model().eq(l.model().union(rl.model()).add(x))
+      proof_assert -1 <= height(nl) - height(rr) &&
+        height(nl) - height(rr) <= 1
       proof_assert single_rotation_eq(
         x,
         rx,
-        elements(l),
-        elements(rl),
-        elements(rr),
+        l.model(),
+        rl.model(),
+        rr.model(),
       )
-      proof_assert elements(nl)
-        .union(elements(rr))
+      proof_assert nl
+        .model()
+        .union(rr.model())
         .add(rx)
-        .eq(elements(l).union(elements(r)).add(x))
+        .eq(l.model().union(r.model()).add(x))
       mk(nl, rx, rr)
     }
   }
@@ -389,23 +397,23 @@ fn remove_min(
           let (m, l1) = remove_min(l)
           proof_assert remove_min_post(l, (m, l1))
           proof_assert avl_inv(l1)
-          proof_assert elements(l).mem(m)
-          proof_assert elements(l).eq(elements(l1).add(m))
+          proof_assert l.model().mem(m)
+          proof_assert l.model().eq(l1.model().add(m))
           proof_assert elements_subset(l1, l)
-          proof_assert all_gt(m, elements(l1))
+          proof_assert all_gt(m, l1.model())
           proof_assert elements_subset(l, t)
           proof_assert elements_subset(l1, t)
           proof_assert m < y
-          proof_assert all_gt(m, elements(r))
+          proof_assert all_gt(m, r.model())
           proof_assert balance_pre(l1, y, r)
           let t1 = balance(l1, y, r)
-          proof_assert all_gt(m, elements(l1).union(elements(r)))
-          proof_assert all_gt(m, elements(t1))
+          proof_assert all_gt(m, l1.model().union(r.model()))
+          proof_assert all_gt(m, t1.model())
           proof_assert height(l1) <= height(l)
           proof_assert height(l) <= height(l1) + 1
           proof_assert height(t1) <= height(t)
           proof_assert height(t) <= height(t1) + 1
-          proof_assert elements(t).eq(elements(t1).add(m))
+          proof_assert t.model().eq(t1.model().add(m))
           proof_assert elements_subset(t1, t)
           proof_assert remove_min_post(t, (m, t1))
           (m, t1)
@@ -480,8 +488,8 @@ pub fn delete(
         let l1 = delete(x, l)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert elements(t1).eq(
-          elements(l).remove(x).union(elements(r)).add(y),
+        proof_assert t1.model().eq(
+          l.model().remove(x).union(r.model()).add(y),
         )
         proof_assert delete_elements_post(x, t, t1)
         t1
@@ -489,8 +497,8 @@ pub fn delete(
         let r1 = delete(x, r)
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert elements(t1).eq(
-          elements(l).union(elements(r).remove(x)).add(y),
+        proof_assert t1.model().eq(
+          l.model().union(r.model().remove(x)).add(y),
         )
         proof_assert delete_elements_post(x, t, t1)
         t1
@@ -503,7 +511,7 @@ pub fn delete(
           Node(_, _, _, _) => {
             let (s, r1) = remove_min(r)
             proof_assert y < s
-            proof_assert all_lt(elements(l), s)
+            proof_assert all_lt(l.model(), s)
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert delete_elements_post(x, t, t1)
