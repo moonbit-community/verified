@@ -1,3 +1,7 @@
 import {
   "moonbit-community/verified/fset",
 }
+
+options(
+  "proof-enabled": true,
+)

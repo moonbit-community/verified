@@ -1,14 +1,100 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/bitmap32"
 
+import {
+  "moonbit-community/verified/fset",
+}
+
 // Values
 pub fn bitmap_add(UInt, Int) -> UInt
 
+pub fn bitmap_add_post(UInt, Int, UInt) -> Bool
+
+pub fn bitmap_add_preserves_other(UInt, Int, UInt, Int) -> Unit
+
+pub fn bitmap_add_sets_idx(UInt, Int, UInt) -> Unit
+
 pub fn bitmap_remove(UInt, Int) -> UInt
+
+pub fn bitmap_remove_post(UInt, Int, UInt) -> Bool
+
+pub fn count_add_one(UInt, Int, UInt) -> Unit
+
+pub fn count_remove_one(UInt, Int, UInt) -> Unit
+
+pub fn count_value(UInt, Int) -> Int
+
+pub fn domain(UInt) -> @fset.Fset[Int]
+
+pub fn domain_add_eq(UInt, Int, UInt) -> Unit
+
+pub fn domain_count_value(UInt) -> Unit
+
+pub fn domain_remove_eq(UInt, Int, UInt) -> Unit
+
+pub fn empty_bitmap_inv(UInt) -> Bool
+
+pub fn empty_bitmap_mem_false(UInt, Int) -> Unit
+
+pub fn empty_domain(UInt) -> Unit
+
+pub fn fset_add_cardinal_absent_local(@fset.Fset[Int], Int) -> Unit
+
+pub fn fset_remove_cardinal_present_local(@fset.Fset[Int], Int) -> Unit
+
+pub fn mem_value(UInt, Int) -> Bool
+
+pub fn prefix_domain(UInt, Int) -> @fset.Fset[Int]
+
+pub fn prefix_domain_monotone(UInt, Int, Int) -> Unit
+
+pub fn prefix_domain_step_absent(UInt, Int) -> Unit
+
+pub fn prefix_domain_step_present(UInt, Int) -> Unit
+
+pub fn prefix_domain_subset(UInt, Int) -> Unit
+
+pub fn rank_add_after(UInt, Int, UInt, Int) -> Unit
+
+pub fn rank_add_before(UInt, Int, UInt, Int) -> Unit
+
+pub fn rank_count_bounds(UInt, Int) -> Unit
+
+pub fn rank_distinct_present(UInt, Int, Int) -> Unit
+
+pub fn rank_remove_after(UInt, Int, UInt, Int) -> Unit
+
+pub fn rank_remove_before(UInt, Int, UInt, Int) -> Unit
+
+pub fn rank_step_absent(UInt, Int) -> Unit
+
+pub fn rank_step_present(UInt, Int) -> Unit
+
+pub fn rank_strict_before(UInt, Int, Int) -> Unit
+
+pub fn rank_value(UInt, Int, Int) -> Int
+
+pub fn singleton_bitmap_from_empty(UInt, Int, UInt) -> Unit
+
+pub fn singleton_bitmap_inv(UInt, Int) -> Bool
+
+pub fn singleton_count_one(UInt, Int) -> Unit
+
+pub fn singleton_domain(UInt, Int) -> Unit
+
+pub fn singleton_mem_is_idx(UInt, Int, Int) -> Unit
+
+pub fn singleton_rank_zero(UInt, Int) -> Unit
 
 pub fn uint_bit0(UInt) -> Bool
 
 pub fn uint_lsr(UInt, Int) -> UInt
+
+pub fn uint_lsr_post(UInt, Int, UInt) -> Bool
+
+pub fn valid_idx(Int) -> Bool
+
+pub fn valid_prefix_idx(Int) -> Bool
 
 pub fn zero_uint() -> UInt
 

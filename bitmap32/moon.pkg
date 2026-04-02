@@ -2,3 +2,7 @@ import {
   "moonbit-community/verified/bv32",
   "moonbit-community/verified/fset",
 }
+
+options(
+  "proof-enabled": true,
+)

@@ -2,11 +2,23 @@
 package "moonbit-community/verified/fset"
 
 // Values
+pub fn fset_empty() -> Fset[Int]
+
+pub fn fset_interval(Int, Int) -> Fset[Int]
 
 // Errors
 
 // Types and methods
 pub type Fset[T]
+pub fn Fset::add(Self[Int], Int) -> Self[Int]
+pub fn Fset::cardinal(Self[Int]) -> Int
+pub fn Fset::empty() -> Self[Int]
+pub fn Fset::eq(Self[Int], Self[Int]) -> Bool
+pub fn Fset::filter(Self[Int], (Int) -> Bool) -> Self[Int]
+pub fn Fset::mem(Self[Int], Int) -> Bool
+pub fn Fset::remove(Self[Int], Int) -> Self[Int]
+pub fn Fset::subset(Self[Int], Self[Int]) -> Bool
+pub fn Fset::union(Self[Int], Self[Int]) -> Self[Int]
 
 // Type aliases
 
