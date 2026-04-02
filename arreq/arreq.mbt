@@ -16,7 +16,7 @@ pub fn arrays_equal(
     proof_invariant: i <= xs.length(),
     proof_invariant: ok == 0 || ok == 1,
     proof_invariant: eq_upto_when_ok(xs, ys, ok, i),
-    reasoning: (
+    proof_reasoning: (
       #| The flag `ok` summarizes whether all inspected pairs have matched so far.
       #| The quantified invariant says: if `ok == 1`, then the prefix
       #| `xs[0 .. i)` and `ys[0 .. i)` is elementwise equal.

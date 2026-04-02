@@ -21,7 +21,7 @@ pub fn lower_bound(
     proof_invariant: hi <= xs.length(),
     proof_invariant: all_less_before(xs, key, lo),
     proof_invariant: all_geq_from(xs, key, hi),
-    reasoning: (
+    proof_reasoning: (
       #| We maintain a boundary search window `[lo, hi)` with a precise meaning:
       #| every index before `lo` is already proved to store a value `< key`,
       #| and every index from `hi` onward is already proved to store a value

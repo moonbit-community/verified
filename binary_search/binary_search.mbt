@@ -24,7 +24,7 @@ pub fn binary_search(
     proof_invariant: all_less_before(xs, key, i),
     proof_invariant: all_greater_from(xs, key, j),
     proof_yield: res => binary_search_ok(xs, key, res),
-    reasoning: (
+    proof_reasoning: (
       #| The loop maintains a candidate window `[i, j)`:
       #| every index before `i` is known to hold a value `< key`, and every
       #| index from `j` onward is known to hold a value `> key`.

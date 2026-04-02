@@ -19,7 +19,7 @@ pub fn isqrt(
     proof_invariant: lo < hi,
     proof_invariant: lo * lo <= n,
     proof_invariant: n < hi * hi,
-    reasoning: (
+    proof_reasoning: (
       #| The loop keeps the true integer square root trapped between two
       #| bracketing candidates: `lo` is always feasible because `lo * lo <= n`,
       #| while `hi` is always too large because `n < hi * hi`.

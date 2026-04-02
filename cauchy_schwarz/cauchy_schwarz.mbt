@@ -25,7 +25,7 @@ pub fn cauchy_schwarz_gap(
     proof_invariant: gap == x2 * y2 - xy * xy,
     proof_invariant: 0 <= gap,
     proof_invariant: xy * xy <= x2 * y2,
-    reasoning: (
+    proof_reasoning: (
       #| The loop accumulates the prefix sums
       #|   `x2 = Σ x_k^2`, `y2 = Σ y_k^2`, and `xy = Σ x_k y_k`,
       #| while `gap` stores the current determinant `x2 * y2 - xy * xy`.
