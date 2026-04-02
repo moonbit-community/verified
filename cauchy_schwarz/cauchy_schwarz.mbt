@@ -25,5 +25,27 @@ pub fn cauchy_schwarz_gap(
     proof_invariant: gap == x2 * y2 - xy * xy,
     proof_invariant: 0 <= gap,
     proof_invariant: xy * xy <= x2 * y2,
+    proof_reasoning: (
+      #| The loop accumulates the prefix sums
+      #|   `x2 = Σ x_k^2`, `y2 = Σ y_k^2`, and `xy = Σ x_k y_k`,
+      #| while `gap` stores the current determinant `x2 * y2 - xy * xy`.
+      #|
+      #| Two invariants work together:
+      #|   - `gap == x2 * y2 - xy * xy` keeps the executable variable tied to
+      #|     the exact algebraic quantity being returned.
+      #|   - `xy * xy <= x2 * y2` is the inequality that actually carries the
+      #|     nonnegativity argument from one prefix to the next.
+      #|
+      #| On each step we extend the prefix by one pair `(x, y)`. The lemma
+      #| `cauchy_step_nonneg` proves that the updated determinant stays
+      #| nonnegative. The explicit `proof_assert 0 <= new_gap` records that
+      #| one-step induction for the next prefix.
+      #|
+      #| The measure `xs.length() - i` decreases as `i` advances, and
+      #| `same_length(xs, ys)` guarantees the paired accesses stay aligned.
+      #|
+      #| At exit, `gap` is the full-array determinant and the invariant
+      #| `0 <= gap` is exactly the postcondition.
+    ),
   }
 }

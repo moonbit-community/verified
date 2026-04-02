@@ -17,5 +17,24 @@ pub fn count_nonneg(
     proof_invariant: i <= xs.length(),
     proof_invariant: 0 <= count,
     proof_invariant: count <= i,
+    proof_reasoning: (
+      #| This proof only tracks bounds on the accumulator, not an exact counting
+      #| predicate. At each loop boundary, `count` is known to be nonnegative
+      #| and no larger than the processed prefix length `i`.
+      #|
+      #| Initialization holds at `i = 0`, `count = 0`.
+      #|
+      #| Each step inspects `xs[i]`:
+      #|   - If `xs[i] >= 0`, incrementing `count` preserves `0 <= count` and
+      #|     still keeps `count <= i + 1`.
+      #|   - Otherwise leaving `count` unchanged preserves the same bounds for
+      #|     the larger prefix.
+      #|
+      #| In both branches `i` increases by one, so the measure `xs.length() - i`
+      #| strictly decreases.
+      #|
+      #| At exit `i == xs.length()`, those same numeric bounds become exactly
+      #| the postcondition `count_bounded(xs, count)`.
+    ),
   }
 }

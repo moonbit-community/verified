@@ -18,7 +18,7 @@ test "duplicates survive delete" {
   inspect(find_min(h), content="Some(3)")
   let h1 = delete_min(h)
   inspect(h1, content="Some(Node(3, Cons(Node(5, Nil, 1), Nil), 2))")
-  inspect(h1.map(fn (x) { find_min(x) }), content="Some(Some(3))")
+  inspect(h1.map(fn(x) { find_min(x) }), content="Some(Some(3))")
 }
 
 ///|

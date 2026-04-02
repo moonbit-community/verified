@@ -32,6 +32,15 @@ pub fn empty() -> Tree {
 }
 
 ///|
+/// Canonical node construction for the AVL invariant.
+///
+/// The proof obligations here are the spine of the whole file:
+/// `l` and `r` must already be valid AVL trees, every key in `l` must stay
+/// below `x`, every key in `r` must stay above `x`, and the heights must be
+/// close enough that the new node can be formed without rebalancing. The
+/// returned height is computed directly from the children, so later proofs can
+/// treat `mk` as the single place where structure, ordering, and height are
+/// recombined.
 fn mk(
   l : Tree,
   x : Int,
@@ -67,6 +76,14 @@ pub fn contains(x : Int, t : Tree) -> Bool {
 }
 
 ///|
+/// Double rotation on a left-heavy tree when the left child is right-heavy.
+///
+/// The proof split matches the standard AVL case analysis: first expose the
+/// left child, then the left-right grandchild, and use the stored ordering and
+/// height facts to rebuild two balanced subtrees before the final root rebuild.
+/// The intermediate `mk` calls isolate the local rotations; the final equality
+/// proof shows that the rotated tree preserves exactly the same element set as
+/// the pre-rotation configuration.
 fn balance_left_double(
   l : Tree,
   x : Int,
@@ -124,6 +141,12 @@ fn balance_left_double(
 }
 
 ///|
+/// Double rotation on a right-heavy tree when the right child is left-heavy.
+///
+/// This is the mirror image of the left-double case. The proof discharges the
+/// same three obligations in mirrored order: preserve the in-order partition,
+/// rebuild balanced children around the inner grandchild, and then show the
+/// final tree keeps both the AVL height bound and the exact element set.
 fn balance_right_double(
   l : Tree,
   x : Int,
@@ -187,6 +210,13 @@ fn balance_right_double(
 }
 
 ///|
+/// Single rotation for the left-heavy but not left-double case.
+///
+/// The non-double assumption tells us the left child's right subtree is not
+/// taller than its left subtree, so one rotation is enough. The proof first
+/// rebuilds the right subtree around `x`, then uses the cached height relation
+/// to show the new root is balanced and preserves exactly the same set of
+/// elements as the unrebalanced node.
 fn balance_left_single(
   l : Tree,
   x : Int,
@@ -208,13 +238,11 @@ fn balance_left_single(
       proof_assert all_gt(lx, elements(r))
       proof_assert elements_subset(lr, l)
       proof_assert all_lt(elements(lr), x)
-      proof_assert -1 <= height(lr) - height(r) &&
-        height(lr) - height(r) <= 1
+      proof_assert -1 <= height(lr) - height(r) && height(lr) - height(r) <= 1
       proof_assert all_lt(elements(lr), x) && all_gt(x, elements(r))
       let nr = mk(lr, x, r)
       proof_assert elements(nr).eq(elements(lr).union(elements(r)).add(x))
-      proof_assert -1 <= height(ll) - height(nr) &&
-        height(ll) - height(nr) <= 1
+      proof_assert -1 <= height(ll) - height(nr) && height(ll) - height(nr) <= 1
       proof_assert single_rotation_eq(
         lx,
         x,
@@ -232,6 +260,12 @@ fn balance_left_single(
 }
 
 ///|
+/// Single rotation for the right-heavy but not right-double case.
+///
+/// This is the symmetric one-rotation repair. The proof structure is the same
+/// as the left-single case, but with the subtrees swapped: rebuild the left
+/// child around `x`, use the height inequality to justify the new root, and
+/// finish by rewriting the element-set equation back to the original tree.
 fn balance_right_single(
   l : Tree,
   x : Int,
@@ -253,13 +287,11 @@ fn balance_right_single(
       proof_assert all_lt(elements(l), rx)
       proof_assert elements_subset(rl, r)
       proof_assert all_gt(x, elements(rl))
-      proof_assert -1 <= height(l) - height(rl) &&
-        height(l) - height(rl) <= 1
+      proof_assert -1 <= height(l) - height(rl) && height(l) - height(rl) <= 1
       proof_assert all_lt(elements(l), x) && all_gt(x, elements(rl))
       let nl = mk(l, x, rl)
       proof_assert elements(nl).eq(elements(l).union(elements(rl)).add(x))
-      proof_assert -1 <= height(nl) - height(rr) &&
-        height(nl) - height(rr) <= 1
+      proof_assert -1 <= height(nl) - height(rr) && height(nl) - height(rr) <= 1
       proof_assert single_rotation_eq(
         x,
         rx,
@@ -277,6 +309,13 @@ fn balance_right_single(
 }
 
 ///|
+/// Rebalance a node after a child update.
+///
+/// The proof is a case split on the relative heights of `l` and `r`. If one
+/// side is too tall, we inspect the heavier child to decide between the single
+/// and double rotation lemmas; otherwise `mk` is already sufficient. This
+/// function is the bridge between recursive edits and the local AVL repair
+/// lemmas above.
 fn balance(
   l : Tree,
   x : Int,
@@ -322,6 +361,14 @@ fn balance(
 }
 
 ///|
+/// Remove and return the minimum element from a non-empty AVL tree.
+///
+/// The proof decreases on the tree shape. When the left child is empty, the
+/// root is already the minimum and the right subtree is returned unchanged.
+/// Otherwise the recursive call removes the minimum from the left branch, and
+/// the remaining proof work shows that balancing the modified left subtree with
+/// the original root preserves both the AVL invariant and the set of
+/// elements minus that minimum.
 fn remove_min(
   t : Tree,
 ) -> (Int, Tree) where {
@@ -368,6 +415,13 @@ fn remove_min(
 }
 
 ///|
+/// Insert by descending to the unique ordered position, then rebalance on the
+/// way back up.
+///
+/// The recursive proof mirrors the algorithm: recurse into the left or right
+/// subtree depending on the comparison, prove the updated child still satisfies
+/// `balance_pre`, and let `balance` restore the local invariant. The equal case
+/// is the no-op branch, so the tree is returned unchanged.
 pub fn insert(
   x : Int,
   t : Tree,
@@ -397,6 +451,14 @@ pub fn insert(
 }
 
 ///|
+/// Delete by ordered search, with a successor replacement when the node has
+/// two children.
+///
+/// The proof follows the same structural recursion as insertion, but the equal
+/// case needs a split: if the right child is empty, the left subtree already is
+/// the correct result; otherwise `remove_min` supplies the successor `s` and the
+/// remaining right subtree, after which `balance` restores AVL shape around the
+/// replacement root.
 pub fn delete(
   x : Int,
   t : Tree,
