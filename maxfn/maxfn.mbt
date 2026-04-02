@@ -1,4 +1,6 @@
 ///|
+/// The proof is the usual order case split: whichever branch wins is an upper bound and
+/// one of the inputs.
 pub fn max(
   a : Int,
   b : Int,

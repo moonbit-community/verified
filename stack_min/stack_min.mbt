@@ -1,4 +1,8 @@
 ///|
+/// A min stack caches the minimum in each cell, so the top element is enough
+/// to answer `min_value` in O(1). The proof invariant is local: every node
+/// must keep the cached minimum equal to a value that really occurs in the
+/// whole suffix beneath it.
 pub enum MinStack {
   Nil
   Cons(Int, Int, MinStack)
@@ -23,16 +27,21 @@ fn stack_size(s : MinStack) -> Int {
 }
 
 ///|
+/// Empty is valid because the invariant is vacuous on `Nil`.
 pub fn empty() -> MinStack where { proof_ensure: result => stack_inv(result) } {
   Nil
 }
 
 ///|
+/// `size` is just the structural length of the spine; it does not depend on
+/// the cached minimum fields.
 pub fn size(s : MinStack) -> Int {
   stack_size(s)
 }
 
 ///|
+/// The proof obligation here is only to read the cached minimum from the top
+/// cell and discharge that it really is the minimum for the whole stack.
 pub fn min_value(
   s : MinStack,
 ) -> Int? where {
@@ -49,6 +58,9 @@ pub fn min_value(
 }
 
 ///|
+/// Pushing only changes the new head. The old stack invariant supplies the
+/// previous minimum, and the new cache is just `min(value, old_min)` with the
+/// empty-stack case handled separately.
 pub fn push(
   s : MinStack,
   value : Int,
@@ -66,6 +78,8 @@ pub fn push(
 }
 
 ///|
+/// Popping forgets exactly one cell. The returned tail already satisfied the
+/// invariant, so the proof is a straight reuse of the existing suffix.
 pub fn pop(
   s : MinStack,
 ) -> (Int, MinStack)? where {
@@ -83,6 +97,9 @@ pub fn pop(
 }
 
 ///|
+/// Folding from right to left is the proof-friendly direction here: each
+/// `push` sees a stack that already satisfies the invariant, so the cached
+/// minimum is rebuilt incrementally.
 pub fn from_array(arr : ArrayView[Int]) -> MinStack {
   arr.rev_fold(init=Nil, (st, value) => push(st, value))
 }
