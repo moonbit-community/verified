@@ -1,12 +1,26 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/fmap"
 
+import {
+  "moonbit-community/verified/fset",
+}
+
 // Values
+pub fn fmap_empty() -> Fmap[Int, Int]
+
+pub fn fmap_mk(@fset.Fset[Int], (Int) -> Int) -> Fmap[Int, Int]
 
 // Errors
 
 // Types and methods
 pub type Fmap[K, V]
+pub fn Fmap::add(Self[Int, Int], Int, Int) -> Self[Int, Int]
+pub fn Fmap::empty() -> Self[Int, Int]
+pub fn Fmap::eq(Self[Int, Int], Self[Int, Int]) -> Bool
+pub fn Fmap::find(Self[Int, Int], Int) -> Int
+pub fn Fmap::mem(Self[Int, Int], Int) -> Bool
+pub fn Fmap::remove(Self[Int, Int], Int) -> Self[Int, Int]
+pub fn Fmap::size(Self[Int, Int]) -> Int
 
 // Type aliases
 

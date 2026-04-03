@@ -4,3 +4,7 @@ import {
   "moonbit-community/verified/fmap",
   "moonbit-community/verified/fset",
 }
+
+options(
+  "proof-enabled": true,
+)
