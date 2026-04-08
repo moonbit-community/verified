@@ -310,9 +310,9 @@ fn balance(
   proof_require: balance_pre(l, x, r),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result =>
-    !balanced_heights(l, r) ||
-    height(result) == 1 + max2(height(l), height(r)),
+  proof_ensure: result => {
+    !balanced_heights(l, r) || height(result) == 1 + max2(height(l), height(r))
+  },
   proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
   proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {

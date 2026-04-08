@@ -13,7 +13,7 @@ pub fn check_sorted(
     proof_invariant: 0 <= i,
     proof_invariant: ok == 0 || ok == 1,
     proof_invariant: adj_sorted_upto(xs, ok, i + 1),
-    reasoning: (
+    proof_reasoning: (
       #| The flag `ok` records whether every adjacent pair examined so far is in
       #| nondecreasing order. The predicate `adj_sorted_upto(xs, ok, i + 1)`
       #| packages that statement over the prefix ending at `i`.

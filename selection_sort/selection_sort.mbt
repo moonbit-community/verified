@@ -24,7 +24,7 @@ pub fn sort(
       proof_invariant: max_in_range(arr, i, j, ub),
       proof_invariant: max_index_in_range(arr, i, j, l),
       proof_invariant: ub == arr[l],
-      reasoning: (
+      proof_reasoning: (
         #| The inner scan maintains a concrete witness `l` and value `ub` such
         #| that `ub == arr[l]` and `ub` is maximal on the visited range
         #| `arr[i .. j)`.
@@ -52,7 +52,7 @@ pub fn sort(
     proof_invariant: 0 <= i,
     proof_invariant: i <= n,
     proof_invariant: prefix_dominates_suffix(arr, i),
-    reasoning: (
+    proof_reasoning: (
       #| After each iteration, the prefix `arr[0 .. i)` contains the `i`
       #| greatest elements of the array in descending order relative to the
       #| remaining suffix.

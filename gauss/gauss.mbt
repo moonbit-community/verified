@@ -14,7 +14,7 @@ pub fn sum_to(
     proof_invariant: 0 <= i,
     proof_invariant: i <= n,
     proof_invariant: sum * 2 == i * (i + 1),
-    reasoning: (
+    proof_reasoning: (
       #| The invariant states the exact closed form for the prefix sum, not just
       #| a bound: after processing `i` terms we have `2 * sum == i * (i + 1)`.
       #| That gives the proof a single algebraic target to preserve.
