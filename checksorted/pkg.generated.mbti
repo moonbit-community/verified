@@ -2,7 +2,7 @@
 package "moonbit-community/verified/checksorted"
 
 // Values
-pub fn check_sorted(FixedArray[Int]) -> Int
+pub fn[T : Compare] check_sorted(FixedArray[T]) -> Int
 
 // Errors
 

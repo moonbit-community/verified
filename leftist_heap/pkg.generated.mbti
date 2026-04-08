@@ -1,28 +1,31 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/leftist_heap"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
-pub fn delete_min(Heap) -> Heap?
+pub fn[T : Compare] delete_min(Heap[T]) -> Heap[T]?
 
-pub fn empty() -> Heap
+pub fn[T : Compare] empty() -> Heap[T]
 
-pub fn find_min(Heap) -> Int?
+pub fn[T : Compare] find_min(Heap[T]) -> T?
 
-pub fn insert(Heap, Int) -> Heap
+pub fn[T : Compare] insert(Heap[T], T) -> Heap[T]
 
-pub fn merge(Heap, Heap) -> Heap
+pub fn[T : Compare] merge(Heap[T], Heap[T]) -> Heap[T]
 
-pub fn size(Heap) -> Int
+pub fn[T] size(Heap[T]) -> Int
 
 // Errors
 
 // Types and methods
-pub enum Heap {
+pub enum Heap[T] {
   Empty
-  Node(Int, Int, Heap, Heap)
-}
+  Node(T, Int, Heap[T], Heap[T])
+} derive(@debug.Debug)
 
 // Type aliases
 
 // Traits
-

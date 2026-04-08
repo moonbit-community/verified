@@ -3,7 +3,7 @@
 fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
 
 ///|
-fn size_model(h : Heap) -> Int {
+fn[T] size_model(h : Heap[T]) -> Int {
   match h {
     Empty => 0
     Node(_value, _rank, left, right) => 1 + size_model(left) + size_model(right)
@@ -11,17 +11,17 @@ fn size_model(h : Heap) -> Int {
 }
 
 ///|
-fn merge_measure(a : Heap, b : Heap) -> Int {
+fn[T] merge_measure(a : Heap[T], b : Heap[T]) -> Int {
   size_model(a) + size_model(b)
 }
 
-fn root_once(x : Int, value : Int) -> Int {
+fn[T : Compare] root_once(x : T, value : T) -> Int {
   raw_numof(fn (i : Int) {
     i == 0 && x == value
   }, 0, 1)
 }
 
-fn count(h : Heap, x : Int) -> Int {
+fn[T : Compare] count(h : Heap[T], x : T) -> Int {
   match h {
     Empty => 0
     Node(value, _rank, left, right) =>
@@ -30,12 +30,12 @@ fn count(h : Heap, x : Int) -> Int {
 }
 
 ///|
-predicate all_ge(x : Int, h : Heap) {
-  ∀ y : Int, 0 < count(h, y) → x <= y
+predicate[T : Compare] all_ge(x : T, h : Heap[T]) {
+  ∀ y : T, 0 < count(h, y) → x <= y
 }
 
 ///|
-predicate non_empty(h : Heap) {
+predicate[T] non_empty(h : Heap[T]) {
   match h {
     Empty => false
     Node(_value, _rank, _left, _right) => true
@@ -43,7 +43,7 @@ predicate non_empty(h : Heap) {
 }
 
 ///|
-predicate heap_inv(h : Heap) {
+predicate[T : Compare] heap_inv(h : Heap[T]) {
   match h {
     Empty => true
     Node(value, stored_rank, left, right) =>
@@ -57,52 +57,48 @@ predicate heap_inv(h : Heap) {
 }
 
 ///|
-predicate counts_sum(a : Heap, b : Heap, res : Heap) {
-  ∀ y : Int, count(res, y) == count(a, y) + count(b, y)
+predicate[T : Compare] counts_sum(a : Heap[T], b : Heap[T], res : Heap[T]) {
+  ∀ y : T, count(res, y) == count(a, y) + count(b, y)
 }
 
 ///|
-predicate is_minimum(h : Heap, x : Int) {
+predicate[T : Compare] is_minimum(h : Heap[T], x : T) {
   0 < count(h, x) && all_ge(x, h)
 }
 
 ///|
-predicate make_node_post(value : Int, left : Heap, right : Heap, res : Heap) {
+predicate[T : Compare] make_node_post(value : T, left : Heap[T], right : Heap[T], res : Heap[T]) {
   heap_inv(res) &&
   non_empty(res) &&
   size_model(res) == size_model(left) + size_model(right) + 1 &&
-  count(res, value) == count(left, value) + count(right, value) + 1 &&
-  (∀ y : Int,
-    y != value →
-      count(res, y) == count(left, y) + count(right, y)) &&
+  (∀ y : T,
+    count(res, y) == count(left, y) + count(right, y) + root_once(y, value)) &&
   rank(res) == min2(rank(left), rank(right)) + 1
 }
 
 ///|
-predicate merge_post(a : Heap, b : Heap, res : Heap) {
+predicate[T : Compare] merge_post(a : Heap[T], b : Heap[T], res : Heap[T]) {
   heap_inv(res) &&
   counts_sum(a, b, res) &&
   size_model(res) == size_model(a) + size_model(b)
 }
 
 ///|
-predicate singleton_post(value : Int, res : Heap) {
+predicate[T : Compare] singleton_post(value : T, res : Heap[T]) {
   heap_inv(res) &&
   size_model(res) == 1 &&
-  count(res, value) == 1 &&
-  (∀ y : Int, y != value → count(res, y) == 0)
+  (∀ y : T, count(res, y) == root_once(y, value))
 }
 
 ///|
-predicate insert_post(h : Heap, value : Int, res : Heap) {
+predicate[T : Compare] insert_post(h : Heap[T], value : T, res : Heap[T]) {
   heap_inv(res) &&
   size_model(res) == size_model(h) + 1 &&
-  count(res, value) == count(h, value) + 1 &&
-  (∀ y : Int, y != value → count(res, y) == count(h, y))
+  (∀ y : T, count(res, y) == count(h, y) + root_once(y, value))
 }
 
 ///|
-predicate find_min_post(h : Heap, res : Option[Int]) {
+predicate[T : Compare] find_min_post(h : Heap[T], res : Option[T]) {
   match res {
     None => non_empty(h) == false
     Some(value) => is_minimum(h, value)
@@ -110,7 +106,7 @@ predicate find_min_post(h : Heap, res : Option[Int]) {
 }
 
 ///|
-predicate delete_min_post(h : Heap, res : Option[Heap]) {
+predicate[T : Compare] delete_min_post(h : Heap[T], res : Option[Heap[T]]) {
   match res {
     None => non_empty(h) == false
     Some(h1) =>
@@ -119,15 +115,14 @@ predicate delete_min_post(h : Heap, res : Option[Heap]) {
         Node(value, _rank, _left, _right) =>
           heap_inv(h1) &&
           size_model(h1) + 1 == size_model(h) &&
-          count(h, value) == count(h1, value) + 1 &&
-          (∀ y : Int, y != value → count(h, y) == count(h1, y)) &&
+          (∀ y : T, count(h, y) == count(h1, y) + root_once(y, value)) &&
           all_ge(value, h1)
       }
   }
 }
 
 ///|
-predicate root_minimum_post(h : Heap) {
+predicate[T : Compare] root_minimum_post(h : Heap[T]) {
   match h {
     Empty => true
     Node(value, _rank, _left, _right) => is_minimum(h, value)
@@ -135,7 +130,7 @@ predicate root_minimum_post(h : Heap) {
 }
 
 ///|
-lemma all_ge_weaken(x : Int, y : Int, h : Heap) where {
+lemma[T : Compare] all_ge_weaken(x : T, y : T, h : Heap[T]) where {
   proof_require: x <= y,
   proof_require: all_ge(y, h),
   proof_ensure: all_ge(x, h),
@@ -143,7 +138,7 @@ lemma all_ge_weaken(x : Int, y : Int, h : Heap) where {
 }
 
 ///|
-lemma all_ge_counts_sum(x : Int, a : Heap, b : Heap, res : Heap) where {
+lemma[T : Compare] all_ge_counts_sum(x : T, a : Heap[T], b : Heap[T], res : Heap[T]) where {
   proof_require: counts_sum(a, b, res),
   proof_require: all_ge(x, a),
   proof_require: all_ge(x, b),
@@ -152,7 +147,7 @@ lemma all_ge_counts_sum(x : Int, a : Heap, b : Heap, res : Heap) where {
 }
 
 ///|
-lemma size_model_nonneg(h : Heap) where {
+lemma[T] size_model_nonneg(h : Heap[T]) where {
   proof_decrease: h,
   proof_ensure: 0 <= size_model(h),
 } {
@@ -166,7 +161,7 @@ lemma size_model_nonneg(h : Heap) where {
 }
 
 ///|
-lemma count_nonneg(h : Heap, x : Int) where {
+lemma[T : Compare] count_nonneg(h : Heap[T], x : T) where {
   proof_decrease: h,
   proof_ensure: 0 <= count(h, x),
 } {
@@ -181,30 +176,32 @@ lemma count_nonneg(h : Heap, x : Int) where {
 }
 
 ///|
-lemma root_once_nonneg(x : Int, value : Int) where {
+lemma[T : Compare] root_once_nonneg(x : T, value : T) where {
   proof_ensure: 0 <= root_once(x, value),
 } {
 }
 
 ///|
-lemma root_once_self(value : Int) where {
+lemma[T : Compare] root_once_self(value : T) where {
   proof_ensure: 0 < root_once(value, value),
 } {
+  proof_assert value == value
+  proof_assert 0 < root_once(value, value)
 }
 
 ///|
-lemma merge_measure_nonneg(a : Heap, b : Heap) where {
+lemma[T] merge_measure_nonneg(a : Heap[T], b : Heap[T]) where {
   proof_ensure: 0 <= merge_measure(a, b),
 } {
 }
 
 ///|
-lemma merge_measure_left_decrease(
-  value : Int,
+lemma[T] merge_measure_left_decrease(
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
-  b : Heap,
+  left : Heap[T],
+  right : Heap[T],
+  b : Heap[T],
 ) where {
   proof_ensure:
     merge_measure(right, b) < merge_measure(raw_node(value, stored_rank, left, right), b),
@@ -212,12 +209,12 @@ lemma merge_measure_left_decrease(
 }
 
 ///|
-lemma merge_measure_right_decrease(
-  a : Heap,
-  value : Int,
+lemma[T] merge_measure_right_decrease(
+  a : Heap[T],
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
+  left : Heap[T],
+  right : Heap[T],
 ) where {
   proof_ensure:
     merge_measure(a, right) < merge_measure(a, raw_node(value, stored_rank, left, right)),
@@ -225,11 +222,11 @@ lemma merge_measure_right_decrease(
 }
 
 ///|
-lemma root_count_positive(
-  value : Int,
+lemma[T : Compare] root_count_positive(
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
+  left : Heap[T],
+  right : Heap[T],
 ) where {
   proof_ensure: 0 < count(raw_node(value, stored_rank, left, right), value),
 } {
@@ -242,11 +239,11 @@ lemma root_count_positive(
 }
 
 ///|
-lemma all_ge_raw_node(
-  value : Int,
+lemma[T : Compare] all_ge_raw_node(
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
+  left : Heap[T],
+  right : Heap[T],
 ) where {
   proof_require: all_ge(value, left),
   proof_require: all_ge(value, right),
@@ -255,14 +252,14 @@ lemma all_ge_raw_node(
 }
 
 ///|
-lemma merge_post_make_node_left(
-  value : Int,
+lemma[T : Compare] merge_post_make_node_left(
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
-  other : Heap,
-  merged : Heap,
-  res : Heap,
+  left : Heap[T],
+  right : Heap[T],
+  other : Heap[T],
+  merged : Heap[T],
+  res : Heap[T],
 ) where {
   proof_require: merge_post(right, other, merged),
   proof_require: make_node_post(value, left, merged, res),
@@ -271,14 +268,14 @@ lemma merge_post_make_node_left(
 }
 
 ///|
-lemma merge_post_make_node_right(
-  other : Heap,
-  value : Int,
+lemma[T : Compare] merge_post_make_node_right(
+  other : Heap[T],
+  value : T,
   stored_rank : Int,
-  left : Heap,
-  right : Heap,
-  merged : Heap,
-  res : Heap,
+  left : Heap[T],
+  right : Heap[T],
+  merged : Heap[T],
+  res : Heap[T],
 ) where {
   proof_require: merge_post(other, right, merged),
   proof_require: make_node_post(value, left, merged, res),
@@ -287,7 +284,7 @@ lemma merge_post_make_node_right(
 }
 
 ///|
-lemma root_is_minimum(h : Heap) where {
+lemma[T : Compare] root_is_minimum(h : Heap[T]) where {
   proof_require: heap_inv(h),
   proof_require: non_empty(h),
   proof_ensure: root_minimum_post(h),

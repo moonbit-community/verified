@@ -1,9 +1,9 @@
-predicate adj_sorted_upto(xs : FixedArray[Int], ok : Int, upto : Int) {
+predicate[T : Compare] adj_sorted_upto(xs : FixedArray[T], ok : Int, upto : Int) {
   ∀ k : Int, ((ok == 1) && (0 <= k) && (k + 1 < upto)) →
     xs[k] <= xs[k + 1]
 }
 
-predicate check_sorted_ok(xs : FixedArray[Int], result : Int) {
+predicate[T : Compare] check_sorted_ok(xs : FixedArray[T], result : Int) {
   ∀ k : Int, ((result == 1) && (0 <= k) && (k + 1 < xs.length())) →
     xs[k] <= xs[k + 1]
 }

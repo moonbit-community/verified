@@ -2,7 +2,7 @@
 package "moonbit-community/verified/binary_search"
 
 // Values
-pub fn binary_search(FixedArray[Int], Int) -> Int?
+pub fn[T : Compare] binary_search(FixedArray[T], T) -> Int?
 
 // Errors
 

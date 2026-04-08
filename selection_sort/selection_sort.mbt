@@ -1,6 +1,6 @@
 ///|
-pub fn sort(
-  arr : FixedArray[Int],
+pub fn[T : Compare] sort(
+  arr : FixedArray[T],
 ) -> Int where {
   proof_ensure: result => result == 0 && sorted_desc(arr),
 } {
@@ -26,7 +26,8 @@ pub fn sort(
       proof_invariant: ub == arr[l],
       proof_reasoning: (
         #| The inner scan maintains a concrete witness `l` and value `ub` such
-        #| that `ub == arr[l]` and `ub` is maximal on the visited range
+        #| that `ub` is compare-equal to `arr[l]` and `ub` is maximal on the
+        #| visited range
         #| `arr[i .. j)`.
         #|
         #| Initialization uses the one-element range `[i, i + 1)`, where
@@ -43,8 +44,17 @@ pub fn sort(
       ),
     }
     let old_i = arr[i]
-    arr[l] = old_i
-    arr[i] = ub
+    if l == i {
+      proof_assert suffix_head_dominates(arr, i)
+    } else {
+      arr[i] = ub
+      proof_assert prefix_dominates_suffix(arr, i)
+      proof_assert suffix_head_dominates(arr, i)
+      arr[l] = old_i
+      proof_assert prefix_dominates_suffix(arr, i)
+      proof_assert suffix_head_dominates(arr, i)
+    }
+    proof_assert prefix_dominates_suffix(arr, i + 1)
     continue i + 1
   } nobreak {
     0

@@ -1,6 +1,6 @@
 ///|
 test "empty lookup" {
-  let sa = empty()
+  let sa : SparseArray[Int] = empty()
   assert_eq(sa.get(0), None)
   assert_eq(sa.length(), 0)
 }

@@ -1,7 +1,7 @@
 ///|
-pub fn binary_search(
-  xs : FixedArray[Int],
-  key : Int,
+pub fn[T : Compare] binary_search(
+  xs : FixedArray[T],
+  key : T,
 ) -> Int? where {
   proof_require: sorted(xs),
   proof_ensure: result => binary_search_ok(xs, key, result),
@@ -9,10 +9,13 @@ pub fn binary_search(
   for i = 0, j = xs.length(); i < j; {
     let h = i + (j - i) / 2
     if xs[h] < key {
+      proof_assert all_less_before(xs, key, h + 1)
       continue h + 1, j
-    } else if xs[h] > key {
+    } else if key < xs[h] {
+      proof_assert all_greater_from(xs, key, h)
       continue i, h
     } else {
+      proof_assert xs[h] == key
       break Some(h)
     }
   } nobreak {
@@ -33,11 +36,13 @@ pub fn binary_search(
       #| excluded regions are empty.
       #|
       #| At midpoint `h` there are three cases:
-      #|   - `xs[h] < key`: by sortedness, every index up to `h` is `< key`, so
-      #|     moving the left boundary to `h + 1` preserves the exclusion facts.
-      #|   - `xs[h] > key`: by sortedness, every index from `h` onward is `> key`,
-      #|     so moving the right boundary to `h` is safe.
-      #|   - `xs[h] == key`: the yielded witness `Some(h)` is immediately correct.
+      #|   - `xs[h] < key`: by sortedness, every index up to `h` is
+      #|     `< key`, so moving the left boundary to `h + 1` preserves the
+      #|     exclusion facts.
+      #|   - `key < xs[h]`: by sortedness, every index from `h`
+      #|     onward is `> key`, so moving the right boundary to `h` is safe.
+      #|   - Otherwise neither strict comparison holds, so the updated compare
+      #|     laws make `xs[h]` compare-equal to `key`.
       #|
       #| The variant is the window width `j - i`. Because `h` lies inside the
       #| current window, either update removes at least one position, so the

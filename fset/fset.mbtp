@@ -1,85 +1,85 @@
 ///|
 #proof_import("set.Fset")
-fn raw_fset_mem(x : Int, s : Fset[Int]) -> Bool = "mem"
+fn[T] raw_fset_mem(x : T, s : Fset[T]) -> Bool = "mem"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_empty() -> Fset[Int] = "empty"
+fn[T] raw_fset_empty() -> Fset[T] = "empty"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_add(x : Int, s : Fset[Int]) -> Fset[Int] = "add"
+fn[T] raw_fset_add(x : T, s : Fset[T]) -> Fset[T] = "add"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_union(s1 : Fset[Int], s2 : Fset[Int]) -> Fset[Int] = "union"
+fn[T] raw_fset_union(s1 : Fset[T], s2 : Fset[T]) -> Fset[T] = "union"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_eq(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "(==)"
+fn[T] raw_fset_eq(s1 : Fset[T], s2 : Fset[T]) -> Bool = "(==)"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_remove(x : Int, s : Fset[Int]) -> Fset[Int] = "remove"
+fn[T] raw_fset_remove(x : T, s : Fset[T]) -> Fset[T] = "remove"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_filter(s : Fset[Int], p : (Int) -> Bool) -> Fset[Int] = "filter"
+fn[T] raw_fset_filter(s : Fset[T], p : (T) -> Bool) -> Fset[T] = "filter"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_subset(s1 : Fset[Int], s2 : Fset[Int]) -> Bool = "subset"
+fn[T] raw_fset_subset(s1 : Fset[T], s2 : Fset[T]) -> Bool = "subset"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_cardinal(s : Fset[Int]) -> Int = "cardinal"
+fn[T] raw_fset_cardinal(s : Fset[T]) -> Int = "cardinal"
 
 ///|
 #proof_import("set.FsetInt")
 fn raw_fset_interval(l : Int, r : Int) -> Fset[Int] = "interval"
 
 ///|
-pub fn Fset::empty() -> Fset[Int] {
+pub fn[T : Eq] Fset::empty() -> Fset[T] {
   raw_fset_empty()
 }
 
 ///|
-pub fn Fset::mem(self : Fset[Int], x : Int) -> Bool {
+pub fn[T : Eq] Fset::mem(self : Fset[T], x : T) -> Bool {
   raw_fset_mem(x, self)
 }
 
 ///|
-pub fn Fset::add(self : Fset[Int], x : Int) -> Fset[Int] {
+pub fn[T : Eq] Fset::add(self : Fset[T], x : T) -> Fset[T] {
   raw_fset_add(x, self)
 }
 
 ///|
-pub fn Fset::union(self : Fset[Int], other : Fset[Int]) -> Fset[Int] {
+pub fn[T : Eq] Fset::union(self : Fset[T], other : Fset[T]) -> Fset[T] {
   raw_fset_union(self, other)
 }
 
 ///|
-pub fn Fset::eq(self : Fset[Int], other : Fset[Int]) -> Bool {
+pub fn[T : Eq] Fset::eq(self : Fset[T], other : Fset[T]) -> Bool {
   raw_fset_eq(self, other)
 }
 
 ///|
-pub fn Fset::remove(self : Fset[Int], x : Int) -> Fset[Int] {
+pub fn[T : Eq] Fset::remove(self : Fset[T], x : T) -> Fset[T] {
   raw_fset_remove(x, self)
 }
 
 ///|
-pub fn Fset::filter(self : Fset[Int], p : (Int) -> Bool) -> Fset[Int] {
+pub fn[T : Eq] Fset::filter(self : Fset[T], p : (T) -> Bool) -> Fset[T] {
   raw_fset_filter(self, p)
 }
 
 ///|
-pub fn Fset::subset(self : Fset[Int], other : Fset[Int]) -> Bool {
+pub fn[T : Eq] Fset::subset(self : Fset[T], other : Fset[T]) -> Bool {
   raw_fset_subset(self, other)
 }
 
 ///|
-pub fn Fset::cardinal(self : Fset[Int]) -> Int {
+pub fn[T : Eq] Fset::cardinal(self : Fset[T]) -> Int {
   raw_fset_cardinal(self)
 }
 

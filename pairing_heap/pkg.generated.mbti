@@ -1,35 +1,36 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/pairing_heap"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
-pub fn delete_min(Heap) -> Heap?
+pub fn[T : Compare] delete_min(Heap[T]) -> Heap[T]?
 
-pub fn empty() -> Heap
+pub fn[T : Compare] empty() -> Heap[T]
 
-pub fn find_min(Heap) -> Int?
+pub fn[T : Compare] find_min(Heap[T]) -> T?
 
-pub fn insert(Heap, Int) -> Heap
+pub fn[T : Compare] insert(Heap[T], T) -> Heap[T]
 
-pub fn merge(Heap, Heap) -> Heap
+pub fn[T : Compare] merge(Heap[T], Heap[T]) -> Heap[T]
 
-pub fn size(Heap) -> Int
+pub fn[T] size(Heap[T]) -> Int
 
 // Errors
 
 // Types and methods
-pub enum ChildList {
+pub enum ChildList[T] {
   Nil
-  Cons(Heap, ChildList)
-}
-pub impl Show for ChildList
+  Cons(Heap[T], ChildList[T])
+} derive(@debug.Debug)
 
-pub enum Heap {
+pub enum Heap[T] {
   Empty
-  Node(Int, ChildList, Int)
-}
-pub impl Show for Heap
+  Node(T, ChildList[T], Int)
+} derive(@debug.Debug)
 
 // Type aliases
 
 // Traits
-

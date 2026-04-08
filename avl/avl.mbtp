@@ -1,29 +1,28 @@
-///|
-fn Tree::model(self : Tree) -> Fset[Int] {
+fn[T : Compare] Tree::model(self : Tree[T]) -> Fset[T] {
   match self {
-    Empty => @fset.fset_empty()
+    Empty => Fset::empty()
     Node(l, x, r, _) => l.model().union(r.model()).add(x)
   }
 }
 
 ///|
-predicate all_lt(s : Fset[Int], x : Int) {
-  ∀ y : Int, s.mem(y) → y < x
+predicate[T : Compare] all_lt(s : Fset[T], x : T) {
+  ∀ y : T, s.mem(y) → y < x
 }
 
 ///|
-predicate all_gt(x : Int, s : Fset[Int]) {
-  ∀ y : Int, s.mem(y) → x < y
+predicate[T : Compare] all_gt(x : T, s : Fset[T]) {
+  ∀ y : T, s.mem(y) → x < y
 }
 
 ///|
-predicate balanced_heights(l : Tree, r : Tree) {
+predicate[T] balanced_heights(l : Tree[T], r : Tree[T]) {
   -1 <= height(l) - height(r) &&
   height(l) - height(r) <= 1
 }
 
 ///|
-predicate non_empty(t : Tree) {
+predicate[T] non_empty(t : Tree[T]) {
   match t {
     Empty => false
     Node(_l, _x, _r, _h) => true
@@ -31,7 +30,7 @@ predicate non_empty(t : Tree) {
 }
 
 ///|
-predicate avl_inv(t : Tree) {
+predicate[T : Compare] avl_inv(t : Tree[T]) {
   match t {
     Empty => true
     Node(l, x, r, h) =>
@@ -45,7 +44,7 @@ predicate avl_inv(t : Tree) {
 }
 
 ///|
-predicate balance_pre(l : Tree, x : Int, r : Tree) {
+predicate[T : Compare] balance_pre(l : Tree[T], x : T, r : Tree[T]) {
   avl_inv(l) &&
   avl_inv(r) &&
   all_lt(l.model(), x) && all_gt(x, r.model()) &&
@@ -54,11 +53,11 @@ predicate balance_pre(l : Tree, x : Int, r : Tree) {
 }
 
 ///|
-predicate left_heavy(l : Tree, r : Tree) {
+predicate[T] left_heavy(l : Tree[T], r : Tree[T]) {
   height(l) > height(r) + 1
 }
 
-predicate left_double_case(l : Tree) {
+predicate[T] left_double_case(l : Tree[T]) {
   match l {
     Empty => false
     Node(ll, _x, lr, _h) => height(ll) < height(lr)
@@ -66,11 +65,11 @@ predicate left_double_case(l : Tree) {
 }
 
 ///|
-predicate right_heavy(l : Tree, r : Tree) {
+predicate[T] right_heavy(l : Tree[T], r : Tree[T]) {
   height(r) > height(l) + 1
 }
 
-predicate right_double_case(r : Tree) {
+predicate[T] right_double_case(r : Tree[T]) {
   match r {
     Empty => false
     Node(rl, _x, rr, _h) => height(rr) < height(rl)
@@ -78,7 +77,7 @@ predicate right_double_case(r : Tree) {
 }
 
 ///|
-predicate remove_min_post(t : Tree, result : (Int, Tree)) {
+predicate[T : Compare] remove_min_post(t : Tree[T], result : (T, Tree[T])) {
   match result {
     (x, t1) =>
       avl_inv(t1) &&
@@ -92,7 +91,7 @@ predicate remove_min_post(t : Tree, result : (Int, Tree)) {
 }
 
 ///|
-lemma height_nonneg_lemma(t : Tree) where {
+lemma[T : Compare] height_nonneg_lemma(t : Tree[T]) where {
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_ensure: 0 <= height(t),
@@ -107,12 +106,12 @@ lemma height_nonneg_lemma(t : Tree) where {
 }
 
 ///|
-predicate elements_subset(t1 : Tree, t2 : Tree) {
-  ∀ y : Int, t1.model().mem(y) → t2.model().mem(y)
+predicate[T : Compare] elements_subset(t1 : Tree[T], t2 : Tree[T]) {
+  ∀ y : T, t1.model().mem(y) → t2.model().mem(y)
 }
 
 ///|
-lemma elements_subset_all_lt(t1 : Tree, t2 : Tree, x : Int) where {
+lemma[T : Compare] elements_subset_all_lt(t1 : Tree[T], t2 : Tree[T], x : T) where {
   proof_require: elements_subset(t1, t2),
   proof_require: all_lt(t2.model(), x),
   proof_ensure: all_lt(t1.model(), x),
@@ -120,7 +119,7 @@ lemma elements_subset_all_lt(t1 : Tree, t2 : Tree, x : Int) where {
 }
 
 ///|
-lemma elements_subset_all_gt(x : Int, t1 : Tree, t2 : Tree) where {
+lemma[T : Compare] elements_subset_all_gt(x : T, t1 : Tree[T], t2 : Tree[T]) where {
   proof_require: elements_subset(t1, t2),
   proof_require: all_gt(x, t2.model()),
   proof_ensure: all_gt(x, t1.model()),
@@ -128,7 +127,7 @@ lemma elements_subset_all_gt(x : Int, t1 : Tree, t2 : Tree) where {
 }
 
 ///|
-lemma elements_subset_trans(t1 : Tree, t2 : Tree, t3 : Tree) where {
+lemma[T : Compare] elements_subset_trans(t1 : Tree[T], t2 : Tree[T], t3 : Tree[T]) where {
   proof_require: elements_subset(t1, t2),
   proof_require: elements_subset(t2, t3),
   proof_ensure: elements_subset(t1, t3),
@@ -136,7 +135,7 @@ lemma elements_subset_trans(t1 : Tree, t2 : Tree, t3 : Tree) where {
 }
 
 ///|
-lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
+lemma[T : Compare] all_gt_add(x : T, y : T, s : Fset[T]) where {
   proof_require: x < y,
   proof_require: all_gt(x, s),
   proof_ensure: all_gt(x, s.add(y)),
@@ -145,7 +144,7 @@ lemma all_gt_add(x : Int, y : Int, s : Fset[Int]) where {
 }
 
 ///|
-lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+lemma[T : Compare] all_gt_union(x : T, s1 : Fset[T], s2 : Fset[T]) where {
   proof_require: all_gt(x, s1),
   proof_require: all_gt(x, s2),
   proof_ensure: all_gt(x, s1.union(s2)),
@@ -154,7 +153,7 @@ lemma all_gt_union(x : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
 }
 
 ///|
-lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
+lemma[T : Compare] all_gt_weaken(x : T, y : T, s : Fset[T]) where {
   proof_require: x < y,
   proof_require: all_gt(y, s),
   proof_ensure: all_gt(x, s),
@@ -163,7 +162,7 @@ lemma all_gt_weaken(x : Int, y : Int, s : Fset[Int]) where {
 }
 
 ///|
-lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
+lemma[T : Compare] all_lt_add(s : Fset[T], x : T, y : T) where {
   proof_require: y < x,
   proof_require: all_lt(s, x),
   proof_ensure: all_lt(s.add(y), x),
@@ -172,7 +171,7 @@ lemma all_lt_add(s : Fset[Int], x : Int, y : Int) where {
 }
 
 ///|
-lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) where {
+lemma[T : Compare] all_lt_union(s1 : Fset[T], s2 : Fset[T], x : T) where {
   proof_require: all_lt(s1, x),
   proof_require: all_lt(s2, x),
   proof_ensure: all_lt(s1.union(s2), x),
@@ -181,7 +180,7 @@ lemma all_lt_union(s1 : Fset[Int], s2 : Fset[Int], x : Int) where {
 }
 
 ///|
-lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) where {
+lemma[T : Compare] all_lt_weaken(s : Fset[T], x : T, y : T) where {
   proof_require: all_lt(s, x),
   proof_require: x < y,
   proof_ensure: all_lt(s, y),
@@ -189,38 +188,38 @@ lemma all_lt_weaken(s : Fset[Int], x : Int, y : Int) where {
 
 }
 
-predicate single_rotation_mem_post(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  z : Int
+predicate[T : Compare] single_rotation_mem_post(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  z : T
 ) {
   s1.union(s2.union(s3).add(b)).add(a).mem(z) ==
   s1.union(s2).add(a).union(s3).add(b).mem(z)
 }
 
 ///|
-lemma single_rotation_mem(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  z : Int
+lemma[T : Compare] single_rotation_mem(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  z : T
 ) where {
   proof_ensure: single_rotation_mem_post(a, b, s1, s2, s3, z),
 } {
   proof_assert single_rotation_mem_post(a, b, s1, s2, s3, z)
 }
 
-predicate single_rotation_eq(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int]
+predicate[T : Compare] single_rotation_eq(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T]
 ) {
   s1.union(s2.union(s3).add(b)).add(a).eq(
     s1.union(s2).add(a).union(s3).add(b),
@@ -228,57 +227,56 @@ predicate single_rotation_eq(
 }
 
 ///|
-lemma single_rotation_eq_lemma(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int]
+lemma[T : Compare] single_rotation_eq_lemma(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T]
 ) where {
   proof_ensure: single_rotation_eq(a, b, s1, s2, s3),
 } {
   proof_assert single_rotation_eq(a, b, s1, s2, s3)
 }
 
-///|
-predicate double_rotation_mem_lr_post(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int],
-  z : Int
+predicate[T : Compare] double_rotation_mem_lr_post(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T],
+  z : T
 ) {
   s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
   s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c).mem(z)
 }
 
 ///|
-lemma double_rotation_mem_lr(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int],
-  z : Int
+lemma[T : Compare] double_rotation_mem_lr(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T],
+  z : T
 ) where {
   proof_ensure: double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z),
 } {
   proof_assert double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z)
 }
 
-predicate double_rotation_eq_lr(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int]
+predicate[T : Compare] double_rotation_eq_lr(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T]
 ) {
   s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
     s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c),
@@ -286,59 +284,58 @@ predicate double_rotation_eq_lr(
 }
 
 ///|
-lemma double_rotation_eq_lr_lemma(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int]
+lemma[T : Compare] double_rotation_eq_lr_lemma(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T]
 ) where {
   proof_ensure: double_rotation_eq_lr(a, b, c, s1, s2, s3, s4),
 } {
   proof_assert double_rotation_eq_lr(a, b, c, s1, s2, s3, s4)
 }
 
-///|
-predicate double_rotation_mem_rl_post(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int],
-  z : Int
+predicate[T : Compare] double_rotation_mem_rl_post(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T],
+  z : T
 ) {
   s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
   s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b).mem(z)
 }
 
 ///|
-lemma double_rotation_mem_rl(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int],
-  z : Int
+lemma[T : Compare] double_rotation_mem_rl(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T],
+  z : T
 ) where {
   proof_ensure: double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z),
 } {
   proof_assert double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z)
 }
 
-predicate double_rotation_eq_rl(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int]
+predicate[T : Compare] double_rotation_eq_rl(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T]
 ) {
   s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
     s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b),
@@ -346,14 +343,14 @@ predicate double_rotation_eq_rl(
 }
 
 ///|
-lemma double_rotation_eq_rl_lemma(
-  a : Int,
-  b : Int,
-  c : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  s3 : Fset[Int],
-  s4 : Fset[Int]
+lemma[T : Compare] double_rotation_eq_rl_lemma(
+  a : T,
+  b : T,
+  c : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  s3 : Fset[T],
+  s4 : Fset[T]
 ) where {
   proof_ensure: double_rotation_eq_rl(a, b, c, s1, s2, s3, s4),
 } {
@@ -361,48 +358,48 @@ lemma double_rotation_eq_rl_lemma(
 }
 
 ///|
-predicate insert_elements_mem_post(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  z : Int
+predicate[T : Compare] insert_elements_mem_post(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  z : T
 ) {
   s1.add(b).union(s2).add(a).mem(z) ==
   s1.union(s2).add(a).add(b).mem(z)
 }
 
 ///|
-lemma insert_elements_mem(
-  a : Int,
-  b : Int,
-  s1 : Fset[Int],
-  s2 : Fset[Int],
-  z : Int
+lemma[T : Compare] insert_elements_mem(
+  a : T,
+  b : T,
+  s1 : Fset[T],
+  s2 : Fset[T],
+  z : T
 ) where {
   proof_ensure: insert_elements_mem_post(a, b, s1, s2, z),
 } {
   proof_assert insert_elements_mem_post(a, b, s1, s2, z)
 }
 
-predicate insert_elements_eq(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+predicate[T : Compare] insert_elements_eq(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) {
   s1.add(b).union(s2).add(a).eq(s1.union(s2).add(a).add(b))
 }
 
 ///|
-lemma insert_elements_eq_lemma(a : Int, b : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+lemma[T : Compare] insert_elements_eq_lemma(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) where {
   proof_ensure: insert_elements_eq(a, b, s1, s2),
 } {
   proof_assert insert_elements_eq(a, b, s1, s2)
 }
 
 ///|
-predicate delete_left_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+predicate[T : Compare] delete_left_eq(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) {
   s1.union(s2).add(y).remove(x).eq(s1.remove(x).union(s2).add(y))
 }
 
 ///|
-lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+lemma[T : Compare] delete_left_eq_lemma(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) where {
   proof_require: x < y,
   proof_require: all_gt(y, s2),
   proof_ensure: delete_left_eq(x, y, s1, s2),
@@ -411,12 +408,12 @@ lemma delete_left_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) whe
 }
 
 ///|
-predicate delete_right_eq(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) {
+predicate[T : Compare] delete_right_eq(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) {
   s1.union(s2).add(y).remove(x).eq(s1.union(s2.remove(x)).add(y))
 }
 
 ///|
-lemma delete_right_eq_lemma(x : Int, y : Int, s1 : Fset[Int], s2 : Fset[Int]) where {
+lemma[T : Compare] delete_right_eq_lemma(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) where {
   proof_require: y < x,
   proof_require: all_lt(s1, y),
   proof_ensure: delete_right_eq(x, y, s1, s2),

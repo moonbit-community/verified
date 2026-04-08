@@ -1,6 +1,6 @@
 ///|
 test "skew heap empty" {
-  let h = empty()
+  let h : Heap[Int] = empty()
   assert_eq(find_min(h), None)
   guard delete_min(h) is None else { fail("expected empty delete") }
   assert_eq(size(h), 0)

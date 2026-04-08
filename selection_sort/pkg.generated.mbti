@@ -2,7 +2,7 @@
 package "moonbit-community/verified/selection_sort"
 
 // Values
-pub fn sort(FixedArray[Int]) -> Int
+pub fn[T : Compare] sort(FixedArray[T]) -> Int
 
 // Errors
 

@@ -2,22 +2,22 @@
 package "moonbit-community/verified/sparse_array"
 
 // Values
-pub fn empty() -> SparseArray
+pub fn[T] empty() -> SparseArray[T]
 
-pub fn singleton(Int, Int) -> SparseArray
+pub fn[T : Eq] singleton(Int, T) -> SparseArray[T]
 
 // Errors
 
 // Types and methods
-pub struct SparseArray {
+pub struct SparseArray[T] {
   bitmap : UInt
-  data : FixedArray[Int]
+  data : FixedArray[T]
 } derive(Eq)
-pub fn SparseArray::add(Self, Int, Int) -> Self
-pub fn SparseArray::get(Self, Int) -> Int?
-pub fn SparseArray::length(Self) -> Int
-pub fn SparseArray::remove(Self, Int) -> Self
-pub fn SparseArray::replace(Self, Int, Int) -> Self
+pub fn[T : Eq] SparseArray::add(Self[T], Int, T) -> Self[T]
+pub fn[T : Eq] SparseArray::get(Self[T], Int) -> T?
+pub fn[T : Eq] SparseArray::length(Self[T]) -> Int
+pub fn[T : Eq] SparseArray::remove(Self[T], Int) -> Self[T]
+pub fn[T : Eq] SparseArray::replace(Self[T], Int, T) -> Self[T]
 
 // Type aliases
 

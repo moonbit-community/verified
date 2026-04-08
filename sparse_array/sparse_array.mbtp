@@ -1,5 +1,5 @@
 #proof_import("fmap.Fmap")
-fn raw_fmap_size(m : Fmap[Int, Int]) -> Int = "size"
+fn[T] raw_fmap_size(m : Fmap[Int, T]) -> Int = "size"
 
 ///|
 predicate valid_idx(idx : Int) {
@@ -168,21 +168,21 @@ lemma empty_domain(
   proof_assert domain(bitmap).eq(@fset.fset_empty())
 }
 
-fn model(sa : SparseArray) -> Fmap[Int, Int] {
-  @fmap.fmap_mk(domain(sa.bitmap), fn (i : Int) {
+fn[T : Eq] model(sa : SparseArray[T]) -> Fmap[Int, T] {
+  Fmap::mk(domain(sa.bitmap), fn (i : Int) {
     sa.data[rank_value(sa.bitmap, i, 0)]
   })
 }
 
 ///|
-predicate fmap_eq_hyp_local(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) {
+predicate[T : Eq] fmap_eq_hyp_local(m1 : Fmap[Int, T], m2 : Fmap[Int, T]) {
   (∀ k : Int, m1.mem(k) == m2.mem(k)) &&
-  (∀ k : Int, m1.mem(k) → m1.find(k) == m2.find(k))
+  (∀ k : Int, m1.mem(k) → m1.find(k).equal(m2.find(k)))
 }
 
 ///|
-lemma model_mem_value(
-  sa : SparseArray,
+lemma[T : Eq] model_mem_value(
+  sa : SparseArray[T],
   idx : Int,
 ) where {
   proof_require: valid_idx(idx),
@@ -191,19 +191,19 @@ lemma model_mem_value(
 }
 
 ///|
-lemma model_find_value(
-  sa : SparseArray,
+lemma[T : Eq] model_find_value(
+  sa : SparseArray[T],
   idx : Int,
 ) where {
   proof_require: valid_idx(idx),
   proof_require: model(sa).mem(idx),
-  proof_ensure: model(sa).find(idx) == sa.data[rank_value(sa.bitmap, idx, 0)],
+  proof_ensure: model(sa).find(idx).equal(sa.data[rank_value(sa.bitmap, idx, 0)]),
 } {
 }
 
 ///|
-lemma model_size_domain(
-  sa : SparseArray,
+lemma[T : Eq] model_size_domain(
+  sa : SparseArray[T],
 ) where {
   proof_ensure: raw_fmap_size(model(sa)) == domain(sa.bitmap).cardinal(),
 } {
@@ -258,7 +258,7 @@ lemma rank_distinct_present(
 }
 
 ///|
-predicate sparse_array_inv(sa : SparseArray) {
+predicate[T : Eq] sparse_array_inv(sa : SparseArray[T]) {
   sa.data.length() == count_value(sa.bitmap, 0) &&
   (∀ i : Int,
     valid_idx(i) && mem_value(sa.bitmap, i) →
@@ -267,27 +267,21 @@ predicate sparse_array_inv(sa : SparseArray) {
 }
 
 ///|
-predicate get_post(sa : SparseArray, idx : Int, result : Option[Int]) {
+predicate[T : Eq] get_post(sa : SparseArray[T], idx : Int, result : Option[T]) {
   match result {
     None => model(sa).mem(idx) == false
     Some(value) =>
-      model(sa).mem(idx) && value == model(sa).find(idx)
+      model(sa).mem(idx) && value.equal(model(sa).find(idx))
   }
 }
 
-///|
-predicate empty_post(_res : SparseArray) {
-  sparse_array_inv(_res) && model(_res).eq(@fmap.fmap_empty())
-}
-
-///|
-predicate singleton_post(_res : SparseArray, _idx : Int, _value : Int) {
+predicate[T : Eq] singleton_post(_res : SparseArray[T], _idx : Int, _value : T) {
   sparse_array_inv(_res) &&
-  model(_res).eq(@fmap.fmap_empty().add(_idx, _value))
+  model(_res).eq(Fmap::empty().add(_idx, _value))
 }
 
 ///|
-predicate singleton_len_inv(_res : SparseArray) {
+predicate[T] singleton_len_inv(_res : SparseArray[T]) {
   _res.data.length() == 1
 }
 
@@ -573,40 +567,40 @@ lemma rank_remove_after(
   proof_assert rank_value(new_bitmap, j, 0) + 1 == rank_value(old_bitmap, j, 0)
 }
 
-predicate add_prefix_ok(
-  old_data : FixedArray[Int],
-  new_data : FixedArray[Int],
+predicate[T : Eq] add_prefix_ok(
+  old_data : FixedArray[T],
+  new_data : FixedArray[T],
   pos : Int,
   upto : Int,
 ) {
   0 <= upto &&
   upto <= pos &&
   new_data.length() == old_data.length() + 1 &&
-  (∀ k : Int, 0 <= k && k < upto → new_data[k] == old_data[k])
+  (∀ k : Int, 0 <= k && k < upto → new_data[k].equal(old_data[k]))
 }
 
 ///|
-predicate add_fill_ok(
-  old_data : FixedArray[Int],
-  new_data : FixedArray[Int],
+predicate[T : Eq] add_fill_ok(
+  old_data : FixedArray[T],
+  new_data : FixedArray[T],
   pos : Int,
-  value : Int,
+  value : T,
   upto : Int,
 ) {
   pos <= upto &&
   upto <= old_data.length() &&
   new_data.length() == old_data.length() + 1 &&
-  new_data[pos] == value &&
-  (∀ k : Int, 0 <= k && k < pos → new_data[k] == old_data[k]) &&
-  (∀ k : Int, pos <= k && k < upto → new_data[k + 1] == old_data[k])
+  new_data[pos].equal(value) &&
+  (∀ k : Int, 0 <= k && k < pos → new_data[k].equal(old_data[k])) &&
+  (∀ k : Int, pos <= k && k < upto → new_data[k + 1].equal(old_data[k]))
 }
 
 ///|
-predicate add_data_ok(
-  _sa : SparseArray,
+predicate[T : Eq] add_data_ok(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) {
   add_fill_ok(
     _sa.data,
@@ -618,28 +612,28 @@ predicate add_data_ok(
 }
 
 ///|
-predicate replace_prefix_ok(
-  old_data : FixedArray[Int],
-  new_data : FixedArray[Int],
+predicate[T : Eq] replace_prefix_ok(
+  old_data : FixedArray[T],
+  new_data : FixedArray[T],
   pos : Int,
-  value : Int,
+  value : T,
   upto : Int,
 ) {
   0 <= upto &&
   upto <= old_data.length() &&
   new_data.length() == old_data.length() &&
-  new_data[pos] == value &&
+  new_data[pos].equal(value) &&
   (∀ k : Int,
     0 <= k && k < upto && k != pos →
-      new_data[k] == old_data[k])
+      new_data[k].equal(old_data[k]))
 }
 
 ///|
-predicate replace_data_ok(
-  _sa : SparseArray,
+predicate[T : Eq] replace_data_ok(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) {
   _res.bitmap == _sa.bitmap &&
   replace_prefix_ok(
@@ -652,11 +646,11 @@ predicate replace_data_ok(
 }
 
 ///|
-lemma replace_mem_same(
-  _sa : SparseArray,
+lemma[T : Eq] replace_mem_same(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
   j : Int,
 ) where {
   proof_require: valid_idx(j),
@@ -666,37 +660,37 @@ lemma replace_mem_same(
 }
 
 ///|
-predicate remove_prefix_ok(
-  old_data : FixedArray[Int],
-  new_data : FixedArray[Int],
+predicate[T : Eq] remove_prefix_ok(
+  old_data : FixedArray[T],
+  new_data : FixedArray[T],
   pos : Int,
   upto : Int,
 ) {
   0 <= upto &&
   upto <= pos &&
   new_data.length() + 1 == old_data.length() &&
-  (∀ k : Int, 0 <= k && k < upto → new_data[k] == old_data[k])
+  (∀ k : Int, 0 <= k && k < upto → new_data[k].equal(old_data[k]))
 }
 
 ///|
-predicate remove_fill_ok(
-  old_data : FixedArray[Int],
-  new_data : FixedArray[Int],
+predicate[T : Eq] remove_fill_ok(
+  old_data : FixedArray[T],
+  new_data : FixedArray[T],
   pos : Int,
   upto : Int,
 ) {
   pos <= upto &&
   upto <= new_data.length() &&
   new_data.length() + 1 == old_data.length() &&
-  (∀ k : Int, 0 <= k && k < pos → new_data[k] == old_data[k]) &&
-  (∀ k : Int, pos <= k && k < upto → new_data[k] == old_data[k + 1])
+  (∀ k : Int, 0 <= k && k < pos → new_data[k].equal(old_data[k])) &&
+  (∀ k : Int, pos <= k && k < upto → new_data[k].equal(old_data[k + 1]))
 }
 
 ///|
-predicate remove_data_ok(
-  _sa : SparseArray,
+predicate[T : Eq] remove_data_ok(
+  _sa : SparseArray[T],
   _idx : Int,
-  _res : SparseArray,
+  _res : SparseArray[T],
 ) {
   remove_fill_ok(
     _sa.data,
@@ -707,21 +701,21 @@ predicate remove_data_ok(
 }
 
 ///|
-predicate add_post(
-  _sa : SparseArray,
+predicate[T : Eq] add_post(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) {
   sparse_array_inv(_res) && model(_res).eq(model(_sa).add(_idx, _value))
 }
 
 ///|
-lemma add_post_lemma(
-  _sa : SparseArray,
+lemma[T : Eq] add_post_lemma(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
@@ -735,44 +729,44 @@ lemma add_post_lemma(
     model(_res).mem(j) == model(_sa).add(_idx, _value).mem(j)
   proof_assert ∀ j : Int,
     model(_res).mem(j) →
-      model(_res).find(j) == model(_sa).add(_idx, _value).find(j)
+      model(_res).find(j).equal(model(_sa).add(_idx, _value).find(j))
   proof_assert fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
   proof_assert model(_res).eq(model(_sa).add(_idx, _value))
   proof_assert add_post(_sa, _idx, _value, _res)
 }
 
 ///|
-predicate replace_post(
-  _sa : SparseArray,
+predicate[T : Eq] replace_post(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) {
   sparse_array_inv(_res) && model(_res).eq(model(_sa).add(_idx, _value))
 }
 
 ///|
-lemma replace_find_self(
-  _sa : SparseArray,
+lemma[T : Eq] replace_find_self(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
   proof_require: model(_sa).mem(_idx),
   proof_require: replace_data_ok(_sa, _idx, _value, _res),
-  proof_ensure: model(_res).find(_idx) == _value,
+  proof_ensure: model(_res).find(_idx).equal(_value),
 } {
-  proof_assert model(_res).find(_idx) == _value
+  proof_assert model(_res).find(_idx).equal(_value)
 }
 
 ///|
-lemma replace_find_other(
-  _sa : SparseArray,
+lemma[T : Eq] replace_find_other(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
   j : Int,
 ) where {
   proof_require: sparse_array_inv(_sa),
@@ -782,18 +776,18 @@ lemma replace_find_other(
   proof_require: model(_sa).mem(j),
   proof_require: j != _idx,
   proof_require: replace_data_ok(_sa, _idx, _value, _res),
-  proof_ensure: model(_res).find(j) == model(_sa).find(j),
+  proof_ensure: model(_res).find(j).equal(model(_sa).find(j)),
 } {
   proof_assert rank_value(_sa.bitmap, j, 0) != rank_value(_sa.bitmap, _idx, 0)
-  proof_assert model(_res).find(j) == model(_sa).find(j)
+  proof_assert model(_res).find(j).equal(model(_sa).find(j))
 }
 
 ///|
-lemma replace_post_lemma(
-  _sa : SparseArray,
+lemma[T : Eq] replace_post_lemma(
+  _sa : SparseArray[T],
   _idx : Int,
-  _value : Int,
-  _res : SparseArray,
+  _value : T,
+  _res : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
@@ -806,26 +800,26 @@ lemma replace_post_lemma(
     model(_res).mem(j) == model(_sa).add(_idx, _value).mem(j)
   proof_assert ∀ j : Int,
     model(_res).mem(j) →
-      model(_res).find(j) == model(_sa).add(_idx, _value).find(j)
+      model(_res).find(j).equal(model(_sa).add(_idx, _value).find(j))
   proof_assert fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
   proof_assert model(_res).eq(model(_sa).add(_idx, _value))
   proof_assert replace_post(_sa, _idx, _value, _res)
 }
 
 ///|
-predicate remove_empty_post(
-  _sa : SparseArray,
+predicate[T : Eq] remove_empty_post(
+  _sa : SparseArray[T],
   _idx : Int,
-  _res : SparseArray,
+  _res : SparseArray[T],
 ) {
   sparse_array_inv(_res) && model(_res).eq(model(_sa).remove(_idx))
 }
 
 ///|
-lemma remove_empty_post_lemma(
-  _sa : SparseArray,
+lemma[T : Eq] remove_empty_post_lemma(
+  _sa : SparseArray[T],
   _idx : Int,
-  _res : SparseArray,
+  _res : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
@@ -839,19 +833,19 @@ lemma remove_empty_post_lemma(
 }
 
 ///|
-predicate remove_post(
-  _sa : SparseArray,
+predicate[T : Eq] remove_post(
+  _sa : SparseArray[T],
   _idx : Int,
-  _res : SparseArray,
+  _res : SparseArray[T],
 ) {
   sparse_array_inv(_res) && model(_res).eq(model(_sa).remove(_idx))
 }
 
 ///|
-lemma remove_post_lemma(
-  _sa : SparseArray,
+lemma[T : Eq] remove_post_lemma(
+  _sa : SparseArray[T],
   _idx : Int,
-  _res : SparseArray,
+  _res : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
@@ -866,20 +860,20 @@ lemma remove_post_lemma(
     model(_res).mem(j) == model(_sa).remove(_idx).mem(j)
   proof_assert ∀ j : Int,
     model(_res).mem(j) →
-      model(_res).find(j) == model(_sa).remove(_idx).find(j)
+      model(_res).find(j).equal(model(_sa).remove(_idx).find(j))
   proof_assert fmap_eq_hyp_local(model(_res), model(_sa).remove(_idx))
   proof_assert model(_res).eq(model(_sa).remove(_idx))
   proof_assert remove_post(_sa, _idx, _res)
 }
 
 ///|
-predicate length_post(_sa : SparseArray) {
+predicate[T : Eq] length_post(_sa : SparseArray[T]) {
   _sa.data.length() == raw_fmap_size(model(_sa))
 }
 
 ///|
-lemma length_post_lemma(
-  _sa : SparseArray,
+lemma[T : Eq] length_post_lemma(
+  _sa : SparseArray[T],
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_ensure: length_post(_sa),

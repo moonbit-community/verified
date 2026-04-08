@@ -2,14 +2,14 @@
 /// A leftist heap stores a rank alongside each node, where the stored rank is
 /// the null-path length of the right spine. The invariant combines the heap
 /// ordering with the rank constraint that makes merges cheap.
-pub enum Heap {
+pub enum Heap[T] {
   Empty
-  Node(Int, Int, Heap, Heap)
-}
+  Node(T, Int, Heap[T], Heap[T])
+} derive(Debug)
 
 ///|
 #proof_pure
-fn rank(h : Heap) -> Int {
+fn[T] rank(h : Heap[T]) -> Int {
   match h {
     Empty => 0
     Node(_, rank, _, _) => rank
@@ -17,7 +17,7 @@ fn rank(h : Heap) -> Int {
 }
 
 ///|
-fn heap_size(h : Heap) -> Int {
+fn[T] heap_size(h : Heap[T]) -> Int {
   match h {
     Empty => 0
     Node(_, _, left, right) => 1 + heap_size(left) + heap_size(right)
@@ -36,17 +36,17 @@ fn min2(a : Int, b : Int) -> Int {
 
 ///|
 #proof_pure
-fn raw_node(value : Int, stored_rank : Int, left : Heap, right : Heap) -> Heap {
+fn[T] raw_node(value : T, stored_rank : Int, left : Heap[T], right : Heap[T]) -> Heap[T] {
   Node(value, stored_rank, left, right)
 }
 
 ///|
-pub fn empty() -> Heap where { proof_ensure: result => heap_inv(result) } {
+pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
   Empty
 }
 
 ///|
-pub fn size(h : Heap) -> Int {
+pub fn[T] size(h : Heap[T]) -> Int {
   heap_size(h)
 }
 
@@ -54,11 +54,11 @@ pub fn size(h : Heap) -> Int {
 /// `make_node` is where the leftist property is restored. It chooses the child
 /// arrangement so that the smaller-rank subtree stays on the right, then stores
 /// `min(rank(left), rank(right)) + 1` as the node rank.
-fn make_node(
-  value : Int,
-  left : Heap,
-  right : Heap,
-) -> Heap where {
+fn[T : Compare] make_node(
+  value : T,
+  left : Heap[T],
+  right : Heap[T],
+) -> Heap[T] where {
   proof_require: heap_inv(left),
   proof_require: heap_inv(right),
   proof_require: all_ge(value, left),
@@ -79,9 +79,9 @@ fn make_node(
 ///|
 /// A singleton heap has rank 1 and empty children, so it satisfies the
 /// invariant without any balancing work.
-fn singleton(
-  value : Int,
-) -> Heap where {
+fn[T : Compare] singleton(
+  value : T,
+) -> Heap[T] where {
   proof_ensure: result => singleton_post(value, result),
 } {
   let result = Node(value, 1, Empty, Empty)
@@ -94,10 +94,10 @@ fn singleton(
 /// recursive call always follows the right subtree of the chosen root, which is
 /// what keeps the measure decreasing and lets `make_node` rebuild the leftist
 /// shape afterward.
-pub fn merge(
-  a : Heap,
-  b : Heap,
-) -> Heap where {
+pub fn[T : Compare] merge(
+  a : Heap[T],
+  b : Heap[T],
+) -> Heap[T] where {
   proof_decrease: merge_measure(a, b),
   proof_require: heap_inv(a),
   proof_require: heap_inv(b),
@@ -112,7 +112,7 @@ pub fn merge(
       proof_assert merge_post(a, b, a)
       a
     }
-    (Node(va, _, la, ra), Node(vb, _, lb, rb)) =>
+    (Node(va, ra_rank, la, ra), Node(vb, rb_rank, lb, rb)) =>
       if va <= vb {
         let merged = merge(ra, b)
         proof_assert merge_post(ra, b, merged)
@@ -120,6 +120,7 @@ pub fn merge(
         proof_assert all_ge(va, merged)
         let result = make_node(va, la, merged)
         proof_assert make_node_post(va, la, merged, result)
+        proof_assert merge_post(raw_node(va, ra_rank, la, ra), b, result)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -129,6 +130,7 @@ pub fn merge(
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, lb, merged)
         proof_assert make_node_post(vb, lb, merged, result)
+        proof_assert merge_post(a, raw_node(vb, rb_rank, lb, rb), result)
         proof_assert merge_post(a, b, result)
         result
       }
@@ -138,10 +140,10 @@ pub fn merge(
 ///|
 /// Insertion is still just merge with a singleton, so the heap-order and rank
 /// proof obligations are inherited from the merge step.
-pub fn insert(
-  h : Heap,
-  value : Int,
-) -> Heap where {
+pub fn[T : Compare] insert(
+  h : Heap[T],
+  value : T,
+) -> Heap[T] where {
   proof_require: heap_inv(h),
   proof_ensure: result => insert_post(h, value, result),
 } {
@@ -154,9 +156,9 @@ pub fn insert(
 ///|
 /// The minimum is always stored at the root, so `find_min` only reads that
 /// value after the invariant rules out the empty case.
-pub fn find_min(
-  h : Heap,
-) -> Int? where {
+pub fn[T : Compare] find_min(
+  h : Heap[T],
+) -> T? where {
   proof_require: heap_inv(h),
   proof_ensure: result => find_min_post(h, result),
 } {
@@ -173,9 +175,9 @@ pub fn find_min(
 /// Deleting the minimum discards the root and merges the two children. The
 /// rank invariant is preserved because the merge result is rewrapped through
 /// `make_node` inside the recursive merge proof.
-pub fn delete_min(
-  h : Heap,
-) -> Heap? where {
+pub fn[T : Compare] delete_min(
+  h : Heap[T],
+) -> Heap[T]? where {
   proof_require: heap_inv(h),
   proof_ensure: result => delete_min_post(h, result),
 } {

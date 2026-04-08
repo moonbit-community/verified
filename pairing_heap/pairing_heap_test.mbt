@@ -1,8 +1,9 @@
 ///|
 test "empty heap" {
-  inspect(find_min(empty()), content="None")
-  inspect(delete_min(empty()), content="None")
-  inspect(size(empty()), content="0")
+  let h : Heap[Int] = empty()
+  inspect(find_min(h), content="None")
+  inspect(delete_min(h), content="None")
+  inspect(size(h), content="0")
 }
 
 ///|

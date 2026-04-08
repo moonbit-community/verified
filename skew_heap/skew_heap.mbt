@@ -2,19 +2,19 @@
 /// A skew heap keeps the minimum at the root and leaves the children otherwise
 /// unconstrained. The invariant only asks that every value below a node is at
 /// least the node value, which is exactly what `merge` has to re-establish.
-pub enum Heap {
+pub enum Heap[T] {
   Empty
-  Node(Int, Heap, Heap)
-}
+  Node(T, Heap[T], Heap[T])
+} derive(Debug)
 
 ///|
 #proof_pure
-fn raw_node(value : Int, left : Heap, right : Heap) -> Heap {
+fn[T] raw_node(value : T, left : Heap[T], right : Heap[T]) -> Heap[T] {
   Node(value, left, right)
 }
 
 ///|
-fn heap_size(h : Heap) -> Int {
+fn[T] heap_size(h : Heap[T]) -> Int {
   match h {
     Empty => 0
     Node(_, left, right) => 1 + heap_size(left) + heap_size(right)
@@ -22,12 +22,12 @@ fn heap_size(h : Heap) -> Int {
 }
 
 ///|
-pub fn empty() -> Heap where { proof_ensure: result => heap_inv(result) } {
+pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
   Empty
 }
 
 ///|
-pub fn size(h : Heap) -> Int {
+pub fn[T] size(h : Heap[T]) -> Int {
   heap_size(h)
 }
 
@@ -36,11 +36,11 @@ pub fn size(h : Heap) -> Int {
 /// and the chosen root must be no larger than either side. Once those
 /// preconditions hold, the node constructor is enough to restore the
 /// invariant after the recursive merge step.
-fn make_node(
-  value : Int,
-  left : Heap,
-  right : Heap,
-) -> Heap where {
+fn[T : Compare] make_node(
+  value : T,
+  left : Heap[T],
+  right : Heap[T],
+) -> Heap[T] where {
   proof_require: heap_inv(left),
   proof_require: heap_inv(right),
   proof_require: all_ge(value, left),
@@ -56,9 +56,9 @@ fn make_node(
 /// The singleton heap is the base case for insertions and recursive merges.
 /// Its proof is trivial because both children are empty and the root is
 /// therefore the minimum by construction.
-fn singleton(
-  value : Int,
-) -> Heap where {
+fn[T : Compare] singleton(
+  value : T,
+) -> Heap[T] where {
   proof_ensure: result => singleton_post(value, result),
 } {
   let result = Node(value, Empty, Empty)
@@ -71,10 +71,10 @@ fn singleton(
 /// roots, the recursive call always goes into one subtree of the chosen root,
 /// so the termination argument is a size decrease and the correctness argument
 /// is "recursive merge + `all_ge` + `make_node`".
-pub fn merge(
-  a : Heap,
-  b : Heap,
-) -> Heap where {
+pub fn[T : Compare] merge(
+  a : Heap[T],
+  b : Heap[T],
+) -> Heap[T] where {
   proof_decrease: merge_measure(a, b),
   proof_require: heap_inv(a),
   proof_require: heap_inv(b),
@@ -95,6 +95,7 @@ pub fn merge(
         proof_assert all_ge(va, b)
         proof_assert all_ge(va, merged)
         let result = make_node(va, merged, la)
+        proof_assert merge_post(raw_node(va, la, ra), b, result)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -102,6 +103,7 @@ pub fn merge(
         proof_assert all_ge(vb, a)
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, merged, lb)
+        proof_assert merge_post(a, raw_node(vb, lb, rb), result)
         proof_assert merge_post(a, b, result)
         result
       }
@@ -111,10 +113,10 @@ pub fn merge(
 ///|
 /// Insertion is just `merge` with a one-element heap, so all of the ordering
 /// and size proof obligations are delegated to the merge proof.
-pub fn insert(
-  h : Heap,
-  value : Int,
-) -> Heap where {
+pub fn[T : Compare] insert(
+  h : Heap[T],
+  value : T,
+) -> Heap[T] where {
   proof_require: heap_inv(h),
   proof_ensure: result => insert_post(h, value, result),
 } {
@@ -128,9 +130,9 @@ pub fn insert(
 /// A valid skew heap exposes its minimum at the root, so `find_min` only needs
 /// to distinguish `Empty` from the non-empty case and then read the root
 /// value.
-pub fn find_min(
-  h : Heap,
-) -> Int? where {
+pub fn[T : Compare] find_min(
+  h : Heap[T],
+) -> T? where {
   proof_require: heap_inv(h),
   proof_ensure: result => find_min_post(h, result),
 } {
@@ -146,9 +148,9 @@ pub fn find_min(
 ///|
 /// Deleting the minimum removes the root and merges the two subheaps. The
 /// root-ordering invariant is what makes the children safe to merge directly.
-pub fn delete_min(
-  h : Heap,
-) -> Heap? where {
+pub fn[T : Compare] delete_min(
+  h : Heap[T],
+) -> Heap[T]? where {
   proof_require: heap_inv(h),
   proof_ensure: result => delete_min_post(h, result),
 } {
@@ -165,6 +167,6 @@ pub fn delete_min(
 ///|
 /// Repeated insertion is the simplest way to build a valid heap from a list of
 /// inputs; each step preserves the invariant via `insert`.
-pub fn from_array(arr : ArrayView[Int]) -> Heap {
+pub fn[T : Compare] from_array(arr : ArrayView[T]) -> Heap[T] {
   arr.fold(init=Empty, (heap, value) => insert(heap, value))
 }
