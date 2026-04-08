@@ -1,0 +1,34 @@
+predicate same_length(exposures : FixedArray[Int], limits : FixedArray[Int]) {
+  exposures.length() == limits.length()
+}
+
+predicate all_safe_before(
+  exposures : FixedArray[Int],
+  limits : FixedArray[Int],
+  idx : Int,
+) {
+  ∀ i : Int, ((0 <= i) && (i < idx)) → exposures[i] <= limits[i]
+}
+
+predicate all_safe(
+  exposures : FixedArray[Int],
+  limits : FixedArray[Int],
+) {
+  ∀ i : Int, ((0 <= i) && (i < exposures.length())) → exposures[i] <= limits[i]
+}
+
+predicate first_breach_post(
+  exposures : FixedArray[Int],
+  limits : FixedArray[Int],
+  result : Option[Int],
+) {
+  match result {
+    None => all_safe(exposures, limits)
+    Some(idx) =>
+      same_length(exposures, limits) &&
+      0 <= idx &&
+      idx < exposures.length() &&
+      limits[idx] < exposures[idx] &&
+      all_safe_before(exposures, limits, idx)
+  }
+}

@@ -1,0 +1,46 @@
+predicate stream_inv(stream : Stream) {
+  0 <= stream.total &&
+  0 < stream.duration &&
+  0 <= stream.released &&
+  stream.released <= stream.total
+}
+
+predicate vested_amount_post(
+  total : Int,
+  start : Int,
+  duration : Int,
+  now : Int,
+  result : Int,
+) {
+  0 <= total &&
+  0 < duration &&
+  result == vested_at(total, start, duration, now) &&
+  0 <= result &&
+  result <= total
+}
+
+predicate claimable_post(stream : Stream, now : Int, result : Int) {
+  stream_inv(stream) &&
+  0 <= result &&
+  stream.released + result <= stream.total &&
+  (
+    (vested_at(stream.total, stream.start, stream.duration, now) <= stream.released &&
+      result == 0) ||
+    (stream.released < vested_at(stream.total, stream.start, stream.duration, now) &&
+      stream.released + result ==
+      vested_at(stream.total, stream.start, stream.duration, now))
+  )
+}
+
+predicate release_post(stream : Stream, now : Int, result : Stream) {
+  stream_inv(result) &&
+  result.total == stream.total &&
+  result.start == stream.start &&
+  result.duration == stream.duration &&
+  (
+    (vested_at(stream.total, stream.start, stream.duration, now) <= stream.released &&
+      result.released == stream.released) ||
+    (stream.released < vested_at(stream.total, stream.start, stream.duration, now) &&
+      result.released == vested_at(stream.total, stream.start, stream.duration, now))
+  )
+}

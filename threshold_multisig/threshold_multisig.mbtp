@@ -1,0 +1,50 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+predicate binary_votes(votes : FixedArray[Int]) {
+  ∀ i : Int, ((0 <= i) && (i < votes.length())) →
+    ((votes[i] == 0) || (votes[i] == 1))
+}
+
+fn approval_count_upto(votes : FixedArray[Int], upto : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    votes[i] == 1
+  }, 0, upto)
+}
+
+fn approval_count(votes : FixedArray[Int]) -> Int {
+  approval_count_upto(votes, votes.length())
+}
+
+predicate count_approvals_post(votes : FixedArray[Int], result : Int) {
+  binary_votes(votes) &&
+  result == approval_count(votes)
+}
+
+predicate can_execute_post(votes : FixedArray[Int], threshold : Int, result : Bool) {
+  binary_votes(votes) &&
+  0 <= threshold &&
+  threshold <= votes.length() &&
+  result == (approval_count(votes) >= threshold)
+}
+
+pub lemma approval_count_step_one(votes : FixedArray[Int], i : Int) where {
+  proof_require: binary_votes(votes),
+  proof_require: 0 <= i,
+  proof_require: i < votes.length(),
+  proof_require: votes[i] == 1,
+  proof_ensure: approval_count_upto(votes, i + 1) == approval_count_upto(votes, i) + 1,
+} {
+  proof_assert approval_count_upto(votes, i + 1) == approval_count_upto(votes, i) + 1
+}
+
+pub lemma approval_count_step_zero(votes : FixedArray[Int], i : Int) where {
+  proof_require: binary_votes(votes),
+  proof_require: 0 <= i,
+  proof_require: i < votes.length(),
+  proof_require: votes[i] == 0,
+  proof_ensure: approval_count_upto(votes, i + 1) == approval_count_upto(votes, i),
+} {
+  proof_assert approval_count_upto(votes, i + 1) == approval_count_upto(votes, i)
+}

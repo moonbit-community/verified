@@ -1,0 +1,54 @@
+predicate same_length(bids : FixedArray[Int], asks : FixedArray[Int]) {
+  bids.length() == asks.length()
+}
+
+predicate in_bounds(xs : FixedArray[Int], i : Int) {
+  0 <= i && i < xs.length()
+}
+
+predicate bids_desc(bids : FixedArray[Int]) {
+  ∀ i : Int, ∀ j : Int,
+    (in_bounds(bids, i) && in_bounds(bids, j) && i <= j) →
+      bids[j] <= bids[i]
+}
+
+predicate asks_asc(asks : FixedArray[Int]) {
+  ∀ i : Int, ∀ j : Int,
+    (in_bounds(asks, i) && in_bounds(asks, j) && i <= j) →
+      asks[i] <= asks[j]
+}
+
+predicate all_cross_before(bids : FixedArray[Int], asks : FixedArray[Int], idx : Int) {
+  ∀ i : Int, (0 <= i && i < idx) → asks[i] <= bids[i]
+}
+
+predicate all_fail_from(bids : FixedArray[Int], asks : FixedArray[Int], idx : Int) {
+  ∀ i : Int, (idx <= i && i < bids.length()) → bids[i] < asks[i]
+}
+
+predicate clearing_quantity_post(
+  bids : FixedArray[Int],
+  asks : FixedArray[Int],
+  result : Int,
+) {
+  same_length(bids, asks) &&
+  0 <= result &&
+  result <= bids.length() &&
+  all_cross_before(bids, asks, result) &&
+  all_fail_from(bids, asks, result)
+}
+
+predicate auction_result_post(
+  bids : FixedArray[Int],
+  asks : FixedArray[Int],
+  result : AuctionResult,
+) {
+  clearing_quantity_post(bids, asks, result.quantity) &&
+  (
+    (result.quantity == 0 && result.price == 0) ||
+    (0 < result.quantity &&
+      result.quantity <= bids.length() &&
+      asks[result.quantity - 1] <= result.price &&
+      result.price <= bids[result.quantity - 1])
+  )
+}
