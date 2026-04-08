@@ -1,0 +1,48 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/stablecoin_engine"
+
+// Values
+pub fn add_collateral(Engine, Int) -> Engine
+
+pub fn add_reserve(Engine, Int) -> Engine
+
+pub fn equity_value(Engine) -> Int
+
+pub fn is_liquidatable(Engine) -> Bool
+
+pub fn liquidate_all(Engine) -> LiquidationResult
+
+pub fn make_engine(Int, Int, Int, Int) -> Engine
+
+pub fn max_mintable(Int, Int) -> Int
+
+pub fn mint(Engine, Int) -> Engine
+
+pub fn open_engine(Int, Int, Int, Int) -> Engine
+
+pub fn repay(Engine, Int) -> Engine
+
+pub fn safety_buffer(Engine) -> Int
+
+pub fn withdraw_collateral(Engine, Int) -> Engine
+
+// Errors
+
+// Types and methods
+pub struct Engine {
+  collateral : Int
+  debt : Int
+  reserve : Int
+  min_ratio_bps : Int
+} derive(Eq)
+
+pub struct LiquidationResult {
+  reserve_used : Int
+  remaining_bad_debt : Int
+  next_engine : Engine
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+
