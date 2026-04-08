@@ -22,7 +22,7 @@ pub fn size(Heap) -> Int
 pub enum Heap {
   Empty
   Node(Int, Heap, Heap)
-} derive(Show)
+}
 
 // Type aliases
 

@@ -20,12 +20,14 @@ pub fn size(Heap) -> Int
 pub enum ChildList {
   Nil
   Cons(Heap, ChildList)
-} derive(Show)
+}
+pub impl Show for ChildList
 
 pub enum Heap {
   Empty
   Node(Int, ChildList, Int)
-} derive(Show)
+}
+pub impl Show for Heap
 
 // Type aliases
 

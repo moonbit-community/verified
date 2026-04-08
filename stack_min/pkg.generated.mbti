@@ -20,7 +20,7 @@ pub fn size(MinStack) -> Int
 pub enum MinStack {
   Nil
   Cons(Int, Int, MinStack)
-} derive(Show)
+}
 
 // Type aliases
 
