@@ -185,7 +185,6 @@ lemma[T : Compare] root_once_nonneg(x : T, value : T) where {
 lemma[T : Compare] root_once_self(value : T) where {
   proof_ensure: 0 < root_once(value, value),
 } {
-  proof_assert value == value
   proof_assert 0 < root_once(value, value)
 }
 

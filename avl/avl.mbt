@@ -330,33 +330,26 @@ fn[T : Compare] balance(
   proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   if height(l) > height(r) + 1 {
-    proof_assert left_heavy(l, r)
     match l {
       Empty => panic()
       Node(ll, _lx, lr, _) =>
         if height(ll) >= height(lr) {
-          proof_assert !left_double_case(l)
           balance_left_single(l, x, r)
         } else {
-          proof_assert left_double_case(l)
           balance_left_double(l, x, r)
         }
     }
   } else if height(r) > height(l) + 1 {
-    proof_assert right_heavy(l, r)
     match r {
       Empty => panic()
       Node(rl, _rx, rr, _) =>
         if height(rr) >= height(rl) {
-          proof_assert !right_double_case(r)
           balance_right_single(l, x, r)
         } else {
-          proof_assert right_double_case(r)
           balance_right_double(l, x, r)
         }
     }
   } else {
-    proof_assert balanced_heights(l, r)
     mk(l, x, r)
   }
 }
@@ -388,7 +381,6 @@ fn[T : Compare] remove_min(
         }
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
-          proof_assert remove_min_post(l, (m, l1))
           proof_assert avl_inv(l1)
           proof_assert l.model().mem(m)
           proof_assert l.model().eq(l1.model().add(m))
@@ -439,11 +431,9 @@ pub fn[T : Compare] insert(
     Node(l, y, r, _) =>
       if x < y {
         let l1 = insert(x, l)
-        proof_assert balance_pre(l1, y, r)
         balance(l1, y, r)
       } else if y < x {
         let r1 = insert(x, r)
-        proof_assert balance_pre(l, y, r1)
         balance(l, y, r1)
       } else {
         t
@@ -472,21 +462,16 @@ pub fn[T : Compare] delete(
   proof_ensure: result => height(result) <= height(t),
 } {
   match t {
-    Empty => {
-      proof_assert t.model().eq(t.model().remove(x))
-      Empty
-    }
+    Empty => Empty
     Node(l, y, r, _) =>
       if x < y {
         let l1 = delete(x, l)
-        proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
         proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
         proof_assert t1.model().eq(t.model().remove(x))
         t1
       } else if y < x {
         let r1 = delete(x, r)
-        proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
         proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
         proof_assert t1.model().eq(t.model().remove(x))
@@ -499,14 +484,12 @@ pub fn[T : Compare] delete(
           }
           Node(_, _, _, _) => {
             let (s, r1) = remove_min(r)
-            proof_assert remove_min_post(r, (s, r1))
             proof_assert all_gt(y, r.model())
             proof_assert r.model().mem(s)
             proof_assert y < s
             proof_assert r.model().eq(r1.model().add(s))
             proof_assert t.model().eq(l.model().union(r.model()).add(y))
             proof_assert all_lt(l.model(), s)
-            proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert t1.model().eq(t.model().remove(x))
             t1

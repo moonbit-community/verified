@@ -62,7 +62,6 @@ fn[T : Compare] singleton(
   proof_ensure: result => singleton_post(value, result),
 } {
   let result = Node(value, Empty, Empty)
-  proof_assert singleton_post(value, result)
   result
 }
 
@@ -81,14 +80,8 @@ pub fn[T : Compare] merge(
   proof_ensure: result => merge_post(a, b, result),
 } {
   match (a, b) {
-    (Empty, _) => {
-      proof_assert merge_post(a, b, b)
-      b
-    }
-    (_, Empty) => {
-      proof_assert merge_post(a, b, a)
-      a
-    }
+    (Empty, _) => b
+    (_, Empty) => a
     (Node(va, la, ra), Node(vb, lb, rb)) =>
       if va <= vb {
         let merged = merge(ra, b)
