@@ -5,7 +5,7 @@
 pub enum Heap {
   Empty
   Node(Int, Heap, Heap)
-} derive(Show)
+}
 
 ///|
 #proof_pure

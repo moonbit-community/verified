@@ -6,7 +6,7 @@
 pub enum Heap {
   Empty
   Node(Int, ChildList, Int)
-} derive(Show)
+}
 
 ///|
 /// The child list is just the forest hanging off the root, but its invariant
@@ -14,7 +14,37 @@ pub enum Heap {
 pub enum ChildList {
   Nil
   Cons(Heap, ChildList)
-} derive(Show)
+}
+
+///|
+pub impl Show for Heap with output(self, logger) {
+  match self {
+    Empty => logger.write_string("Empty")
+    Node(value, children, size) => {
+      logger.write_string("Node(")
+      logger.write_object(value)
+      logger.write_string(", ")
+      logger.write_object(children)
+      logger.write_string(", ")
+      logger.write_object(size)
+      logger.write_string(")")
+    }
+  }
+}
+
+///|
+pub impl Show for ChildList with output(self, logger) {
+  match self {
+    Nil => logger.write_string("Nil")
+    Cons(head, tail) => {
+      logger.write_string("Cons(")
+      logger.write_object(head)
+      logger.write_string(", ")
+      logger.write_object(tail)
+      logger.write_string(")")
+    }
+  }
+}
 
 ///|
 #proof_pure
