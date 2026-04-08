@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/threshold_multisig"
+
+// Values
+pub fn approval_count_step_one(FixedArray[Int], Int) -> Unit
+
+pub fn approval_count_step_zero(FixedArray[Int], Int) -> Unit
+
+pub fn can_execute(FixedArray[Int], Int) -> Bool
+
+pub fn count_approvals(FixedArray[Int]) -> Int
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

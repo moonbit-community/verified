@@ -2,7 +2,7 @@
 pub fn first_breach(
   exposures : FixedArray[Int],
   limits : FixedArray[Int],
-) -> Option[Int] where {
+) -> Int? where {
   proof_require: same_length(exposures, limits),
   proof_ensure: result => first_breach_post(exposures, limits, result),
 } {
@@ -19,15 +19,14 @@ pub fn first_breach(
   } where {
     proof_invariant: 0 <= i,
     proof_invariant: i <= exposures.length(),
-    proof_invariant:
-      first == missing || (
-        0 <= first &&
-        first < i &&
-        limits[first] < exposures[first] &&
-        all_safe_before(exposures, limits, first)
-      ),
-    proof_invariant:
-      first != missing || all_safe_before(exposures, limits, i),
+    proof_invariant: first == missing ||
+    (
+      0 <= first &&
+      first < i &&
+      limits[first] < exposures[first] &&
+      all_safe_before(exposures, limits, first)
+    ),
+    proof_invariant: first != missing || all_safe_before(exposures, limits, i),
     proof_reasoning: (
       #| `i` is the first unchecked account index and `first` is either the
       #| sentinel `missing` or the earliest breach found so far.

@@ -1,0 +1,29 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/ltv_lending"
+
+// Values
+pub fn add_collateral(Position, Int) -> Position
+
+pub fn borrow(Position, Int) -> Position
+
+pub fn is_liquidatable(Position) -> Bool
+
+pub fn max_safe_debt(Int, Int) -> Int
+
+pub fn open(Int, Int, Int) -> Position
+
+pub fn repay(Position, Int) -> Position
+
+// Errors
+
+// Types and methods
+pub struct Position {
+  collateral : Int
+  debt : Int
+  max_ltv_bps : Int
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+

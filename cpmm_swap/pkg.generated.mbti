@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/cpmm_swap"
+
+// Values
+pub fn make_pool(Int, Int, Int) -> Pool
+
+pub fn quote_amount_out(Pool, Int) -> Int
+
+pub fn swap_x_for_y(Pool, Int) -> SwapResult
+
+// Errors
+
+// Types and methods
+pub struct Pool {
+  reserve_in : Int
+  reserve_out : Int
+  fee_bps : Int
+} derive(Eq)
+
+pub struct SwapResult {
+  amount_out : Int
+  next_pool : Pool
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+

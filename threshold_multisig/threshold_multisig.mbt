@@ -1,5 +1,7 @@
 ///|
-pub fn count_approvals(votes : FixedArray[Int]) -> Int where {
+pub fn count_approvals(
+  votes : FixedArray[Int],
+) -> Int where {
   proof_require: binary_votes(votes),
   proof_ensure: result => count_approvals_post(votes, result),
 } {
@@ -32,7 +34,10 @@ pub fn count_approvals(votes : FixedArray[Int]) -> Int where {
 }
 
 ///|
-pub fn can_execute(votes : FixedArray[Int], threshold : Int) -> Bool where {
+pub fn can_execute(
+  votes : FixedArray[Int],
+  threshold : Int,
+) -> Bool where {
   proof_require: binary_votes(votes),
   proof_require: 0 <= threshold,
   proof_require: threshold <= votes.length(),

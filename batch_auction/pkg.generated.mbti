@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/batch_auction"
+
+// Values
+pub fn clear_book(FixedArray[Int], FixedArray[Int]) -> AuctionResult
+
+pub fn clearing_quantity(FixedArray[Int], FixedArray[Int]) -> Int
+
+// Errors
+
+// Types and methods
+pub struct AuctionResult {
+  quantity : Int
+  price : Int
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+

@@ -23,7 +23,10 @@ pub fn make_pool(reserve_in : Int, reserve_out : Int, fee_bps : Int) -> Pool {
 }
 
 ///|
-pub fn quote_amount_out(pool : Pool, amount_in : Int) -> Int where {
+pub fn quote_amount_out(
+  pool : Pool,
+  amount_in : Int,
+) -> Int where {
   proof_require: pool_inv(pool),
   proof_require: 0 < amount_in,
   proof_ensure: result => quote_post(pool, amount_in, result),
@@ -43,7 +46,10 @@ pub fn quote_amount_out(pool : Pool, amount_in : Int) -> Int where {
 }
 
 ///|
-pub fn swap_x_for_y(pool : Pool, amount_in : Int) -> SwapResult where {
+pub fn swap_x_for_y(
+  pool : Pool,
+  amount_in : Int,
+) -> SwapResult where {
   proof_require: pool_inv(pool),
   proof_require: 0 < amount_in,
   proof_ensure: result => swap_post(pool, amount_in, result),
@@ -57,15 +63,18 @@ pub fn swap_x_for_y(pool : Pool, amount_in : Int) -> SwapResult where {
   let fee = fee_multiplier(pool.fee_bps)
   proof_assert 0 < fee
   proof_assert fee <= 10000
-  proof_assert fee * (pool.reserve_in + amount_in) <= pool.reserve_in * 10000 + amount_in * fee
-  proof_assert amount_out * fee * (pool.reserve_in + amount_in) <= amount_in * fee * pool.reserve_out
-  proof_assert amount_out * (pool.reserve_in + amount_in) <= amount_in * pool.reserve_out
-  proof_assert
-    next_pool.reserve_in * next_pool.reserve_out ==
+  proof_assert fee * (pool.reserve_in + amount_in) <=
+    pool.reserve_in * 10000 + amount_in * fee
+  proof_assert amount_out * fee * (pool.reserve_in + amount_in) <=
+    amount_in * fee * pool.reserve_out
+  proof_assert amount_out * (pool.reserve_in + amount_in) <=
+    amount_in * pool.reserve_out
+  proof_assert next_pool.reserve_in * next_pool.reserve_out ==
     pool.reserve_in * pool.reserve_out +
     amount_in * pool.reserve_out -
     amount_out * (pool.reserve_in + amount_in)
-  proof_assert next_pool.reserve_in * next_pool.reserve_out >= pool.reserve_in * pool.reserve_out
+  proof_assert next_pool.reserve_in * next_pool.reserve_out >=
+    pool.reserve_in * pool.reserve_out
   let result = { amount_out, next_pool }
   proof_assert swap_post(pool, amount_in, result)
   result

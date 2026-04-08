@@ -49,9 +49,8 @@ pub fn borrow(
 ) -> Position where {
   proof_require: safe_position(position),
   proof_require: 0 <= extra_debt,
-  proof_require:
-    (position.debt + extra_debt) * 10000 <=
-    position.collateral * position.max_ltv_bps,
+  proof_require: (position.debt + extra_debt) * 10000 <=
+  position.collateral * position.max_ltv_bps,
   proof_ensure: result => borrow_post(position, extra_debt, result),
 } {
   let result = {
@@ -91,24 +90,30 @@ pub fn add_collateral(
 ) -> Position where {
   proof_require: safe_position(position),
   proof_require: 0 <= extra_collateral,
-  proof_ensure: result => add_collateral_post(position, extra_collateral, result),
+  proof_ensure: result => {
+    add_collateral_post(position, extra_collateral, result)
+  },
 } {
   let result = {
     collateral: position.collateral + extra_collateral,
     debt: position.debt,
     max_ltv_bps: position.max_ltv_bps,
   }
-  proof_assert buffer(result) == buffer(position) + extra_collateral * position.max_ltv_bps
+  proof_assert buffer(result) ==
+    buffer(position) + extra_collateral * position.max_ltv_bps
   proof_assert add_collateral_post(position, extra_collateral, result)
   result
 }
 
 ///|
-pub fn is_liquidatable(position : Position) -> Bool where {
+pub fn is_liquidatable(
+  position : Position,
+) -> Bool where {
   proof_require: position_inv(position),
   proof_ensure: result => liquidatable_post(position, result),
 } {
-  let result = position.collateral * position.max_ltv_bps < position.debt * 10000
+  let result = position.collateral * position.max_ltv_bps <
+    position.debt * 10000
   proof_assert liquidatable_post(position, result)
   result
 }

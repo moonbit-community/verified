@@ -1,0 +1,26 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/vesting_stream"
+
+// Values
+pub fn claimable(Stream, Int) -> Int
+
+pub fn create_stream(Int, Int, Int) -> Stream
+
+pub fn release(Stream, Int) -> Stream
+
+pub fn vested_amount(Int, Int, Int, Int) -> Int
+
+// Errors
+
+// Types and methods
+pub struct Stream {
+  total : Int
+  released : Int
+  start : Int
+  duration : Int
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+

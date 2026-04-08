@@ -19,7 +19,11 @@ fn vested_at(total : Int, start : Int, duration : Int, now : Int) -> Int {
 }
 
 ///|
-pub fn create_stream(total : Int, start : Int, duration : Int) -> Stream where {
+pub fn create_stream(
+  total : Int,
+  start : Int,
+  duration : Int,
+) -> Stream where {
   proof_require: 0 <= total,
   proof_require: 0 < duration,
   proof_ensure: result => stream_inv(result),
@@ -38,7 +42,9 @@ pub fn vested_amount(
 ) -> Int where {
   proof_require: 0 <= total,
   proof_require: 0 < duration,
-  proof_ensure: result => vested_amount_post(total, start, duration, now, result),
+  proof_ensure: result => {
+    vested_amount_post(total, start, duration, now, result)
+  },
 } {
   let result = vested_at(total, start, duration, now)
   proof_assert vested_amount_post(total, start, duration, now, result)
@@ -46,7 +52,10 @@ pub fn vested_amount(
 }
 
 ///|
-pub fn claimable(stream : Stream, now : Int) -> Int where {
+pub fn claimable(
+  stream : Stream,
+  now : Int,
+) -> Int where {
   proof_require: stream_inv(stream),
   proof_ensure: result => claimable_post(stream, now, result),
 } {
@@ -61,12 +70,19 @@ pub fn claimable(stream : Stream, now : Int) -> Int where {
 }
 
 ///|
-pub fn release(stream : Stream, now : Int) -> Stream where {
+pub fn release(
+  stream : Stream,
+  now : Int,
+) -> Stream where {
   proof_require: stream_inv(stream),
   proof_ensure: result => release_post(stream, now, result),
 } {
   let vested = vested_at(stream.total, stream.start, stream.duration, now)
-  let released = if vested <= stream.released { stream.released } else { vested }
+  let released = if vested <= stream.released {
+    stream.released
+  } else {
+    vested
+  }
   let result = {
     total: stream.total,
     released,
