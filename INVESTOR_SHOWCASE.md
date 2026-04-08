@@ -1,6 +1,6 @@
 # Investor Showcase
 
-This branch adds seven finance and crypto examples that are intentionally more
+This branch adds nine finance and crypto examples that are intentionally more
 business-facing than the baseline algorithm demos. Each one is executable
 MoonBit code with proof obligations discharged through the Why3 backend.
 
@@ -9,6 +9,8 @@ MoonBit code with proof obligations discharged through the Why3 backend.
 | Package | Domain | What is proved | Why it matters |
 |---------|--------|----------------|----------------|
 | `stablecoin_engine` | Stablecoins / protocol solvency | Safe mint/repay/withdraw transitions preserve collateralization exactly, and full liquidation computes exact residual bad debt after consuming collateral and reserve. | This is the flagship example: it is much closer to a real protocol safety story than a standalone math primitive. |
+| `clearinghouse_waterfall` | Exchanges / risk mutualization | A default is resolved through insurance, junior capital, senior capital, and finally socialized loss, with the exact loss split proved. | This is a stronger institutional-risk story than simple collateral math because it certifies the whole loss waterfall. |
+| `bridge_custody` | Bridges / custody | Every withdrawal consumes a fresh nonce exactly once, preserves the rest of the nonce set, and reduces reserves by the exact amount. | Shows replay protection and custody safety with an explicit state model, not just scalar accounting. |
 | `cpmm_swap` | DeFi / AMMs | The fee-adjusted quote is a valid floor quote, output never drains reserves, and the post-swap pool invariant does not decrease. | Shows protocol math, slippage control, and reserve safety in one compact example. |
 | `ltv_lending` | Lending / credit | `max_safe_debt` is the exact floor of the LTV bound, and `borrow`, `repay`, and `add_collateral` preserve solvency while updating the risk buffer exactly. | Demonstrates provable collateral safety and deterministic risk accounting. |
 | `batch_auction` | Exchanges / market structure | A binary search finds the exact frontier between matched and unmatched orders, and the returned clearing price stays inside the marginal spread. | Shows that formal methods can certify a realistic market-clearing engine, not just toy arithmetic. |
@@ -29,6 +31,8 @@ Or demo just the showcase packages one by one:
 
 ```sh
 moon prove stablecoin_engine
+moon prove clearinghouse_waterfall
+moon prove bridge_custody
 moon prove cpmm_swap
 moon prove ltv_lending
 moon prove batch_auction
@@ -39,8 +43,9 @@ moon prove threshold_multisig
 
 ## Caveats
 
-If you only show one package in a pitch, show `stablecoin_engine` first. It is
-the closest thing in the repo to a protocol-level solvency guarantee.
+If you only show one package in a pitch, show `stablecoin_engine` first. If you
+show two, pair it with `clearinghouse_waterfall`: together they tell a fuller
+story about prevention plus loss containment.
 
 The current proof/backend limitations I found while building these examples are
 tracked in [PROOF_SYSTEM_FINDINGS.md](PROOF_SYSTEM_FINDINGS.md). The most

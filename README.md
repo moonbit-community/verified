@@ -177,6 +177,8 @@ For more market-facing examples, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md
 The new packages are:
 
 - `stablecoin_engine` — verified mint/repay/withdraw/liquidate flows with exact bad-debt resolution
+- `clearinghouse_waterfall` — exact multi-layer default waterfall with insurance, junior, senior, and socialized loss
+- `bridge_custody` — replay-safe bridge withdrawals with exact nonce-set updates
 - `cpmm_swap` — fee-adjusted constant-product AMM swap math with reserve-safety and invariant proofs
 - `ltv_lending` — solvency-preserving lending operations with exact risk-buffer accounting
 - `batch_auction` — verified uniform-price batch-auction frontier search

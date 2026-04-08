@@ -1,0 +1,51 @@
+predicate house_inv(house : House) {
+  0 <= house.collateral &&
+  0 <= house.liability &&
+  0 <= house.insurance &&
+  0 <= house.junior &&
+  0 <= house.senior
+}
+
+predicate total_buffer_post(house : House, result : Int) {
+  house_inv(house) &&
+  result == house.insurance + house.junior + house.senior
+}
+
+predicate can_fully_absorb_post(house : House, result : Bool) {
+  house_inv(house) &&
+  result == (shortfall(house) <= house.insurance + house.junior + house.senior)
+}
+
+predicate add_insurance_post(house : House, amount : Int, result : House) {
+  house_inv(result) &&
+  result.collateral == house.collateral &&
+  result.liability == house.liability &&
+  result.insurance == house.insurance + amount &&
+  result.junior == house.junior &&
+  result.senior == house.senior &&
+  shortfall(result) == shortfall(house)
+}
+
+predicate resolve_default_post(house : House, result : Resolution) {
+  house_inv(house) &&
+  house_inv(result.next_house) &&
+  result.insurance_used == insurance_used_to_cover(house) &&
+  result.junior_used == junior_used_to_cover(house) &&
+  result.senior_used == senior_used_to_cover(house) &&
+  result.socialized_loss == socialized_tail_loss(house) &&
+  result.next_house.collateral == 0 &&
+  result.next_house.liability == 0 &&
+  result.next_house.insurance == house.insurance - insurance_used_to_cover(house) &&
+  result.next_house.junior == house.junior - junior_used_to_cover(house) &&
+  result.next_house.senior == house.senior - senior_used_to_cover(house) &&
+  result.insurance_used + result.junior_used + result.senior_used + result.socialized_loss ==
+    shortfall(house) &&
+  (
+    result.socialized_loss == 0 ||
+    (
+      result.next_house.insurance == 0 &&
+      result.next_house.junior == 0 &&
+      result.next_house.senior == 0
+    )
+  )
+}

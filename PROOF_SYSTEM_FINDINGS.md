@@ -72,6 +72,23 @@ Impact:
 - Demo code either needs explicit overflow preconditions or test inputs chosen
   to stay inside MoonBit runtime integer limits.
 
+### 5. Some proof dependencies still need explicit direct package imports
+
+Direct experiment:
+
+- In the `bridge_custody` package, importing `bitmap32` was not enough for the
+  proof pipeline even though `bitmap32` already depends on `bv32`.
+- `moon prove bridge_custody` hit a compiler ICE until I added an explicit
+  direct `bv32` dependency in `bridge_custody/moon.pkg`.
+
+Impact:
+
+- Proof dependency resolution is not fully robust across transitive proof-only
+  requirements.
+- When a package reuses proof-side definitions from another verified package,
+  it may still need to import lower-level proof dependencies directly to keep
+  the prover pipeline stable.
+
 ## Practical Design Consequences
 
 The current examples in this branch therefore bias toward proof shapes that the
@@ -89,6 +106,7 @@ I am intentionally avoiding proof designs that depend on:
 - pure helper functions that need preconditions
 - large inline contract formulas instead of named predicates
 - arithmetic demos with large unchecked intermediate products
+- relying on transitive proof dependencies to be discovered automatically
 
 ## Suggested Future Improvements
 
