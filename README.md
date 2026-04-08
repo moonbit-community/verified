@@ -171,6 +171,18 @@ The project contains a compact set of example packages at increasing difficulty:
 | `checksorted` | If result == 1, all adjacent pairs in order — connects a boolean flag to a quantified property |
 | `arreq` | Two-array equality: if result == 1, `∀ k, xs[k] == ys[k]` |
 
+## Investor-Grade Crypto / Finance Showcase
+
+For more market-facing examples, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md).
+The new packages are:
+
+- `cpmm_swap` — fee-adjusted constant-product AMM swap math with reserve-safety and invariant proofs
+- `ltv_lending` — solvency-preserving lending operations with exact risk-buffer accounting
+- `batch_auction` — verified uniform-price batch-auction frontier search
+- `risk_limits` — earliest-breach risk monitor for bounded exposure envelopes
+- `vesting_stream` — bounded token vesting and release logic
+- `threshold_multisig` — exact threshold execution via counted approvals
+
 ## Known limitations
 
 See [TODO.md](TODO.md) for detailed writeups. Summary:

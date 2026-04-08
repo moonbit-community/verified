@@ -1,0 +1,33 @@
+predicate valid_fee_bps(fee_bps : Int) {
+  0 <= fee_bps && fee_bps < 10000
+}
+
+predicate pool_inv(pool : Pool) {
+  0 < pool.reserve_in &&
+  0 < pool.reserve_out &&
+  valid_fee_bps(pool.fee_bps)
+}
+
+predicate quote_post(pool : Pool, amount_in : Int, result : Int) {
+  pool_inv(pool) &&
+  0 < amount_in &&
+  0 <= result &&
+  result < pool.reserve_out &&
+  result *
+    (pool.reserve_in * 10000 + amount_in * fee_multiplier(pool.fee_bps)) <=
+    amount_in * fee_multiplier(pool.fee_bps) * pool.reserve_out &&
+  amount_in * fee_multiplier(pool.fee_bps) * pool.reserve_out <
+    (result + 1) *
+      (pool.reserve_in * 10000 + amount_in * fee_multiplier(pool.fee_bps))
+}
+
+predicate swap_post(pool : Pool, amount_in : Int, result : SwapResult) {
+  quote_post(pool, amount_in, result.amount_out) &&
+  pool_inv(result.next_pool) &&
+  result.next_pool.reserve_in == pool.reserve_in + amount_in &&
+  result.next_pool.reserve_out == pool.reserve_out - result.amount_out &&
+  result.next_pool.fee_bps == pool.fee_bps &&
+  result.amount_out * (pool.reserve_in + amount_in) <= amount_in * pool.reserve_out &&
+  result.next_pool.reserve_in * result.next_pool.reserve_out >=
+    pool.reserve_in * pool.reserve_out
+}
