@@ -176,6 +176,7 @@ The project contains a compact set of example packages at increasing difficulty:
 For more market-facing examples, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md).
 The new packages are:
 
+- `stablecoin_engine` — verified mint/repay/withdraw/liquidate flows with exact bad-debt resolution
 - `cpmm_swap` — fee-adjusted constant-product AMM swap math with reserve-safety and invariant proofs
 - `ltv_lending` — solvency-preserving lending operations with exact risk-buffer accounting
 - `batch_auction` — verified uniform-price batch-auction frontier search
