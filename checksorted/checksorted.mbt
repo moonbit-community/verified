@@ -1,6 +1,6 @@
 ///|
-pub fn check_sorted(
-  xs : FixedArray[Int],
+pub fn[T : Compare] check_sorted(
+  xs : FixedArray[T],
 ) -> Int where {
   proof_ensure: result => check_sorted_ok(xs, result),
 } {

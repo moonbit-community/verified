@@ -1,17 +1,31 @@
-predicate sorted_desc(arr : FixedArray[Int]) {
+predicate[T : Compare] sorted_desc(arr : FixedArray[T]) {
   ∀ k : Int,
-    (0 <= k && k + 1 < arr.length()) → arr[k] >= arr[k + 1]
+    (0 <= k && k + 1 < arr.length()) → arr[k + 1] <= arr[k]
 }
 
-predicate prefix_dominates_suffix(arr : FixedArray[Int], i : Int) {
+predicate[T : Compare] prefix_dominates_suffix(arr : FixedArray[T], i : Int) {
   ∀ j : Int, ∀ k : Int,
-    (0 <= j && j < i && j < k && k < arr.length()) → arr[j] >= arr[k]
+    (0 <= j && j < i && j < k && k < arr.length()) →
+      arr[k] <= arr[j]
 }
 
-predicate max_in_range(arr : FixedArray[Int], i : Int, j : Int, ub : Int) {
-  ∀ k : Int, (i <= k && k < j) → ub >= arr[k]
+predicate[T : Compare] max_in_range(arr : FixedArray[T], i : Int, j : Int, ub : T) {
+  ∀ k : Int, (i <= k && k < j) → arr[k] <= ub
 }
 
-predicate max_index_in_range(_arr : FixedArray[Int], i : Int, j : Int, l : Int) {
+predicate[T] max_index_in_range(_arr : FixedArray[T], i : Int, j : Int, l : Int) {
   i <= l && l < j
+}
+
+predicate[T : Compare] suffix_head_dominates(arr : FixedArray[T], i : Int) {
+  ∀ k : Int, (i < k && k < arr.length()) → arr[k] <= arr[i]
+}
+
+lemma[T : Compare] extend_prefix_dominates(arr : FixedArray[T], i : Int) where {
+  proof_require: 0 <= i,
+  proof_require: i < arr.length(),
+  proof_require: prefix_dominates_suffix(arr, i),
+  proof_require: suffix_head_dominates(arr, i),
+  proof_ensure: prefix_dominates_suffix(arr, i + 1),
+} {
 }

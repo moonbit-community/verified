@@ -2,20 +2,20 @@
 package "moonbit-community/verified/avl"
 
 // Values
-pub fn contains(Int, Tree) -> Bool
+pub fn[T : Compare] contains(T, Tree[T]) -> Bool
 
-pub fn delete(Int, Tree) -> Tree
+pub fn[T : Compare] delete(T, Tree[T]) -> Tree[T]
 
-pub fn empty() -> Tree
+pub fn[T] empty() -> Tree[T]
 
-pub fn insert(Int, Tree) -> Tree
+pub fn[T : Compare] insert(T, Tree[T]) -> Tree[T]
 
 // Errors
 
 // Types and methods
-pub enum Tree {
+pub enum Tree[T] {
   Empty
-  Node(Tree, Int, Tree, Int)
+  Node(Tree[T], T, Tree[T], Int)
 }
 
 // Type aliases

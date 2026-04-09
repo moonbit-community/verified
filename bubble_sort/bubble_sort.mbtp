@@ -1,13 +1,14 @@
-predicate sorted_desc(arr : FixedArray[Int]) {
+predicate[T : Compare] sorted_desc(arr : FixedArray[T]) {
   ∀ k : Int,
-    (0 <= k && k + 1 < arr.length()) → arr[k] >= arr[k + 1]
+    (0 <= k && k + 1 < arr.length()) → arr[k + 1] <= arr[k]
 }
 
-predicate prefix_dominates_suffix(arr : FixedArray[Int], i : Int) {
+predicate[T : Compare] prefix_dominates_suffix(arr : FixedArray[T], i : Int) {
   ∀ k : Int, ∀ l : Int,
-    (0 <= k && k < i && k < l && l < arr.length()) → arr[k] >= arr[l]
+    (0 <= k && k < i && k < l && l < arr.length()) →
+      arr[l] <= arr[k]
 }
 
-predicate suffix_head_dominates(arr : FixedArray[Int], j : Int) {
-  ∀ k : Int, (j <= k && k < arr.length()) → arr[j] >= arr[k]
+predicate[T : Compare] suffix_head_dominates(arr : FixedArray[T], j : Int) {
+  ∀ k : Int, (j <= k && k < arr.length()) → arr[k] <= arr[j]
 }

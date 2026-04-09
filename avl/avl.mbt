@@ -2,14 +2,14 @@
 using @fset {type Fset}
 
 ///|
-pub enum Tree {
+pub enum Tree[T] {
   Empty
-  Node(Tree, Int, Tree, Int)
+  Node(Tree[T], T, Tree[T], Int)
 }
 
 ///|
 #proof_pure
-fn height(t : Tree) -> Int {
+fn[T] height(t : Tree[T]) -> Int {
   match t {
     Empty => 0
     Node(_, _, _, h) => h
@@ -27,7 +27,7 @@ fn max2(a : Int, b : Int) -> Int {
 }
 
 ///|
-pub fn empty() -> Tree {
+pub fn[T] empty() -> Tree[T] {
   Empty
 }
 
@@ -41,11 +41,11 @@ pub fn empty() -> Tree {
 /// returned height is computed directly from the children, so later proofs can
 /// treat `mk` as the single place where structure, ordering, and height are
 /// recombined.
-fn mk(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] mk(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: avl_inv(l),
   proof_require: avl_inv(r),
   proof_require: all_lt(l.model(), x),
@@ -59,7 +59,7 @@ fn mk(
 }
 
 ///|
-pub fn contains(x : Int, t : Tree) -> Bool {
+pub fn[T : Compare] contains(x : T, t : Tree[T]) -> Bool {
   match t {
     Empty => false
     Node(l, y, r, _) =>
@@ -82,11 +82,11 @@ pub fn contains(x : Int, t : Tree) -> Bool {
 /// The intermediate `mk` calls isolate the local rotations; the final equality
 /// proof shows that the rotated tree preserves exactly the same element set as
 /// the pre-rotation configuration.
-fn balance_left_double(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] balance_left_double(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
   proof_require: left_heavy(l, r),
   proof_require: left_double_case(l),
@@ -101,6 +101,8 @@ fn balance_left_double(
       match lr {
         Empty => panic()
         Node(lrl, lrx, lrr, _) => {
+          proof_assert l.model().eq(ll.model().union(lr.model()).add(lx))
+          proof_assert lr.model().eq(lrl.model().union(lrr.model()).add(lrx))
           proof_assert l.model().mem(lrx)
           proof_assert lx < lrx
           proof_assert lrx < x
@@ -123,9 +125,25 @@ fn balance_left_double(
           let nr = mk(lrr, x, r)
           proof_assert nr.model().eq(lrr.model().union(r.model()).add(x))
           proof_assert height(nr) == 1 + max2(height(lrr), height(r))
-          proof_assert all_lt(nl.model(), lrx) && all_gt(lrx, nr.model())
+          proof_assert all_lt(ll.model(), lrx)
+          proof_assert all_lt(lrl.model(), lrx)
+          proof_assert all_lt(ll.model().union(lrl.model()), lrx)
+          proof_assert all_lt(nl.model(), lrx)
+          proof_assert all_gt(lrx, lrr.model())
+          proof_assert all_gt(lrx, r.model())
+          proof_assert all_gt(lrx, lrr.model().union(r.model()))
+          proof_assert all_gt(lrx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
+          proof_assert double_rotation_eq_lr(
+            lrx,
+            lx,
+            x,
+            ll.model(),
+            lrl.model(),
+            lrr.model(),
+            r.model(),
+          )
           proof_assert nl
             .model()
             .union(nr.model())
@@ -144,11 +162,11 @@ fn balance_left_double(
 /// same three obligations in mirrored order: preserve the in-order partition,
 /// rebuild balanced children around the inner grandchild, and then show the
 /// final tree keeps both the AVL height bound and the exact element set.
-fn balance_right_double(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] balance_right_double(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
   proof_require: right_heavy(l, r),
   proof_require: right_double_case(r),
@@ -163,6 +181,8 @@ fn balance_right_double(
       match rl {
         Empty => panic()
         Node(rll, rlx, rlr, _) => {
+          proof_assert r.model().eq(rl.model().union(rr.model()).add(rx))
+          proof_assert rl.model().eq(rll.model().union(rlr.model()).add(rlx))
           proof_assert r.model().mem(rlx)
           proof_assert elements_subset(rl, r)
           proof_assert elements_subset(rll, rl)
@@ -182,12 +202,19 @@ fn balance_right_double(
           proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
           proof_assert nr.model().eq(rlr.model().union(rr.model()).add(rx))
-          proof_assert all_lt(nl.model(), rlx) && all_gt(rlx, nr.model())
+          proof_assert all_lt(l.model(), rlx)
+          proof_assert all_lt(rll.model(), rlx)
+          proof_assert all_lt(l.model().union(rll.model()), rlx)
+          proof_assert all_lt(nl.model(), rlx)
+          proof_assert all_gt(rlx, rlr.model())
+          proof_assert all_gt(rlx, rr.model())
+          proof_assert all_gt(rlx, rlr.model().union(rr.model()))
+          proof_assert all_gt(rlx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
           proof_assert double_rotation_eq_rl(
-            x,
             rlx,
+            x,
             rx,
             l.model(),
             rll.model(),
@@ -213,11 +240,11 @@ fn balance_right_double(
 /// rebuilds the right subtree around `x`, then uses the cached height relation
 /// to show the new root is balanced and preserves exactly the same set of
 /// elements as the unrebalanced node.
-fn balance_left_single(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] balance_left_single(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
   proof_require: left_heavy(l, r),
   proof_require: !left_double_case(l),
@@ -257,11 +284,11 @@ fn balance_left_single(
 /// as the left-single case, but with the subtrees swapped: rebuild the left
 /// child around `x`, use the height inequality to justify the new root, and
 /// finish by rewriting the element-set equation back to the original tree.
-fn balance_right_single(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] balance_right_single(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
   proof_require: right_heavy(l, r),
   proof_require: !right_double_case(r),
@@ -302,11 +329,11 @@ fn balance_right_single(
 /// and double rotation lemmas; otherwise `mk` is already sufficient. This
 /// function is the bridge between recursive edits and the local AVL repair
 /// lemmas above.
-fn balance(
-  l : Tree,
-  x : Int,
-  r : Tree,
-) -> Tree where {
+fn[T : Compare] balance(
+  l : Tree[T],
+  x : T,
+  r : Tree[T],
+) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
   proof_ensure: result => avl_inv(result),
   proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
@@ -317,33 +344,26 @@ fn balance(
   proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   if height(l) > height(r) + 1 {
-    proof_assert left_heavy(l, r)
     match l {
       Empty => panic()
       Node(ll, _lx, lr, _) =>
         if height(ll) >= height(lr) {
-          proof_assert !left_double_case(l)
           balance_left_single(l, x, r)
         } else {
-          proof_assert left_double_case(l)
           balance_left_double(l, x, r)
         }
     }
   } else if height(r) > height(l) + 1 {
-    proof_assert right_heavy(l, r)
     match r {
       Empty => panic()
       Node(rl, _rx, rr, _) =>
         if height(rr) >= height(rl) {
-          proof_assert !right_double_case(r)
           balance_right_single(l, x, r)
         } else {
-          proof_assert right_double_case(r)
           balance_right_double(l, x, r)
         }
     }
   } else {
-    proof_assert balanced_heights(l, r)
     mk(l, x, r)
   }
 }
@@ -357,9 +377,9 @@ fn balance(
 /// the remaining proof work shows that balancing the modified left subtree with
 /// the original root preserves both the AVL invariant and the set of
 /// elements minus that minimum.
-fn remove_min(
-  t : Tree,
-) -> (Int, Tree) where {
+fn[T : Compare] remove_min(
+  t : Tree[T],
+) -> (T, Tree[T]) where {
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_require: non_empty(t),
@@ -375,7 +395,6 @@ fn remove_min(
         }
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
-          proof_assert remove_min_post(l, (m, l1))
           proof_assert avl_inv(l1)
           proof_assert l.model().mem(m)
           proof_assert l.model().eq(l1.model().add(m))
@@ -410,10 +429,10 @@ fn remove_min(
 /// subtree depending on the comparison, prove the updated child still satisfies
 /// `balance_pre`, and let `balance` restore the local invariant. The equal case
 /// is the no-op branch, so the tree is returned unchanged.
-pub fn insert(
-  x : Int,
-  t : Tree,
-) -> Tree where {
+pub fn[T : Compare] insert(
+  x : T,
+  t : Tree[T],
+) -> Tree[T] where {
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_ensure: result => avl_inv(result),
@@ -426,11 +445,9 @@ pub fn insert(
     Node(l, y, r, _) =>
       if x < y {
         let l1 = insert(x, l)
-        proof_assert balance_pre(l1, y, r)
         balance(l1, y, r)
       } else if y < x {
         let r1 = insert(x, r)
-        proof_assert balance_pre(l, y, r1)
         balance(l, y, r1)
       } else {
         t
@@ -447,10 +464,10 @@ pub fn insert(
 /// the correct result; otherwise `remove_min` supplies the successor `s` and the
 /// remaining right subtree, after which `balance` restores AVL shape around the
 /// replacement root.
-pub fn delete(
-  x : Int,
-  t : Tree,
-) -> Tree where {
+pub fn[T : Compare] delete(
+  x : T,
+  t : Tree[T],
+) -> Tree[T] where {
   proof_decrease: t,
   proof_require: avl_inv(t),
   proof_ensure: result => avl_inv(result),
@@ -459,21 +476,16 @@ pub fn delete(
   proof_ensure: result => height(result) <= height(t),
 } {
   match t {
-    Empty => {
-      proof_assert Empty.model().eq(t.model().remove(x))
-      Empty
-    }
+    Empty => Empty
     Node(l, y, r, _) =>
       if x < y {
         let l1 = delete(x, l)
-        proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
         proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
         proof_assert t1.model().eq(t.model().remove(x))
         t1
       } else if y < x {
         let r1 = delete(x, r)
-        proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
         proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
         proof_assert t1.model().eq(t.model().remove(x))
@@ -486,9 +498,12 @@ pub fn delete(
           }
           Node(_, _, _, _) => {
             let (s, r1) = remove_min(r)
+            proof_assert all_gt(y, r.model())
+            proof_assert r.model().mem(s)
             proof_assert y < s
+            proof_assert r.model().eq(r1.model().add(s))
+            proof_assert t.model().eq(l.model().union(r.model()).add(y))
             proof_assert all_lt(l.model(), s)
-            proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert t1.model().eq(t.model().remove(x))
             t1

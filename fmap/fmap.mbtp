@@ -1,112 +1,94 @@
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_empty() -> Fmap[Int, Int] = "empty"
+fn[V] raw_fmap_empty() -> Fmap[Int, V] = "empty"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_mk(
+fn[V] raw_fmap_mk(
   d : Fset[Int],
-  f : (Int) -> Int,
-) -> Fmap[Int, Int] = "mk"
+  f : (Int) -> V,
+) -> Fmap[Int, V] = "mk"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_mem(k : Int, m : Fmap[Int, Int]) -> Bool = "mem"
+fn[V] raw_fmap_mem(k : Int, m : Fmap[Int, V]) -> Bool = "mem"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_add(
+fn[V] raw_fmap_add(
   k : Int,
-  v : Int,
-  m : Fmap[Int, Int],
-) -> Fmap[Int, Int] = "add"
+  v : V,
+  m : Fmap[Int, V],
+) -> Fmap[Int, V] = "add"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_find(k : Int, m : Fmap[Int, Int]) -> Int = "find"
+fn[V] raw_fmap_find(k : Int, m : Fmap[Int, V]) -> V = "find"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_remove(k : Int, m : Fmap[Int, Int]) -> Fmap[Int, Int] = "remove"
+fn[V] raw_fmap_remove(k : Int, m : Fmap[Int, V]) -> Fmap[Int, V] = "remove"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_eq(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) -> Bool = "(==)"
+fn[V] raw_fmap_eq(m1 : Fmap[Int, V], m2 : Fmap[Int, V]) -> Bool = "(==)"
 
 ///|
 #proof_import("fmap.Fmap")
-fn raw_fmap_size(m : Fmap[Int, Int]) -> Int = "size"
+fn[V] raw_fmap_size(m : Fmap[Int, V]) -> Int = "size"
 
 ///|
-pub fn Fmap::empty() -> Fmap[Int, Int] {
+pub fn[V : Eq] Fmap::empty() -> Fmap[Int, V] {
   raw_fmap_empty()
 }
 
 ///|
-pub fn Fmap::mem(self : Fmap[Int, Int], k : Int) -> Bool {
-  raw_fmap_mem(k, self)
-}
-
-///|
-pub fn Fmap::add(self : Fmap[Int, Int], k : Int, v : Int) -> Fmap[Int, Int] {
-  raw_fmap_add(k, v, self)
-}
-
-///|
-pub fn Fmap::find(self : Fmap[Int, Int], k : Int) -> Int {
-  raw_fmap_find(k, self)
-}
-
-///|
-pub fn Fmap::remove(self : Fmap[Int, Int], k : Int) -> Fmap[Int, Int] {
-  raw_fmap_remove(k, self)
-}
-
-///|
-pub fn Fmap::eq(self : Fmap[Int, Int], other : Fmap[Int, Int]) -> Bool {
-  raw_fmap_eq(self, other)
-}
-
-///|
-pub fn Fmap::size(self : Fmap[Int, Int]) -> Int {
-  raw_fmap_size(self)
-}
-
-///|
-pub fn fmap_empty() -> Fmap[Int, Int] {
-  raw_fmap_empty()
-}
-
-///|
-pub fn fmap_mk(d : Fset[Int], f : (Int) -> Int) -> Fmap[Int, Int] {
+pub fn[V : Eq] Fmap::mk(d : Fset[Int], f : (Int) -> V) -> Fmap[Int, V] {
   raw_fmap_mk(d, f)
 }
 
 ///|
-predicate fmap_eq_hyp(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) {
-  (∀ k : Int, m1.mem(k) == m2.mem(k)) &&
-  (∀ k : Int, m1.mem(k) → m1.find(k) == m2.find(k))
+pub fn[V : Eq] Fmap::mem(self : Fmap[Int, V], k : Int) -> Bool {
+  raw_fmap_mem(k, self)
 }
 
 ///|
-lemma fmap_eq_intro(m1 : Fmap[Int, Int], m2 : Fmap[Int, Int]) where {
-  proof_require: fmap_eq_hyp(m1, m2),
-  proof_ensure: m1.eq(m2),
-} {
+pub fn[V : Eq] Fmap::add(self : Fmap[Int, V], k : Int, v : V) -> Fmap[Int, V] {
+  raw_fmap_add(k, v, self)
 }
 
 ///|
-lemma fmap_add_mem_self(m : Fmap[Int, Int], k : Int, v : Int) where {
+pub fn[V : Eq] Fmap::find(self : Fmap[Int, V], k : Int) -> V {
+  raw_fmap_find(k, self)
+}
+
+///|
+pub fn[V : Eq] Fmap::remove(self : Fmap[Int, V], k : Int) -> Fmap[Int, V] {
+  raw_fmap_remove(k, self)
+}
+
+///|
+pub fn[V : Eq] Fmap::eq(self : Fmap[Int, V], other : Fmap[Int, V]) -> Bool {
+  raw_fmap_eq(self, other)
+}
+
+///|
+pub fn[V : Eq] Fmap::size(self : Fmap[Int, V]) -> Int {
+  raw_fmap_size(self)
+}
+
+///|
+lemma[V : Eq] fmap_add_mem_self(m : Fmap[Int, V], k : Int, v : V) where {
   proof_ensure: m.add(k, v).mem(k),
 } {
 }
 
 ///|
-lemma fmap_add_mem_other(
-  m : Fmap[Int, Int],
+lemma[V : Eq] fmap_add_mem_other(
+  m : Fmap[Int, V],
   k : Int,
   k1 : Int,
-  v : Int,
+  v : V,
 ) where {
   proof_require: k1 != k,
   proof_ensure: m.add(k, v).mem(k1) == m.mem(k1),
@@ -114,49 +96,18 @@ lemma fmap_add_mem_other(
 }
 
 ///|
-lemma fmap_add_find_self(m : Fmap[Int, Int], k : Int, v : Int) where {
-  proof_ensure: m.add(k, v).find(k) == v,
-} {
-}
-
-///|
-lemma fmap_add_find_other(
-  m : Fmap[Int, Int],
-  k : Int,
-  k1 : Int,
-  v : Int,
-) where {
-  proof_require: m.mem(k1),
-  proof_require: k1 != k,
-  proof_ensure: m.add(k, v).find(k1) == m.find(k1),
-} {
-}
-
-///|
-lemma fmap_remove_mem_self(m : Fmap[Int, Int], k : Int) where {
+lemma[V : Eq] fmap_remove_mem_self(m : Fmap[Int, V], k : Int) where {
   proof_ensure: m.remove(k).mem(k) == false,
 } {
 }
 
 ///|
-lemma fmap_remove_mem_other(
-  m : Fmap[Int, Int],
+lemma[V : Eq] fmap_remove_mem_other(
+  m : Fmap[Int, V],
   k : Int,
   k1 : Int,
 ) where {
   proof_require: k1 != k,
   proof_ensure: m.remove(k).mem(k1) == m.mem(k1),
-} {
-}
-
-///|
-lemma fmap_remove_find_other(
-  m : Fmap[Int, Int],
-  k : Int,
-  k1 : Int,
-) where {
-  proof_require: m.mem(k1),
-  proof_require: k1 != k,
-  proof_ensure: m.remove(k).find(k1) == m.find(k1),
 } {
 }

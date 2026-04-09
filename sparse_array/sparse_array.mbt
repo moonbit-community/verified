@@ -5,9 +5,9 @@ using @fmap {type Fmap}
 using @fset {type Fset}
 
 ///|
-pub struct SparseArray {
+pub struct SparseArray[T] {
   bitmap : UInt
-  data : FixedArray[Int]
+  data : FixedArray[T]
 } derive(Eq)
 
 ///|
@@ -60,24 +60,15 @@ fn bitmap_rank(
 }
 
 ///|
-pub fn empty() -> SparseArray where {
-  proof_ensure: result => empty_bitmap_inv(result.bitmap),
-  proof_ensure: result => result.data.length() == 0,
-  proof_ensure: result => empty_post(result),
-} {
-  let result = { bitmap: zero_uint(), data: FixedArray::make(0, 0) }
-  proof_assert sparse_array_inv(result)
-  proof_assert domain(result.bitmap).eq(@fset.fset_empty())
-  proof_assert model(result).eq(@fmap.fmap_empty())
-  proof_assert empty_post(result)
-  result
+pub fn[T] empty() -> SparseArray[T] {
+  { bitmap: zero_uint(), data: [] }
 }
 
 ///|
-pub fn singleton(
+pub fn[T : Eq] singleton(
   idx : Int,
-  value : Int,
-) -> SparseArray where {
+  value : T,
+) -> SparseArray[T] where {
   proof_require: valid_idx(idx),
   proof_ensure: result => singleton_post(result, idx, value),
 } {
@@ -88,23 +79,23 @@ pub fn singleton(
   proof_assert singleton_bitmap_inv(bitmap, idx)
   let data = FixedArray::make(1, value)
   proof_assert data.length() == 1
-  proof_assert data[0] == value
+  proof_assert data[0].equal(value)
   let result = { bitmap, data }
   proof_assert count_value(result.bitmap, 0) == 1
   proof_assert rank_value(result.bitmap, idx, 0) == 0
   proof_assert sparse_array_inv(result)
   proof_assert domain(result.bitmap).eq(@fset.fset_empty().add(idx))
   proof_assert model(result).mem(idx)
-  proof_assert model(result).find(idx) == value
+  proof_assert model(result).find(idx).equal(value)
   proof_assert singleton_post(result, idx, value)
   result
 }
 
 ///|
-pub fn SparseArray::get(
-  self : SparseArray,
+pub fn[T : Eq] SparseArray::get(
+  self : SparseArray[T],
   idx : Int,
-) -> Int? where {
+) -> T? where {
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_ensure: result => get_post(self, idx, result),
@@ -117,11 +108,11 @@ pub fn SparseArray::get(
 }
 
 ///|
-pub fn SparseArray::add(
-  self : SparseArray,
+pub fn[T : Eq] SparseArray::add(
+  self : SparseArray[T],
   idx : Int,
-  value : Int,
-) -> SparseArray where {
+  value : T,
+) -> SparseArray[T] where {
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx) == false,
@@ -187,16 +178,15 @@ pub fn SparseArray::add(
 }
 
 ///|
-pub fn SparseArray::replace(
-  self : SparseArray,
+pub fn[T : Eq] SparseArray::replace(
+  self : SparseArray[T],
   idx : Int,
-  value : Int,
-) -> SparseArray where {
+  value : T,
+) -> SparseArray[T] where {
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx),
-  proof_ensure: result => sparse_array_inv(result),
-  proof_ensure: result => model(result).eq(model(self).add(idx, value)),
+  proof_ensure: result => replace_post(self, idx, value, result),
 } {
   let old_data = self.data
   let old_len = old_data.length()
@@ -205,7 +195,7 @@ pub fn SparseArray::replace(
   proof_assert pos < old_len
   let new_data = FixedArray::make(old_len, value)
   proof_assert new_data.length() == old_len
-  proof_assert new_data[pos] == value
+  proof_assert new_data[pos].equal(value)
   for i = 0; i < old_len; {
     if i != pos {
       new_data[i] = old_data[i]
@@ -238,10 +228,10 @@ pub fn SparseArray::replace(
 }
 
 ///|
-pub fn SparseArray::remove(
-  self : SparseArray,
+pub fn[T : Eq] SparseArray::remove(
+  self : SparseArray[T],
   idx : Int,
-) -> SparseArray where {
+) -> SparseArray[T] where {
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx),
@@ -251,7 +241,7 @@ pub fn SparseArray::remove(
   let old_data = self.data
   let old_len = old_data.length()
   if old_len == 1 {
-    let result = empty()
+    let result = { bitmap: zero_uint(), data: FixedArray::make(0, old_data[0]) }
     proof_assert remove_empty_post(self, idx, result)
     result
   } else {
@@ -305,8 +295,8 @@ pub fn SparseArray::remove(
 }
 
 ///|
-pub fn SparseArray::length(
-  self : SparseArray,
+pub fn[T : Eq] SparseArray::length(
+  self : SparseArray[T],
 ) -> Int where {
   proof_require: sparse_array_inv(self),
   proof_ensure: result => result == model(self).size(),

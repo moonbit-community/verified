@@ -1,6 +1,6 @@
 ///|
-pub fn sort(
-  arr : FixedArray[Int],
+pub fn[T : Compare] sort(
+  arr : FixedArray[T],
 ) -> Int where {
   proof_ensure: result => result == 0 && sorted_desc(arr),
 } {
