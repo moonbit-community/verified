@@ -1,0 +1,150 @@
+predicate valid_margin_bps(maintenance_margin_bps : Int) {
+  0 < maintenance_margin_bps &&
+  maintenance_margin_bps < 10000
+}
+
+predicate account_inv(account : Account) {
+  0 <= account.collateral &&
+  0 <= account.contracts &&
+  0 <= account.entry_price &&
+  0 <= account.funding_debt &&
+  valid_margin_bps(account.maintenance_margin_bps)
+}
+
+predicate healthy_at(account : Account, mark : Int) {
+  account_inv(account) &&
+  0 <= mark &&
+  0 <= scaled_buffer(account, mark)
+}
+
+predicate open_account_post(
+  collateral : Int,
+  contracts : Int,
+  entry_price : Int,
+  funding_debt : Int,
+  maintenance_margin_bps : Int,
+  result : Account,
+) {
+  healthy_at(result, entry_price) &&
+  result.collateral == collateral &&
+  result.contracts == contracts &&
+  result.entry_price == entry_price &&
+  result.funding_debt == funding_debt &&
+  result.maintenance_margin_bps == maintenance_margin_bps
+}
+
+predicate equity_value_post(account : Account, mark : Int, result : Int) {
+  account_inv(account) &&
+  0 <= mark &&
+  result == equity(account, mark)
+}
+
+predicate margin_buffer_post(account : Account, mark : Int, result : Int) {
+  account_inv(account) &&
+  0 <= mark &&
+  result == scaled_buffer(account, mark)
+}
+
+predicate liquidation_price_post(account : Account, result : Int) {
+  account_inv(account) &&
+  0 <= result &&
+  (
+    ((account.contracts == 0 || liquidation_numerator(account) <= 0) &&
+      result == 0) ||
+    (
+      0 < account.contracts &&
+      0 < liquidation_numerator(account) &&
+      0 < result &&
+      (result - 1) * liquidation_denominator(account) <
+        liquidation_numerator(account) &&
+      liquidation_numerator(account) <=
+        result * liquidation_denominator(account) &&
+      0 <= scaled_buffer(account, result) &&
+      scaled_buffer(account, result - 1) < 0
+    )
+  )
+}
+
+predicate apply_funding_post(
+  account : Account,
+  amount : Int,
+  mark : Int,
+  result : Account,
+) {
+  healthy_at(result, mark) &&
+  result.collateral == account.collateral &&
+  result.contracts == account.contracts &&
+  result.entry_price == account.entry_price &&
+  result.funding_debt == account.funding_debt + amount &&
+  result.maintenance_margin_bps == account.maintenance_margin_bps &&
+  scaled_buffer(result, mark) == scaled_buffer(account, mark) - amount * 10000
+}
+
+predicate partial_close_post(
+  account : Account,
+  close_units : Int,
+  mark : Int,
+  result : Account,
+) {
+  account_inv(result) &&
+  0 <= mark &&
+  result.collateral ==
+    account.collateral + close_units * (mark - account.entry_price) &&
+  result.contracts + close_units == account.contracts &&
+  result.entry_price == account.entry_price &&
+  result.funding_debt == account.funding_debt &&
+  result.maintenance_margin_bps == account.maintenance_margin_bps &&
+  equity(result, mark) == equity(account, mark) &&
+  scaled_buffer(result, mark) ==
+    scaled_buffer(account, mark) +
+    close_units * mark * account.maintenance_margin_bps
+}
+
+predicate min_close_frontier(
+  account : Account,
+  mark : Int,
+  result : Int,
+) {
+  if result == 0 {
+    true
+  } else {
+    scaled_buffer(account, mark) +
+      (result - 1) * mark * account.maintenance_margin_bps <
+      0
+  }
+}
+
+predicate min_close_to_restore_post(
+  account : Account,
+  mark : Int,
+  result : Int,
+) {
+  account_inv(account) &&
+  0 < mark &&
+  0 <= equity(account, mark) &&
+  result == required_close_units(account, mark) &&
+  0 <= result &&
+  result <= account.contracts &&
+  0 <=
+    scaled_buffer(account, mark) +
+      result * mark * account.maintenance_margin_bps &&
+  min_close_frontier(account, mark, result)
+}
+
+predicate close_to_restore_post(
+  account : Account,
+  mark : Int,
+  result : Account,
+) {
+  healthy_at(result, mark) &&
+  equity(result, mark) == equity(account, mark) &&
+  result.contracts + required_close_units(account, mark) == account.contracts &&
+  result.funding_debt == account.funding_debt &&
+  result.entry_price == account.entry_price
+}
+
+predicate liquidatable_post(account : Account, mark : Int, result : Bool) {
+  account_inv(account) &&
+  0 <= mark &&
+  result == (healthy_at(account, mark) == false)
+}
