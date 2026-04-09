@@ -8,14 +8,6 @@ predicate[T : Compare] sorted(xs : FixedArray[T]) {
       xs[i] <= xs[j]
 }
 
-predicate[T : Compare] all_less_before(xs : FixedArray[T], key : T, idx : Int) {
-  ∀ i : Int, ((0 <= i) && (i < idx)) → xs[i] < key
-}
-
-predicate[T : Compare] all_greater_from(xs : FixedArray[T], key : T, idx : Int) {
-  ∀ i : Int, ((idx <= i) && (i < xs.length())) → key < xs[i]
-}
-
 predicate[T : Compare] binary_search_ok(xs : FixedArray[T], key : T, result : Option[Int]) {
   match result {
     None => ∀ i : Int, in_bounds(xs, i) → xs[i] != key
