@@ -177,6 +177,7 @@ For more market-facing examples, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md
 The new packages are:
 
 - `stablecoin_engine` — verified mint/repay/withdraw/liquidate flows with exact bad-debt resolution
+- `margin_engine` — verified liquidation boundary, funding impact, and minimum partial deleveraging to restore maintenance margin
 - `clearinghouse_waterfall` — exact multi-layer default waterfall with insurance, junior, senior, and socialized loss
 - `bridge_custody` — replay-safe bridge withdrawals with exact nonce-set updates
 - `cpmm_swap` — fee-adjusted constant-product AMM swap math with reserve-safety and invariant proofs

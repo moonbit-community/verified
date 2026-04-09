@@ -3,7 +3,7 @@
 This note records limitations I hit while constructing stronger crypto/finance
 proof examples on top of MoonBit's current Why3-backed proof pipeline.
 
-Date: 2026-04-08
+Date: 2026-04-09
 
 ## Confirmed Limits
 
@@ -89,6 +89,28 @@ Impact:
   it may still need to import lower-level proof dependencies directly to keep
   the prover pipeline stable.
 
+### 6. Mixed `&&` / `||` predicate tails can lower into a harder or misleading
+proof shape
+
+Direct experiment:
+
+- In the `margin_engine` package, the original `min_close_to_restore_post`
+  predicate ended with a conjunction followed by a parenthesized disjunction:
+  `... && (result == 0 || frontier < 0)`.
+- The generated WhyML for that predicate did not preserve the grouping in a
+  solver-friendly way, and downstream callers could no longer easily recover
+  earlier conjuncts such as `0 <= result`.
+- Replacing the tail disjunction with a separate helper predicate
+  `min_close_frontier(...)` fixed the issue immediately.
+
+Impact:
+
+- Complex finance predicates that mix conjunction and disjunction near the end
+  of a formula are brittle today.
+- In practice, it is safer to factor such case splits into a named helper
+  predicate instead of relying on nested boolean structure inside one large
+  postcondition.
+
 ## Practical Design Consequences
 
 The current examples in this branch therefore bias toward proof shapes that the
@@ -107,6 +129,8 @@ I am intentionally avoiding proof designs that depend on:
 - large inline contract formulas instead of named predicates
 - arithmetic demos with large unchecked intermediate products
 - relying on transitive proof dependencies to be discovered automatically
+- long mixed `&&` / `||` postconditions instead of smaller named helper
+  predicates
 
 ## Suggested Future Improvements
 
