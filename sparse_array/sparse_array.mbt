@@ -186,8 +186,7 @@ pub fn[T : Eq] SparseArray::replace(
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx),
-  proof_ensure: result => sparse_array_inv(result),
-  proof_ensure: result => model(result).eq(model(self).add(idx, value)),
+  proof_ensure: result => replace_post(self, idx, value, result),
 } {
   let old_data = self.data
   let old_len = old_data.length()

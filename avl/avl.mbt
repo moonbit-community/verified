@@ -125,7 +125,14 @@ fn[T : Compare] balance_left_double(
           let nr = mk(lrr, x, r)
           proof_assert nr.model().eq(lrr.model().union(r.model()).add(x))
           proof_assert height(nr) == 1 + max2(height(lrr), height(r))
-          proof_assert all_lt(nl.model(), lrx) && all_gt(lrx, nr.model())
+          proof_assert all_lt(ll.model(), lrx)
+          proof_assert all_lt(lrl.model(), lrx)
+          proof_assert all_lt(ll.model().union(lrl.model()), lrx)
+          proof_assert all_lt(nl.model(), lrx)
+          proof_assert all_gt(lrx, lrr.model())
+          proof_assert all_gt(lrx, r.model())
+          proof_assert all_gt(lrx, lrr.model().union(r.model()))
+          proof_assert all_gt(lrx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
           proof_assert double_rotation_eq_lr(
@@ -195,7 +202,14 @@ fn[T : Compare] balance_right_double(
           proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
           proof_assert nr.model().eq(rlr.model().union(rr.model()).add(rx))
-          proof_assert all_lt(nl.model(), rlx) && all_gt(rlx, nr.model())
+          proof_assert all_lt(l.model(), rlx)
+          proof_assert all_lt(rll.model(), rlx)
+          proof_assert all_lt(l.model().union(rll.model()), rlx)
+          proof_assert all_lt(nl.model(), rlx)
+          proof_assert all_gt(rlx, rlr.model())
+          proof_assert all_gt(rlx, rr.model())
+          proof_assert all_gt(rlx, rlr.model().union(rr.model()))
+          proof_assert all_gt(rlx, nr.model())
           proof_assert -1 <= height(nl) - height(nr) &&
             height(nl) - height(nr) <= 1
           proof_assert double_rotation_eq_rl(

@@ -742,7 +742,7 @@ predicate[T : Eq] replace_post(
   _value : T,
   _res : SparseArray[T],
 ) {
-  sparse_array_inv(_res) && model(_res).eq(model(_sa).add(_idx, _value))
+  sparse_array_inv(_res) && fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
 }
 
 ///|
@@ -802,7 +802,6 @@ lemma[T : Eq] replace_post_lemma(
     model(_res).mem(j) →
       model(_res).find(j).equal(model(_sa).add(_idx, _value).find(j))
   proof_assert fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
-  proof_assert model(_res).eq(model(_sa).add(_idx, _value))
   proof_assert replace_post(_sa, _idx, _value, _res)
 }
 
