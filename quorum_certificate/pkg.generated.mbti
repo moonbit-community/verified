@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/quorum_certificate"
+
+// Values
+pub fn conflicting(QC, QC) -> Bool
+
+pub fn has_quorum(UInt, Int, Int) -> Bool
+
+pub fn make_qc(Int, Int, UInt) -> QC
+
+pub fn shared_count(UInt, UInt, Int) -> Int
+
+pub fn signer_count(UInt, Int) -> Int
+
+pub fn slashable(QC, QC, Int, Int) -> Bool
+
+pub fn slashable_overlap(QC, QC, Int, Int) -> Int
+
+// Errors
+
+// Types and methods
+pub struct QC {
+  block : Int
+  round : Int
+  signers : UInt
+} derive(Eq, Show)
+
+// Type aliases
+
+// Traits
+

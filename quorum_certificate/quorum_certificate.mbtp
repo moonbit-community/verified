@@ -1,0 +1,101 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+predicate valid_member_idx(idx : Int) {
+  0 <= idx && idx < 32
+}
+
+///|
+predicate valid_validator_count(n : Int) {
+  0 <= n && n <= 32
+}
+
+///|
+predicate validator_params(n : Int, f : Int) {
+  0 <= f && n == 3 * f + 1 && valid_validator_count(n)
+}
+
+///|
+fn member_at_value(bitmap : UInt, idx : Int) -> Bool {
+  @bitmap32.mem_value(bitmap, idx)
+}
+
+///|
+fn signer_count_upto(bitmap : UInt, upto : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    member_at_value(bitmap, i)
+  }, 0, upto)
+}
+
+///|
+fn shared_count_upto(left : UInt, right : UInt, upto : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    member_at_value(left, i) && member_at_value(right, i)
+  }, 0, upto)
+}
+
+///|
+fn union_count_upto(left : UInt, right : UInt, upto : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    member_at_value(left, i) || member_at_value(right, i)
+  }, 0, upto)
+}
+
+///|
+predicate signer_count_post(bitmap : UInt, n : Int, result : Int) {
+  valid_validator_count(n) &&
+  result == signer_count_upto(bitmap, n)
+}
+
+///|
+predicate shared_count_post(left : UInt, right : UInt, n : Int, result : Int) {
+  valid_validator_count(n) &&
+  result == shared_count_upto(left, right, n)
+}
+
+///|
+predicate has_quorum_post(bitmap : UInt, n : Int, f : Int, result : Bool) {
+  validator_params(n, f) &&
+  result == (signer_count_upto(bitmap, n) >= 2 * f + 1)
+}
+
+///|
+predicate conflicting_qcs(a : QC, b : QC) {
+  a.round == b.round && a.block != b.block
+}
+
+///|
+predicate quorum_bitmap(bitmap : UInt, n : Int, f : Int) {
+  signer_count_upto(bitmap, n) >= 2 * f + 1
+}
+
+///|
+predicate slashable_condition(a : QC, b : QC, n : Int, f : Int) {
+  conflicting_qcs(a, b) &&
+  quorum_bitmap(a.signers, n, f) &&
+  quorum_bitmap(b.signers, n, f) &&
+  shared_count_upto(a.signers, b.signers, n) >= f + 1
+}
+
+///|
+predicate conflicting_post(a : QC, b : QC, result : Bool) {
+  result == conflicting_qcs(a, b)
+}
+
+///|
+predicate slashable_overlap_post(a : QC, b : QC, n : Int, f : Int, result : Int) {
+  validator_params(n, f) &&
+  conflicting_qcs(a, b) &&
+  quorum_bitmap(a.signers, n, f) &&
+  quorum_bitmap(b.signers, n, f) &&
+  result == shared_count_upto(a.signers, b.signers, n) &&
+  f + 1 <= result
+}
+
+///|
+predicate slashable_post(a : QC, b : QC, n : Int, f : Int, result : Bool) {
+  validator_params(n, f) &&
+  result == slashable_condition(a, b, n, f)
+}
