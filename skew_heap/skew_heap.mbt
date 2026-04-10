@@ -8,12 +8,6 @@ pub enum Heap[T] {
 } derive(Debug)
 
 ///|
-#proof_pure
-fn[T] raw_node(value : T, left : Heap[T], right : Heap[T]) -> Heap[T] {
-  Node(value, left, right)
-}
-
-///|
 fn[T] heap_size(h : Heap[T]) -> Int {
   match h {
     Empty => 0
@@ -88,7 +82,7 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(va, b)
         proof_assert all_ge(va, merged)
         let result = make_node(va, merged, la)
-        proof_assert merge_post(raw_node(va, la, ra), b, result)
+        proof_assert merge_post(Node(va, la, ra), b, result)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -96,7 +90,7 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(vb, a)
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, merged, lb)
-        proof_assert merge_post(a, raw_node(vb, lb, rb), result)
+        proof_assert merge_post(a, Node(vb, lb, rb), result)
         proof_assert merge_post(a, b, result)
         result
       }
