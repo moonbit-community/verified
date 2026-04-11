@@ -203,7 +203,7 @@ lemma[T] merge_measure_left_decrease(
   b : Heap[T],
 ) where {
   proof_ensure:
-    merge_measure(right, b) < merge_measure(raw_node(value, stored_rank, left, right), b),
+    merge_measure(right, b) < merge_measure(Node(value, stored_rank, left, right), b),
 } {
 }
 
@@ -216,7 +216,7 @@ lemma[T] merge_measure_right_decrease(
   right : Heap[T],
 ) where {
   proof_ensure:
-    merge_measure(a, right) < merge_measure(a, raw_node(value, stored_rank, left, right)),
+    merge_measure(a, right) < merge_measure(a, Node(value, stored_rank, left, right)),
 } {
 }
 
@@ -227,14 +227,14 @@ lemma[T : Compare] root_count_positive(
   left : Heap[T],
   right : Heap[T],
 ) where {
-  proof_ensure: 0 < count(raw_node(value, stored_rank, left, right), value),
+  proof_ensure: 0 < count(Node(value, stored_rank, left, right), value),
 } {
   proof_assert 0 <= count(left, value)
   proof_assert 0 <= count(right, value)
   proof_assert 0 < root_once(value, value)
-  proof_assert count(raw_node(value, stored_rank, left, right), value) ==
+  proof_assert count(Node(value, stored_rank, left, right), value) ==
     count(left, value) + count(right, value) + root_once(value, value)
-  proof_assert 0 < count(raw_node(value, stored_rank, left, right), value)
+  proof_assert 0 < count(Node(value, stored_rank, left, right), value)
 }
 
 ///|
@@ -246,7 +246,7 @@ lemma[T : Compare] all_ge_raw_node(
 ) where {
   proof_require: all_ge(value, left),
   proof_require: all_ge(value, right),
-  proof_ensure: all_ge(value, raw_node(value, stored_rank, left, right)),
+  proof_ensure: all_ge(value, Node(value, stored_rank, left, right)),
 } {
 }
 
@@ -262,7 +262,7 @@ lemma[T : Compare] merge_post_make_node_left(
 ) where {
   proof_require: merge_post(right, other, merged),
   proof_require: make_node_post(value, left, merged, res),
-  proof_ensure: merge_post(raw_node(value, stored_rank, left, right), other, res),
+  proof_ensure: merge_post(Node(value, stored_rank, left, right), other, res),
 } {
 }
 
@@ -278,7 +278,7 @@ lemma[T : Compare] merge_post_make_node_right(
 ) where {
   proof_require: merge_post(other, right, merged),
   proof_require: make_node_post(value, left, merged, res),
-  proof_ensure: merge_post(other, raw_node(value, stored_rank, left, right), res),
+  proof_ensure: merge_post(other, Node(value, stored_rank, left, right), res),
 } {
 }
 

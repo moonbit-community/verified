@@ -207,13 +207,13 @@ lemma[T] list_length_nonneg(xs : ChildList[T]) where {
 
 ///|
 lemma[T : Compare] list_count_cons(xs : ChildList[T], h : Heap[T], y : T) where {
-  proof_ensure: list_count(raw_cons(h, xs), y) == count(h, y) + list_count(xs, y),
+  proof_ensure: list_count(Cons(h, xs), y) == count(h, y) + list_count(xs, y),
 } {
 }
 
 ///|
 lemma[T] list_size_cons(xs : ChildList[T], h : Heap[T]) where {
-  proof_ensure: list_size_model(raw_cons(h, xs)) == size_model(h) + list_size_model(xs),
+  proof_ensure: list_size_model(Cons(h, xs)) == size_model(h) + list_size_model(xs),
 } {
 }
 
@@ -221,7 +221,7 @@ lemma[T] list_size_cons(xs : ChildList[T], h : Heap[T]) where {
 lemma[T : Compare] all_ge_list_cons(x : T, h : Heap[T], xs : ChildList[T]) where {
   proof_require: all_ge(x, h),
   proof_require: all_ge_list(x, xs),
-  proof_ensure: all_ge_list(x, raw_cons(h, xs)),
+  proof_ensure: all_ge_list(x, Cons(h, xs)),
 } {
 }
 
@@ -229,7 +229,7 @@ lemma[T : Compare] all_ge_list_cons(x : T, h : Heap[T], xs : ChildList[T]) where
 lemma[T : Compare] all_ge_list_to_heap(x : T, value : T, children : ChildList[T], stored_size : Int) where {
   proof_require: x <= value,
   proof_require: all_ge_list(x, children),
-  proof_ensure: all_ge(x, raw_node(value, children, stored_size)),
+  proof_ensure: all_ge(x, Node(value, children, stored_size)),
 } {
 }
 
@@ -238,7 +238,7 @@ lemma[T : Compare] list_inv_cons(h : Heap[T], xs : ChildList[T]) where {
   proof_require: heap_inv(h),
   proof_require: non_empty(h),
   proof_require: list_inv(xs),
-  proof_ensure: list_inv(raw_cons(h, xs)),
+  proof_ensure: list_inv(Cons(h, xs)),
 } {
 }
 

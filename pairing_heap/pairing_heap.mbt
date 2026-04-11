@@ -17,18 +17,6 @@ pub enum ChildList[T] {
 } derive(Debug)
 
 ///|
-#proof_pure
-fn[T] raw_node(value : T, children : ChildList[T], size : Int) -> Heap[T] {
-  Node(value, children, size)
-}
-
-///|
-#proof_pure
-fn[T] raw_cons(head : Heap[T], tail : ChildList[T]) -> ChildList[T] {
-  Cons(head, tail)
-}
-
-///|
 /// The empty heap is valid immediately; the invariant has nothing to check in
 /// the `Empty` case.
 pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {

@@ -35,12 +35,6 @@ fn min2(a : Int, b : Int) -> Int {
 }
 
 ///|
-#proof_pure
-fn[T] raw_node(value : T, stored_rank : Int, left : Heap[T], right : Heap[T]) -> Heap[T] {
-  Node(value, stored_rank, left, right)
-}
-
-///|
 pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
   Empty
 }
@@ -113,7 +107,7 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(va, merged)
         let result = make_node(va, la, merged)
         proof_assert make_node_post(va, la, merged, result)
-        proof_assert merge_post(raw_node(va, ra_rank, la, ra), b, result)
+        proof_assert merge_post(Node(va, ra_rank, la, ra), b, result)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -123,7 +117,7 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, lb, merged)
         proof_assert make_node_post(vb, lb, merged, result)
-        proof_assert merge_post(a, raw_node(vb, rb_rank, lb, rb), result)
+        proof_assert merge_post(a, Node(vb, rb_rank, lb, rb), result)
         proof_assert merge_post(a, b, result)
         result
       }
