@@ -1,0 +1,413 @@
+#proof_import("seq.Seq")
+fn[T] seq_empty() -> Seq[T] = "empty"
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_append(left : Seq[T], right : Seq[T]) -> Seq[T] = "(++)"
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_singleton(v : T) -> Seq[T] = "singleton"
+
+///|
+#proof_import("seq.Seq")
+fn[T] Seq::seq_length(self : Seq[T]) -> Int = "length"
+
+///|
+#proof_import("seq.Seq")
+fn[T] Seq::seq_get(self : Seq[T], i : Int) -> T = "get"
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_set(self : Seq[T], i : Int, v : T) -> Seq[T] = "([<-])"
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_eq(left : Seq[T], right : Seq[T]) -> Bool = "(==)"
+
+fn[T] seq_len(s : Seq[T]) -> Int {
+  s.seq_length()
+}
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_tail(self : Seq[T], i : Int) -> Seq[T] = "([_..])"
+
+///|
+#proof_import("seq.Seq")
+fn[T] seq_sub(self : Seq[T], i : Int, j : Int) -> Seq[T] = "([..])"
+
+///|
+#proof_import("moonbit_builtin_prelude.ReadOnlyArray")
+fn[T] ReadOnlyArray::model(self : ReadOnlyArray[T]) -> Seq[T] = "model"
+
+///|
+#proof_import("moonbit_builtin_prelude.ReadOnlyArray")
+fn[T] readonly_tree_model(self : ReadOnlyArray[Tree[T]]) -> Seq[Tree[T]] = "model"
+
+///|
+fn root_level(shift : Int) -> Int {
+  if shift <= 0 {
+    0
+  } else {
+    shift / 5
+  }
+}
+
+///|
+/// The mutual recursion alternates between:
+/// - a single tree at some logical height `level`
+/// - a forest of sibling trees at that same height
+///
+/// We assign 33 "points" to each remaining tree level and 1 point to each
+/// remaining sibling in a forest. The constant 33 is deliberate: a node has at
+/// most 32 children, so descending from `tree_model(..., level)` to
+/// `forest_model(children, level - 1)` still decreases:
+///
+///   33 * (level + 1) > 33 * level + length(children)
+///
+/// because `length(children) <= 32`.
+///
+/// The other recursive calls also decrease:
+/// - `forest_model(cs, level) -> tree_model(cs[0], level)` drops the sibling
+///   count term `+ length(cs)`
+/// - `forest_model(cs, level) -> forest_model(cs[1..], level)` shortens the
+///   forest by one sibling
+///
+/// The same measures are reused for `tree_inv` / `forest_inv`.
+fn tree_measure(level : Int) -> Int {
+  if level < 0 {
+    0
+  } else {
+    33 * (level + 1)
+  }
+}
+
+///|
+fn[T] forest_measure(level : Int, cs : Seq[Tree[T]]) -> Int {
+  tree_measure(level) + seq_len(cs)
+}
+
+///|
+predicate[T] forest_inv(cs : Seq[Tree[T]], level : Int) where {
+  proof_decrease: forest_measure(level, cs),
+} {
+  if cs.seq_length() == 0 {
+    true
+  } else {
+    tree_inv(cs.seq_get(0), level) && forest_inv(seq_tail(cs, 1), level)
+  }
+}
+
+///|
+predicate[T] tree_inv(self : Tree[T], level : Int) where {
+  proof_decrease: tree_measure(level),
+} {
+  match self {
+    Empty => true
+    Leaf(values) =>
+      level == 0 &&
+      0 < seq_len(values.model()) &&
+      seq_len(values.model()) <= 32
+    Node(children, _sizes) =>
+      level > 0 &&
+      0 < seq_len(readonly_tree_model(children)) &&
+      seq_len(readonly_tree_model(children)) <= 32 &&
+      forest_inv(readonly_tree_model(children), level - 1)
+  }
+}
+
+///|
+predicate[T] vector_inv(self : Vector[T]) {
+  0 <= self.shift &&
+  tree_inv(self.tree, root_level(self.shift)) &&
+  seq_len(self.tail.model()) <= 32 &&
+  tree_model(self.tree, root_level(self.shift)).seq_length() == self.size - self.tail.length() &&
+  self.size == self.model().seq_length()
+}
+
+///|
+fn[T] forest_model(cs : Seq[Tree[T]], level : Int) -> Seq[T] where {
+  proof_decrease: forest_measure(level, cs),
+} {
+  if cs.seq_length() == 0 {
+    seq_empty()
+  } else {
+    seq_append(
+      tree_model(cs.seq_get(0), level),
+      forest_model(seq_tail(cs, 1), level),
+    )
+  }
+}
+
+///|
+fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
+  proof_decrease: tree_measure(level),
+} {
+  match self {
+    Empty => seq_empty()
+    Leaf(values) => values.model()
+    Node(children, _sizes) =>
+      if level <= 0 || 32 < seq_len(readonly_tree_model(children)) {
+        seq_empty()
+      } else {
+        forest_model(readonly_tree_model(children), level - 1)
+      }
+  }
+}
+
+///|
+fn[T] Vector::model(self : Vector[T]) -> Seq[T] {
+  seq_append(tree_model(self.tree, root_level(self.shift)), self.tail.model())
+}
+
+///|
+predicate[T] valid_index_model(self : Vector[T], index : Int) {
+  0 <= index && index < self.model().seq_length()
+}
+
+///|
+predicate[T] tree_valid_index_model(self : Tree[T], shift : Int, index : Int) {
+  0 <= index && index < tree_model(self, root_level(shift)).seq_length()
+}
+
+///|
+predicate[T : Eq] tree_get_post(self : Tree[T], shift : Int, index : Int, result : T) {
+  tree_inv(self, root_level(shift)) &&
+  tree_valid_index_model(self, shift, index) &&
+  result == tree_model(self, root_level(shift)).seq_get(index)
+}
+
+///|
+predicate[T] immutable_set_post(
+  arr : ReadOnlyArray[T],
+  index : Int,
+  value : T,
+  result : ReadOnlyArray[T],
+) {
+  0 <= index &&
+  index < arr.model().seq_length() &&
+  seq_eq(result.model(), seq_set(arr.model(), index, value))
+}
+
+///|
+predicate[T] immutable_push_post(
+  arr : ReadOnlyArray[T],
+  value : T,
+  result : ReadOnlyArray[T],
+) {
+  seq_eq(result.model(), seq_append(arr.model(), seq_singleton(value)))
+}
+
+///|
+predicate[T] immutable_slice_post(
+  arr : ReadOnlyArray[T],
+  start : Int,
+  stop : Int,
+  result : ReadOnlyArray[T],
+) {
+  0 <= start &&
+  start <= stop &&
+  stop <= arr.model().seq_length() &&
+  seq_eq(result.model(), seq_sub(arr.model(), start, stop))
+}
+
+///|
+predicate[T] tree_set_post(
+  self : Tree[T],
+  shift : Int,
+  index : Int,
+  value : T,
+  result : Tree[T],
+) {
+  tree_inv(self, root_level(shift)) &&
+  tree_valid_index_model(self, shift, index) &&
+  tree_inv(result, root_level(shift)) &&
+  seq_eq(
+    tree_model(result, root_level(shift)),
+    seq_set(tree_model(self, root_level(shift)), index, value),
+  )
+}
+
+///|
+predicate[T] append_right_leaf_post(
+  self : Tree[T],
+  shift : Int,
+  leaf : ReadOnlyArray[T],
+  result : (Tree[T], Int),
+) {
+  match result {
+    (new_tree, new_shift) =>
+      tree_inv(self, root_level(shift)) &&
+      0 < leaf.model().seq_length() &&
+      leaf.model().seq_length() <= 32 &&
+      tree_inv(new_tree, root_level(new_shift)) &&
+      seq_eq(
+        tree_model(new_tree, root_level(new_shift)),
+        seq_append(tree_model(self, root_level(shift)), leaf.model()),
+      )
+  }
+}
+
+///|
+predicate[T] empty_tree_post(result : Tree[T]) {
+  match result {
+    Empty => true
+    _ => false
+  }
+}
+
+///|
+predicate[T] new_post(result : Vector[T]) {
+  vector_inv(result) && result.model().seq_length() == 0
+}
+
+///|
+predicate[T] tail_offset_post(self : Vector[T], result : Int) {
+  result == self.size - self.tail.length()
+}
+
+///|
+predicate[T] length_post(self : Vector[T], result : Int) {
+  vector_inv(self) && result == self.model().seq_length()
+}
+
+///|
+predicate[T] is_empty_post(self : Vector[T], result : Bool) {
+  vector_inv(self) && result == (self.model().seq_length() == 0)
+}
+
+///|
+predicate[T : Eq] at_post(self : Vector[T], index : Int, result : T) {
+  vector_inv(self) &&
+  valid_index_model(self, index) &&
+  result == self.model().seq_get(index)
+}
+
+///|
+predicate[T : Eq] get_post_model(self : Vector[T], index : Int, result : Option[T]) {
+  vector_inv(self) &&
+  match result {
+    None => !valid_index_model(self, index)
+    Some(value) =>
+      valid_index_model(self, index) &&
+      value == self.model().seq_get(index)
+  }
+}
+
+///|
+predicate[T : Eq] peek_post_model(self : Vector[T], result : Option[T]) {
+  vector_inv(self) &&
+  match result {
+    None => self.model().seq_length() == 0
+    Some(value) =>
+      0 < self.model().seq_length() &&
+      value == self.model().seq_get(self.model().seq_length() - 1)
+  }
+}
+
+///|
+predicate[T] set_post_model(
+  self : Vector[T],
+  index : Int,
+  value : T,
+  result : Vector[T],
+) {
+  vector_inv(self) &&
+  valid_index_model(self, index) &&
+  vector_inv(result) &&
+  seq_eq(result.model(), seq_set(self.model(), index, value))
+}
+
+///|
+predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
+  vector_inv(self) &&
+  vector_inv(result) &&
+  (
+    (
+      self.tail.model().seq_length() < 32 &&
+      seq_eq(
+        result.model(),
+        seq_append(
+          tree_model(self.tree, root_level(self.shift)),
+          seq_append(self.tail.model(), seq_singleton(value)),
+        ),
+      )
+    ) ||
+    (
+      32 <= self.tail.model().seq_length() &&
+      match self.tree {
+        Empty =>
+          seq_eq(
+            result.model(),
+            seq_append(self.tail.model(), seq_singleton(value)),
+          )
+        _ =>
+          seq_eq(
+            result.model(),
+            seq_append(
+              seq_append(
+                tree_model(self.tree, root_level(self.shift)),
+                self.tail.model(),
+              ),
+              seq_singleton(value),
+            ),
+          )
+      }
+    )
+  )
+}
+
+///|
+predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
+  vector_inv(self) &&
+  self.tail.model().seq_length() == 1 &&
+  1 < self.model().seq_length() &&
+  vector_inv(result) &&
+  seq_eq(result.model(), tree_model(self.tree, root_level(self.shift)))
+}
+
+///|
+predicate[T] pop_tree_only_post(self : Vector[T], result : Vector[T]) {
+  vector_inv(self) &&
+  self.tail.model().seq_length() == 0 &&
+  1 < self.model().seq_length() &&
+  vector_inv(result) &&
+  seq_eq(result.model(), seq_sub(self.model(), 0, self.model().seq_length() - 1))
+}
+
+///|
+predicate[T] pop_post_model(self : Vector[T], result : Option[Vector[T]]) {
+  vector_inv(self) &&
+  match result {
+    None => self.model().seq_length() == 0
+    Some(value) =>
+      0 < self.model().seq_length() &&
+      (
+        (
+          self.model().seq_length() == 1 &&
+          vector_inv(value) &&
+          value.model().seq_length() == 0
+        ) ||
+        (
+          1 < self.tail.model().seq_length() &&
+          vector_inv(value) &&
+          seq_eq(
+            value.model(),
+            seq_append(
+              tree_model(self.tree, root_level(self.shift)),
+              seq_sub(self.tail.model(), 0, self.tail.model().seq_length() - 1),
+            ),
+          )
+        ) ||
+        (
+          self.tail.model().seq_length() == 1 &&
+          pop_singleton_tail_post(self, value)
+        ) ||
+        (
+          self.tail.model().seq_length() == 0 &&
+          pop_tree_only_post(self, value)
+        )
+      )
+  }
+}
