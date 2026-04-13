@@ -1,0 +1,7 @@
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::length(self : Seq[T]) -> Int = "length"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::get(self : Seq[T], idx : Int) -> T = "get"

@@ -1,43 +1,32 @@
 ///|
-#proof_import("seq.Seq")
-fn raw_bytes_length(xs : Bytes) -> Int = "length"
+fn bytes_length(xs : Bytes) -> Int {
+  @bytes.model(xs).length()
+}
 
 ///|
-#proof_import("seq.Seq")
-fn raw_bytes_get(xs : Bytes, idx : Int) -> Byte = "get"
-
-///|
-#proof_import("mach.int.Byte")
-fn raw_byte_to_int(x : Byte) -> Int = "to_int"
+fn byte_value(xs : Bytes, idx : Int) -> Int {
+  @bytes.model(xs).get(idx).to_int()
+}
 
 ///|
 predicate bytes_len_ok(xs : Bytes, result : Int) {
-  result == raw_bytes_length(xs)
+  result == bytes_length(xs)
 }
 
 ///|
 predicate bytes_get_int_pre(xs : Bytes, idx : Int) {
-  0 <= idx && idx < raw_bytes_length(xs)
+  0 <= idx && idx < bytes_length(xs)
 }
 
-///|
-predicate bytes_get_int_ok(xs : Bytes, idx : Int, result : Int) {
-  result == raw_byte_to_int(raw_bytes_get(xs, idx)) &&
-  0 <= result &&
-  result < 256
-}
-
-///|
 predicate valid_offset(haystack : Bytes, needle : Bytes, offset : Int) {
-  0 <= offset && offset + raw_bytes_length(needle) <= raw_bytes_length(haystack)
+  0 <= offset && offset + bytes_length(needle) <= bytes_length(haystack)
 }
 
 ///|
 predicate match_at(haystack : Bytes, needle : Bytes, offset : Int) {
   ∀ j : Int,
-    ((0 <= j) && (j < raw_bytes_length(needle))) →
-      raw_byte_to_int(raw_bytes_get(haystack, offset + j)) ==
-      raw_byte_to_int(raw_bytes_get(needle, j))
+    ((0 <= j) && (j < bytes_length(needle))) →
+      byte_value(haystack, offset + j) == byte_value(needle, j)
 }
 
 ///|
@@ -58,45 +47,42 @@ predicate matches_at_ok(
 
 ///|
 predicate skip_table_ok(skip : FixedArray[Int], needle : Bytes) {
-  raw_bytes_length(needle) > 0 &&
+  bytes_length(needle) > 0 &&
   skip.length() == 256 &&
   (∀ c : Int, ((0 <= c) && (c < 256)) →
-    ((1 <= skip[c]) && (skip[c] <= raw_bytes_length(needle)))) &&
+    ((1 <= skip[c]) && (skip[c] <= bytes_length(needle)))) &&
   (∀ c : Int, ∀ s : Int,
     ((0 <= c) && (c < 256) && (1 <= s) && (s < skip[c])) →
-      raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - s)) != c)
+      byte_value(needle, bytes_length(needle) - 1 - s) != c)
 }
 
 ///|
 predicate skip_table_prefix_ok(skip : FixedArray[Int], needle : Bytes, upto : Int) {
-  raw_bytes_length(needle) > 0 &&
+  bytes_length(needle) > 0 &&
   0 <= upto &&
-  upto <= raw_bytes_length(needle) - 1 &&
+  upto <= bytes_length(needle) - 1 &&
   skip.length() == 256 &&
   (∀ c : Int, ((0 <= c) && (c < 256)) →
-    ((1 <= skip[c]) && (skip[c] <= raw_bytes_length(needle)))) &&
+    ((1 <= skip[c]) && (skip[c] <= bytes_length(needle)))) &&
   (∀ p : Int,
     ((0 <= p) && (p < upto)) →
-      skip[raw_byte_to_int(raw_bytes_get(needle, p))] <= raw_bytes_length(needle) - 1 - p)
+      skip[byte_value(needle, p)] <= bytes_length(needle) - 1 - p)
 }
 
 ///|
 pub lemma skip_table_prefix_complete(skip : FixedArray[Int], needle : Bytes, upto : Int) where {
   proof_require: skip_table_prefix_ok(skip, needle, upto),
-  proof_require: upto == raw_bytes_length(needle) - 1,
+  proof_require: upto == bytes_length(needle) - 1,
   proof_ensure: skip_table_ok(skip, needle),
 } {
   proof_assert ∀ c : Int, ∀ s : Int,
     ((0 <= c) && (c < 256) && (1 <= s) && (s < skip[c])) →
-      raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - s)) != c
+      byte_value(needle, bytes_length(needle) - 1 - s) != c
 }
 
 ///|
 predicate matched_prefix(haystack : Bytes, needle : Bytes, offset : Int, j : Int) {
-  ∀ k : Int,
-    ((0 <= k) && (k < j)) →
-      raw_byte_to_int(raw_bytes_get(haystack, offset + k)) ==
-      raw_byte_to_int(raw_bytes_get(needle, k))
+  ∀ k : Int, ((0 <= k) && (k < j)) → byte_value(haystack, offset + k) == byte_value(needle, k)
 }
 
 ///|
@@ -108,19 +94,10 @@ predicate mismatch_scan_inv(
   mismatch : Int,
 ) {
   0 <= j &&
-  j <= raw_bytes_length(needle) &&
+  j <= bytes_length(needle) &&
   (mismatch == -1 || (0 <= mismatch && mismatch < j)) &&
   (mismatch != -1 || matched_prefix(haystack, needle, offset, j)) &&
-  (mismatch == -1 ||
-    raw_byte_to_int(raw_bytes_get(haystack, offset + mismatch)) !=
-    raw_byte_to_int(raw_bytes_get(needle, mismatch)))
-}
-
-///|
-predicate record_match_pre(haystack : Bytes, needle : Bytes, offset : Int) {
-  valid_offset(haystack, needle, offset) &&
-  match_at(haystack, needle, offset) &&
-  no_match_before(haystack, needle, offset)
+  (mismatch == -1 || byte_value(haystack, offset + mismatch) != byte_value(needle, mismatch))
 }
 
 ///|
@@ -139,17 +116,7 @@ predicate skip_step_pre(
   0 <= last &&
   last < 256 &&
   shift == skip[last] &&
-  last == raw_byte_to_int(raw_bytes_get(haystack, offset + raw_bytes_length(needle) - 1))
-}
-
-///|
-predicate skip_step_ok(
-  haystack : Bytes,
-  needle : Bytes,
-  offset : Int,
-  shift : Int,
-) {
-  no_match_before(haystack, needle, offset + shift)
+  last == byte_value(haystack, offset + bytes_length(needle) - 1)
 }
 
 ///|
@@ -162,30 +129,23 @@ pub lemma shifted_match_reads_last(
 ) where {
   proof_require: valid_offset(haystack, needle, k),
   proof_require: offset < k,
-  proof_require: k < offset + raw_bytes_length(needle),
+  proof_require: k < offset + bytes_length(needle),
   proof_require: match_at(haystack, needle, k),
-  proof_require:
-    last == raw_byte_to_int(raw_bytes_get(haystack, offset + raw_bytes_length(needle) - 1)),
-  proof_ensure:
-    raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - (k - offset))) == last,
+  proof_require: last == byte_value(haystack, offset + bytes_length(needle) - 1),
+  proof_ensure: byte_value(needle, bytes_length(needle) - 1 - (k - offset)) == last,
 } {
   proof_assert 1 <= k - offset
-  proof_assert k - offset < raw_bytes_length(needle)
-  proof_assert 0 <= raw_bytes_length(needle) - 1 - (k - offset)
-  proof_assert raw_bytes_length(needle) - 1 - (k - offset) < raw_bytes_length(needle)
+  proof_assert k - offset < bytes_length(needle)
+  proof_assert 0 <= bytes_length(needle) - 1 - (k - offset)
+  proof_assert bytes_length(needle) - 1 - (k - offset) < bytes_length(needle)
   proof_assert
-    offset + raw_bytes_length(needle) - 1 ==
-    k + (raw_bytes_length(needle) - 1 - (k - offset))
+    offset + bytes_length(needle) - 1 == k + (bytes_length(needle) - 1 - (k - offset))
   proof_assert
-    raw_byte_to_int(
-      raw_bytes_get(
-        haystack,
-        k + (raw_bytes_length(needle) - 1 - (k - offset)),
-      ),
-    ) ==
-    raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - (k - offset)))
-  proof_assert
-    raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - (k - offset))) == last
+    byte_value(
+      haystack,
+      k + (bytes_length(needle) - 1 - (k - offset)),
+    ) == byte_value(needle, bytes_length(needle) - 1 - (k - offset))
+  proof_assert byte_value(needle, bytes_length(needle) - 1 - (k - offset)) == last
 }
 
 ///|
@@ -203,17 +163,16 @@ pub lemma shifted_match_conflict(
   proof_require: k < offset + shift,
   proof_require: valid_offset(haystack, needle, k),
   proof_require: match_at(haystack, needle, k),
-  proof_ensure: 0 == 1,
+  proof_ensure: false,
 } {
   proof_assert 1 <= shift
-  proof_assert shift <= raw_bytes_length(needle)
+  proof_assert shift <= bytes_length(needle)
   proof_assert 1 <= k - offset
   proof_assert k - offset < shift
-  proof_assert k < offset + raw_bytes_length(needle)
-  proof_assert
-    raw_byte_to_int(raw_bytes_get(needle, raw_bytes_length(needle) - 1 - (k - offset))) != last
+  proof_assert k < offset + bytes_length(needle)
+  proof_assert byte_value(needle, bytes_length(needle) - 1 - (k - offset)) != last
   shifted_match_reads_last(haystack, needle, offset, last, k)
-  proof_assert 0 == 1
+  proof_assert false
 }
 
 ///|
