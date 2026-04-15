@@ -35,7 +35,10 @@ fn min2(a : Int, b : Int) -> Int {
 }
 
 ///|
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+#warnings("-unused_trait_bound")
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 
@@ -48,6 +51,7 @@ pub fn[T] size(h : Heap[T]) -> Int {
 /// `make_node` is where the leftist property is restored. It chooses the child
 /// arrangement so that the smaller-rank subtree stays on the right, then stores
 /// `min(rank(left), rank(right)) + 1` as the node rank.
+#warnings("-unused_trait_bound")
 fn[T : Compare] make_node(
   value : T,
   left : Heap[T],
@@ -73,6 +77,7 @@ fn[T : Compare] make_node(
 ///|
 /// A singleton heap has rank 1 and empty children, so it satisfies the
 /// invariant without any balancing work.
+#warnings("-unused_trait_bound")
 fn[T : Compare] singleton(
   value : T,
 ) -> Heap[T] where {
@@ -143,6 +148,7 @@ pub fn[T : Compare] insert(
 ///|
 /// The minimum is always stored at the root, so `find_min` only reads that
 /// value after the invariant rules out the empty case.
+#warnings("-unused_trait_bound")
 pub fn[T : Compare] find_min(
   h : Heap[T],
 ) -> T? where {

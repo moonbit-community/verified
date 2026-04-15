@@ -9,12 +9,11 @@ pub fn[T : Compare] binary_search(
   for i = 0, j = xs.length(); i < j; {
     let h = i + (j - i) / 2
     if xs[h] < key {
-      proof_assert ∀ idx : Int,
-        (0 <= idx) && (idx < h + 1) → xs[idx] < key
+      proof_assert ∀ idx : Int, 0 <= idx && idx < h + 1 → xs[idx] < key
       continue h + 1, j
     } else if key < xs[h] {
       proof_assert ∀ idx : Int,
-        (h <= idx) && (idx < xs.length()) → key < xs[idx]
+        h <= idx && idx < xs.length() → key < xs[idx]
       continue i, h
     } else {
       proof_assert xs[h] == key
@@ -26,8 +25,9 @@ pub fn[T : Compare] binary_search(
     proof_invariant: 0 <= i,
     proof_invariant: i <= j,
     proof_invariant: j <= xs.length(),
-    proof_invariant: ∀ idx : Int, (0 <= idx) && (idx < i) → xs[idx] < key,
-    proof_invariant: ∀ idx : Int, (j <= idx) && (idx < xs.length()) → key < xs[idx],
+    proof_invariant: ∀ idx : Int, 0 <= idx && idx < i → xs[idx] < key,
+    proof_invariant: ∀ idx : Int,
+      j <= idx && idx < xs.length() → key < xs[idx],
     proof_yield: res => binary_search_ok(xs, key, res),
     proof_reasoning: (
       #| The loop maintains a candidate window `[i, j)`:

@@ -1,0 +1,69 @@
+///|
+fn path_len(path : Path) -> Int {
+  match path {
+    Nil => 0
+    Cons(_, rest) => 1 + path_len(rest)
+  }
+}
+
+///|
+predicate valid_depth(depth : Int) {
+  0 <= depth && depth < 32
+}
+
+///|
+predicate valid_depth_prefix(depth : Int, path : Path) {
+  0 <= depth && depth + path_len(path) <= 32
+}
+
+///|
+predicate full_path(path : Path) {
+  path_len(path) == 32
+}
+
+///|
+fn bit_at_value(key : UInt, depth : Int) -> Bool {
+  @bitmap32.mem_value(key, depth)
+}
+
+///|
+fn path_root_value(
+  key : UInt,
+  depth : Int,
+  acc : Int,
+  path : Path,
+) -> Int {
+  match path {
+    Nil => acc
+    Cons(sibling, rest) =>
+      path_root_value(
+        key,
+        depth + 1,
+        step_hash(bit_at_value(key, depth), acc, sibling),
+        rest,
+      )
+  }
+}
+
+///|
+predicate root_from_post(
+  key : UInt,
+  depth : Int,
+  acc : Int,
+  path : Path,
+  result : Int,
+) {
+  result == path_root_value(key, depth, acc, path)
+}
+
+///|
+predicate compute_root_post(key : UInt, leaf : Int, path : Path, result : Int) {
+  full_path(path) &&
+  result == path_root_value(key, 0, leaf, path)
+}
+
+///|
+predicate verify_post(root : Int, key : UInt, leaf : Int, path : Path, result : Bool) {
+  full_path(path) &&
+  result == (root == path_root_value(key, 0, leaf, path))
+}

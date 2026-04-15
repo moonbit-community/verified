@@ -10,15 +10,15 @@ pub fn fset_interval(Int, Int) -> Fset[Int]
 
 // Types and methods
 pub type Fset[T]
-pub fn Fset::add(Self[Int], Int) -> Self[Int]
-pub fn Fset::cardinal(Self[Int]) -> Int
-pub fn Fset::empty() -> Self[Int]
-pub fn Fset::eq(Self[Int], Self[Int]) -> Bool
-pub fn Fset::filter(Self[Int], (Int) -> Bool) -> Self[Int]
-pub fn Fset::mem(Self[Int], Int) -> Bool
-pub fn Fset::remove(Self[Int], Int) -> Self[Int]
-pub fn Fset::subset(Self[Int], Self[Int]) -> Bool
-pub fn Fset::union(Self[Int], Self[Int]) -> Self[Int]
+pub fn[T : Eq] Fset::add(Self[T], T) -> Self[T]
+pub fn[T : Eq] Fset::cardinal(Self[T]) -> Int
+pub fn[T : Eq] Fset::empty() -> Self[T]
+pub fn[T : Eq] Fset::eq(Self[T], Self[T]) -> Bool
+pub fn[T : Eq] Fset::filter(Self[T], (T) -> Bool) -> Self[T]
+pub fn[T : Eq] Fset::mem(Self[T], T) -> Bool
+pub fn[T : Eq] Fset::remove(Self[T], T) -> Self[T]
+pub fn[T : Eq] Fset::subset(Self[T], Self[T]) -> Bool
+pub fn[T : Eq] Fset::union(Self[T], Self[T]) -> Self[T]
 
 // Type aliases
 

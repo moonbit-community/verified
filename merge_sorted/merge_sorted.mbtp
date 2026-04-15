@@ -1,0 +1,241 @@
+///|
+#proof_import("int.NumOf")
+fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_cardinal(s : @fset.Fset[Int]) -> Int = "cardinal"
+
+///|
+#proof_import("set.Fset")
+fn raw_fset_filter(s : @fset.Fset[Int], p : (Int) -> Bool) -> @fset.Fset[Int] = "filter"
+
+///|
+#proof_import("set.FsetInt")
+fn raw_fset_interval(l : Int, r : Int) -> @fset.Fset[Int] = "interval"
+
+///|
+fn step_count(x : Int, value : Int) -> Int {
+  raw_numof(fn (i : Int) {
+    i == 0 && x == value
+  }, 0, 1)
+}
+
+///|
+fn prefix_positions(arr : FixedArray[Int], len : Int, x : Int) -> @fset.Fset[Int] {
+  fset_id(raw_fset_filter(raw_fset_interval(0, len), fn (i : Int) {
+    arr[i] == x
+  }))
+}
+
+///|
+fn count_prefix(arr : FixedArray[Int], len : Int, x : Int) -> Int {
+  raw_fset_cardinal(prefix_positions(arr, len, x))
+}
+
+///|
+predicate valid_prefix(arr : FixedArray[Int], len : Int) {
+  0 <= len && len <= arr.length()
+}
+
+///|
+predicate sorted(arr : FixedArray[Int]) {
+  ∀ i : Int, (0 <= i && i + 1 < arr.length()) → arr[i] <= arr[i + 1]
+}
+
+///|
+predicate sorted_prefix(arr : FixedArray[Int], len : Int) {
+  ∀ i : Int, (0 <= i && i + 1 < len) → arr[i] <= arr[i + 1]
+}
+
+///|
+predicate prefix_le_value(arr : FixedArray[Int], len : Int, value : Int) {
+  ∀ i : Int, (0 <= i && i < len) → arr[i] <= value
+}
+
+///|
+predicate eq_prefix(old_arr : FixedArray[Int], new_arr : FixedArray[Int], len : Int) {
+  ∀ i : Int, (0 <= i && i < len) → old_arr[i] == new_arr[i]
+}
+
+///|
+predicate prefix_positions_mem(arr : FixedArray[Int], len : Int, x : Int, i : Int) {
+  (0 <= i && i < len) && arr[i] == x
+}
+
+///|
+predicate prefix_positions_present_mem(arr : FixedArray[Int], len : Int, x : Int, i : Int) {
+  prefix_positions_mem(arr, len, x, i) || i == len
+}
+
+///|
+predicate prefix_positions_add_mem(arr : FixedArray[Int], len : Int, x : Int, i : Int) {
+  prefix_positions(arr, len, x).mem(i) || i == len
+}
+
+///|
+predicate prefix_positions_absent_mem(arr : FixedArray[Int], len : Int, x : Int, i : Int) {
+  prefix_positions_mem(arr, len, x, i)
+}
+
+///|
+predicate prefix_counts_merge(
+  xs : FixedArray[Int],
+  i : Int,
+  ys : FixedArray[Int],
+  j : Int,
+  out : FixedArray[Int],
+  k : Int,
+) {
+  ∀ value : Int,
+    count_prefix(out, k, value) ==
+    count_prefix(xs, i, value) + count_prefix(ys, j, value)
+}
+
+///|
+predicate merge_ok(xs : FixedArray[Int], ys : FixedArray[Int], out : FixedArray[Int]) {
+  out.length() == xs.length() + ys.length() &&
+  sorted(out) &&
+  (∀ value : Int,
+    count_prefix(out, out.length(), value) ==
+    count_prefix(xs, xs.length(), value) + count_prefix(ys, ys.length(), value))
+}
+
+///|
+pub lemma fset_add_cardinal_absent_local(s : @fset.Fset[Int], x : Int) where {
+  proof_require: s.mem(x) == false,
+  proof_ensure: s.add(x).cardinal() == s.cardinal() + 1,
+} {
+}
+
+///|
+pub lemma count_prefix_nonneg(arr : FixedArray[Int], len : Int, value : Int) where {
+  proof_require: valid_prefix(arr, len),
+  proof_ensure: 0 <= count_prefix(arr, len, value),
+} {
+  proof_assert 0 <= count_prefix(arr, len, value)
+}
+
+///|
+pub lemma step_count_nonneg(x : Int, value : Int) where {
+  proof_ensure: 0 <= step_count(x, value),
+} {
+}
+
+///|
+pub lemma step_count_self(value : Int) where {
+  proof_ensure: step_count(value, value) == 1,
+} {
+}
+
+///|
+pub lemma step_count_other(x : Int, value : Int) where {
+  proof_require: x != value,
+  proof_ensure: step_count(x, value) == 0,
+} {
+}
+
+pub lemma prefix_positions_step_present(
+  arr : FixedArray[Int],
+  len : Int,
+  x : Int,
+) where {
+  proof_require: valid_prefix(arr, len),
+  proof_require: len < arr.length(),
+  proof_require: arr[len] == x,
+  proof_ensure: prefix_positions(arr, len + 1, x).eq(prefix_positions(arr, len, x).add(len)),
+} {
+  proof_assert ∀ i : Int,
+    prefix_positions(arr, len + 1, x).mem(i) == prefix_positions_mem(arr, len + 1, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions_mem(arr, len + 1, x, i) == prefix_positions_present_mem(arr, len, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions(arr, len, x).mem(i) == prefix_positions_mem(arr, len, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions(arr, len, x).add(len).mem(i) == prefix_positions_add_mem(arr, len, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions_add_mem(arr, len, x, i) == prefix_positions_present_mem(arr, len, x, i)
+  proof_assert prefix_positions(arr, len + 1, x).eq(prefix_positions(arr, len, x).add(len))
+}
+
+///|
+pub lemma prefix_positions_step_absent(
+  arr : FixedArray[Int],
+  len : Int,
+  x : Int,
+) where {
+  proof_require: valid_prefix(arr, len),
+  proof_require: len < arr.length(),
+  proof_require: arr[len] != x,
+  proof_ensure: prefix_positions(arr, len + 1, x).eq(prefix_positions(arr, len, x)),
+} {
+  proof_assert ∀ i : Int,
+    prefix_positions(arr, len + 1, x).mem(i) == prefix_positions_mem(arr, len + 1, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions_mem(arr, len + 1, x, i) == prefix_positions_absent_mem(arr, len, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions(arr, len, x).mem(i) == prefix_positions_mem(arr, len, x, i)
+  proof_assert ∀ i : Int,
+    prefix_positions_mem(arr, len, x, i) == prefix_positions_absent_mem(arr, len, x, i)
+  proof_assert prefix_positions(arr, len + 1, x).eq(prefix_positions(arr, len, x))
+}
+
+///|
+pub lemma count_prefix_step(
+  arr : FixedArray[Int],
+  len : Int,
+  value : Int,
+  x : Int,
+) where {
+  proof_require: valid_prefix(arr, len),
+  proof_require: len < arr.length(),
+  proof_require: arr[len] == value,
+  proof_ensure:
+    count_prefix(arr, len + 1, x) == count_prefix(arr, len, x) + step_count(x, value),
+} {
+}
+
+///|
+predicate count_prefix_step_holds(arr : FixedArray[Int], len : Int, value : Int) {
+  ∀ x : Int,
+    count_prefix(arr, len + 1, x) == count_prefix(arr, len, x) + step_count(x, value)
+}
+
+///|
+pub lemma count_prefix_prefix_frame(
+  old_arr : FixedArray[Int],
+  new_arr : FixedArray[Int],
+  len : Int,
+  value : Int,
+) where {
+  proof_require: valid_prefix(old_arr, len),
+  proof_require: valid_prefix(new_arr, len),
+  proof_require: eq_prefix(old_arr, new_arr, len),
+  proof_ensure: count_prefix(new_arr, len, value) == count_prefix(old_arr, len, value),
+} {
+  proof_assert ∀ i : Int,
+    prefix_positions(new_arr, len, value).mem(i) == prefix_positions(old_arr, len, value).mem(i)
+  proof_assert prefix_positions(new_arr, len, value).eq(prefix_positions(old_arr, len, value))
+  proof_assert count_prefix(new_arr, len, value) == count_prefix(old_arr, len, value)
+}
+
+///|
+pub lemma prefix_counts_merge_prefix_frame(
+  xs : FixedArray[Int],
+  i : Int,
+  ys : FixedArray[Int],
+  j : Int,
+  old_out : FixedArray[Int],
+  new_out : FixedArray[Int],
+  k : Int,
+) where {
+  proof_require: valid_prefix(old_out, k),
+  proof_require: valid_prefix(new_out, k),
+  proof_require: eq_prefix(old_out, new_out, k),
+  proof_require: prefix_counts_merge(xs, i, ys, j, old_out, k),
+  proof_ensure: prefix_counts_merge(xs, i, ys, j, new_out, k),
+} {
+  proof_assert ∀ value : Int,
+    count_prefix(new_out, k, value) == count_prefix(old_out, k, value)
+  proof_assert prefix_counts_merge(xs, i, ys, j, new_out, k)
+}

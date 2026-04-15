@@ -65,6 +65,7 @@ pub fn[T] empty() -> SparseArray[T] {
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] singleton(
   idx : Int,
   value : T,
@@ -92,6 +93,7 @@ pub fn[T : Eq] singleton(
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] SparseArray::get(
   self : SparseArray[T],
   idx : Int,
@@ -108,6 +110,7 @@ pub fn[T : Eq] SparseArray::get(
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] SparseArray::add(
   self : SparseArray[T],
   idx : Int,
@@ -178,6 +181,7 @@ pub fn[T : Eq] SparseArray::add(
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] SparseArray::replace(
   self : SparseArray[T],
   idx : Int,
@@ -228,6 +232,7 @@ pub fn[T : Eq] SparseArray::replace(
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] SparseArray::remove(
   self : SparseArray[T],
   idx : Int,
@@ -295,6 +300,7 @@ pub fn[T : Eq] SparseArray::remove(
 }
 
 ///|
+#warnings("-unused_trait_bound")
 pub fn[T : Eq] SparseArray::length(
   self : SparseArray[T],
 ) -> Int where {

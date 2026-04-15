@@ -1,0 +1,7 @@
+import {
+  "moonbit-community/verified/bitmap32",
+}
+
+options(
+  "proof-enabled": true,
+)

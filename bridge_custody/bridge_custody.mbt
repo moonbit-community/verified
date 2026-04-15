@@ -8,7 +8,10 @@ pub struct Bridge {
 } derive(Eq)
 
 ///|
-fn nonce_mem(bitmap : UInt, nonce : Int) -> Bool where {
+fn nonce_mem(
+  bitmap : UInt,
+  nonce : Int,
+) -> Bool where {
   proof_require: @bitmap32.valid_idx(nonce),
   proof_ensure: result => result == @bitmap32.mem_value(bitmap, nonce),
 } {
@@ -20,7 +23,9 @@ fn nonce_mem(bitmap : UInt, nonce : Int) -> Bool where {
 }
 
 ///|
-pub fn empty(reserve : Int) -> Bridge where {
+pub fn empty(
+  reserve : Int,
+) -> Bridge where {
   proof_require: 0 <= reserve,
   proof_ensure: result => empty_post(reserve, result),
 } {
@@ -33,7 +38,10 @@ pub fn empty(reserve : Int) -> Bridge where {
 }
 
 ///|
-pub fn deposit(bridge : Bridge, amount : Int) -> Bridge where {
+pub fn deposit(
+  bridge : Bridge,
+  amount : Int,
+) -> Bridge where {
   proof_require: bridge_inv(bridge),
   proof_require: 0 <= amount,
   proof_ensure: result => deposit_post(bridge, amount, result),
@@ -47,7 +55,10 @@ pub fn deposit(bridge : Bridge, amount : Int) -> Bridge where {
 }
 
 ///|
-pub fn nonce_used(bridge : Bridge, nonce : Int) -> Bool where {
+pub fn nonce_used(
+  bridge : Bridge,
+  nonce : Int,
+) -> Bool where {
   proof_require: bridge_inv(bridge),
   proof_require: @bitmap32.valid_idx(nonce),
   proof_ensure: result => nonce_used_post(bridge, nonce, result),

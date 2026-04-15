@@ -1,0 +1,92 @@
+///|
+///|
+fn height_value(tree : Tree) -> Int {
+  match tree {
+    Zero(remaining) => remaining
+    Leaf(_value) => 0
+    Branch(left, _) => 1 + height_value(left)
+  }
+}
+
+///|
+predicate tree_inv(tree : Tree) {
+  match tree {
+    Zero(remaining) =>
+      0 <= remaining && remaining <= 32
+    Leaf(_value) => true
+    Branch(left, right) =>
+      tree_inv(left) &&
+      tree_inv(right) &&
+      height_value(left) == height_value(right) &&
+      0 <= height_value(left) &&
+      1 + height_value(left) <= 32
+  }
+}
+
+///|
+predicate full_tree_inv(tree : Tree) {
+  tree_inv(tree) && height_value(tree) == 32
+}
+
+///|
+predicate valid_member_idx(idx : Int) {
+  0 <= idx && idx < 32
+}
+
+///|
+fn bit_at_value(key : UInt, idx : Int) -> Bool {
+  @bitmap32.mem_value(key, idx)
+}
+
+///|
+predicate lookup_rel(tree : Tree, key : UInt, result : Int) {
+  match tree {
+    Zero(_remaining) => result == 0
+    Leaf(value) => result == value
+    Branch(left, right) =>
+      (bit_at_value(key, 31 - height_value(left)) →
+        lookup_rel(right, key, result)) &&
+      (bit_at_value(key, 31 - height_value(left)) == false →
+        lookup_rel(left, key, result))
+  }
+}
+
+///|
+predicate empty_post(result : Tree) {
+  match result {
+    Zero(remaining) => remaining == 32
+    Leaf(_value) => false
+    Branch(_left, _right) => false
+  }
+}
+
+///|
+predicate lookup_post(tree : Tree, key : UInt, result : Int) {
+  full_tree_inv(tree) &&
+  lookup_rel(tree, key, result)
+}
+
+///|
+predicate update_subtree_post(
+  tree : Tree,
+  key : UInt,
+  value : Int,
+  result : Tree,
+) {
+  tree_inv(tree) &&
+  tree_inv(result) &&
+  height_value(result) == height_value(tree) &&
+  lookup_rel(result, key, value)
+}
+
+///|
+predicate update_post(
+  tree : Tree,
+  key : UInt,
+  value : Int,
+  result : Tree,
+) {
+  full_tree_inv(tree) &&
+  full_tree_inv(result) &&
+  lookup_rel(result, key, value)
+}

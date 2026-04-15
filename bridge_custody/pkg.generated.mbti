@@ -1,0 +1,24 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/bridge_custody"
+
+// Values
+pub fn deposit(Bridge, Int) -> Bridge
+
+pub fn empty(Int) -> Bridge
+
+pub fn execute_withdraw(Bridge, Int, Int) -> Bridge
+
+pub fn nonce_used(Bridge, Int) -> Bool
+
+// Errors
+
+// Types and methods
+pub struct Bridge {
+  reserve : Int
+  used_nonces : UInt
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+

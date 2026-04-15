@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/clearinghouse_waterfall"
+
+// Values
+pub fn add_insurance(House, Int) -> House
+
+pub fn can_fully_absorb(House) -> Bool
+
+pub fn make_house(Int, Int, Int, Int, Int) -> House
+
+pub fn resolve_default(House) -> Resolution
+
+pub fn total_buffer(House) -> Int
+
+// Errors
+
+// Types and methods
+pub struct House {
+  collateral : Int
+  liability : Int
+  insurance : Int
+  junior : Int
+  senior : Int
+} derive(Eq)
+
+pub struct Resolution {
+  insurance_used : Int
+  junior_used : Int
+  senior_used : Int
+  socialized_loss : Int
+  next_house : House
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+
