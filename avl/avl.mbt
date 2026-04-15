@@ -41,6 +41,7 @@ pub fn[T] empty() -> Tree[T] {
 /// returned height is computed directly from the children, so later proofs can
 /// treat `mk` as the single place where structure, ordering, and height are
 /// recombined.
+#warnings("-unused_trait_bound")
 fn[T : Compare] mk(
   l : Tree[T],
   x : T,

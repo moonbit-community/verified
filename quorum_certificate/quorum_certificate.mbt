@@ -3,7 +3,7 @@ pub struct QC {
   block : Int
   round : Int
   signers : UInt
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 pub fn make_qc(block : Int, round : Int, signers : UInt) -> QC {

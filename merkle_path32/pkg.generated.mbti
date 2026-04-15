@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/merkle_path32"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn compute_root(UInt, Int, Path) -> Int
 
@@ -14,7 +18,7 @@ pub fn verify(Int, UInt, Int, Path) -> Bool
 pub enum Path {
   Nil
   Cons(Int, Path)
-} derive(Eq, Show)
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

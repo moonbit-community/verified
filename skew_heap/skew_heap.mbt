@@ -16,7 +16,10 @@ fn[T] heap_size(h : Heap[T]) -> Int {
 }
 
 ///|
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+#warnings("-unused_trait_bound")
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 
@@ -30,6 +33,7 @@ pub fn[T] size(h : Heap[T]) -> Int {
 /// and the chosen root must be no larger than either side. Once those
 /// preconditions hold, the node constructor is enough to restore the
 /// invariant after the recursive merge step.
+#warnings("-unused_trait_bound")
 fn[T : Compare] make_node(
   value : T,
   left : Heap[T],
@@ -50,6 +54,7 @@ fn[T : Compare] make_node(
 /// The singleton heap is the base case for insertions and recursive merges.
 /// Its proof is trivial because both children are empty and the root is
 /// therefore the minimum by construction.
+#warnings("-unused_trait_bound")
 fn[T : Compare] singleton(
   value : T,
 ) -> Heap[T] where {
@@ -117,6 +122,7 @@ pub fn[T : Compare] insert(
 /// A valid skew heap exposes its minimum at the root, so `find_min` only needs
 /// to distinguish `Empty` from the non-empty case and then read the root
 /// value.
+#warnings("-unused_trait_bound")
 pub fn[T : Compare] find_min(
   h : Heap[T],
 ) -> T? where {

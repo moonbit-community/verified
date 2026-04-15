@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/quorum_certificate"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn conflicting(QC, QC) -> Bool
 
@@ -23,7 +27,7 @@ pub struct QC {
   block : Int
   round : Int
   signers : UInt
-} derive(Eq, Show)
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

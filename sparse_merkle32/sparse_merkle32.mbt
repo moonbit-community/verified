@@ -3,7 +3,7 @@ pub enum Tree {
   Zero(Int)
   Leaf(Int)
   Branch(Tree, Tree)
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 /// This package uses the same deterministic hash combiner as `merkle_path32`.

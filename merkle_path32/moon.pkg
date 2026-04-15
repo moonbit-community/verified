@@ -1,7 +1,5 @@
 import {
   "moonbit-community/verified/bitmap32",
-  "moonbit-community/verified/bv32",
-  "moonbit-community/verified/fset",
 }
 
 options(

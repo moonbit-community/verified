@@ -1,4 +1,9 @@
-using @fset {type Fset}
+///|
+#warnings("-unused_value")
+#proof_pure
+fn fset_id(s : @fset.Fset[Int]) -> @fset.Fset[Int] {
+  s
+}
 
 ///|
 pub fn merge(
@@ -66,7 +71,7 @@ pub fn merge(
     proof_invariant: prefix_counts_merge(xs, i, ys, j, out, k),
     proof_invariant: i >= xs.length() || prefix_le_value(out, k, xs[i]),
     proof_invariant: j >= ys.length() || prefix_le_value(out, k, ys[j]),
-    reasoning: (
+    proof_reasoning: (
       #| This loop is the core merge step used by mergesort. The processed
       #| prefixes `xs[0 .. i)` and `ys[0 .. j)` have already been copied into
       #| `out[0 .. k)`, with `k == i + j`.

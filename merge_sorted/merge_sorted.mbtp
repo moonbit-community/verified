@@ -4,19 +4,15 @@ fn raw_numof(p : (Int) -> Bool, a : Int, b : Int) -> Int = "numof"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_add(x : Int, s : Fset[Int]) -> Fset[Int] = "add"
+fn raw_fset_cardinal(s : @fset.Fset[Int]) -> Int = "cardinal"
 
 ///|
 #proof_import("set.Fset")
-fn raw_fset_cardinal(s : Fset[Int]) -> Int = "cardinal"
-
-///|
-#proof_import("set.Fset")
-fn raw_fset_filter(s : Fset[Int], p : (Int) -> Bool) -> Fset[Int] = "filter"
+fn raw_fset_filter(s : @fset.Fset[Int], p : (Int) -> Bool) -> @fset.Fset[Int] = "filter"
 
 ///|
 #proof_import("set.FsetInt")
-fn raw_fset_interval(l : Int, r : Int) -> Fset[Int] = "interval"
+fn raw_fset_interval(l : Int, r : Int) -> @fset.Fset[Int] = "interval"
 
 ///|
 fn step_count(x : Int, value : Int) -> Int {
@@ -26,10 +22,10 @@ fn step_count(x : Int, value : Int) -> Int {
 }
 
 ///|
-fn prefix_positions(arr : FixedArray[Int], len : Int, x : Int) -> Fset[Int] {
-  raw_fset_filter(raw_fset_interval(0, len), fn (i : Int) {
+fn prefix_positions(arr : FixedArray[Int], len : Int, x : Int) -> @fset.Fset[Int] {
+  fset_id(raw_fset_filter(raw_fset_interval(0, len), fn (i : Int) {
     arr[i] == x
-  })
+  }))
 }
 
 ///|
@@ -106,7 +102,7 @@ predicate merge_ok(xs : FixedArray[Int], ys : FixedArray[Int], out : FixedArray[
 }
 
 ///|
-pub lemma fset_add_cardinal_absent_local(s : Fset[Int], x : Int) where {
+pub lemma fset_add_cardinal_absent_local(s : @fset.Fset[Int], x : Int) where {
   proof_require: s.mem(x) == false,
   proof_ensure: s.add(x).cardinal() == s.cardinal() + 1,
 } {

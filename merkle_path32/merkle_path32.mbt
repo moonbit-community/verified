@@ -2,7 +2,7 @@
 pub enum Path {
   Nil
   Cons(Int, Path)
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 /// This is a deterministic binary combiner for proof purposes, not a real
@@ -84,7 +84,9 @@ pub fn compute_root_from(
 } {
   match path {
     Nil => {
-      proof_assert root_from_post(key, depth, acc, Nil, acc)
+      let empty = Nil
+      proof_assert path == empty
+      proof_assert root_from_post(key, depth, acc, empty, acc)
       acc
     }
     Cons(sibling, rest) => {

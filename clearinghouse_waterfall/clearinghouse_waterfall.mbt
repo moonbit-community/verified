@@ -95,7 +95,9 @@ pub fn make_house(
 }
 
 ///|
-pub fn total_buffer(house : House) -> Int where {
+pub fn total_buffer(
+  house : House,
+) -> Int where {
   proof_require: house_inv(house),
   proof_ensure: result => total_buffer_post(house, result),
 } {
@@ -105,7 +107,9 @@ pub fn total_buffer(house : House) -> Int where {
 }
 
 ///|
-pub fn can_fully_absorb(house : House) -> Bool where {
+pub fn can_fully_absorb(
+  house : House,
+) -> Bool where {
   proof_require: house_inv(house),
   proof_ensure: result => can_fully_absorb_post(house, result),
 } {
@@ -115,7 +119,10 @@ pub fn can_fully_absorb(house : House) -> Bool where {
 }
 
 ///|
-pub fn add_insurance(house : House, amount : Int) -> House where {
+pub fn add_insurance(
+  house : House,
+  amount : Int,
+) -> House where {
   proof_require: house_inv(house),
   proof_require: 0 <= amount,
   proof_ensure: result => add_insurance_post(house, amount, result),
@@ -132,7 +139,9 @@ pub fn add_insurance(house : House, amount : Int) -> House where {
 }
 
 ///|
-pub fn resolve_default(house : House) -> Resolution where {
+pub fn resolve_default(
+  house : House,
+) -> Resolution where {
   proof_require: house_inv(house),
   proof_ensure: result => resolve_default_post(house, result),
 } {

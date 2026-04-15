@@ -1,8 +1,32 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/verified/merge_sorted"
 
+import {
+  "moonbit-community/verified/fset",
+}
+
 // Values
+pub fn count_prefix_nonneg(FixedArray[Int], Int, Int) -> Unit
+
+pub fn count_prefix_prefix_frame(FixedArray[Int], FixedArray[Int], Int, Int) -> Unit
+
+pub fn count_prefix_step(FixedArray[Int], Int, Int, Int) -> Unit
+
+pub fn fset_add_cardinal_absent_local(@fset.Fset[Int], Int) -> Unit
+
 pub fn merge(FixedArray[Int], FixedArray[Int]) -> FixedArray[Int]
+
+pub fn prefix_counts_merge_prefix_frame(FixedArray[Int], Int, FixedArray[Int], Int, FixedArray[Int], FixedArray[Int], Int) -> Unit
+
+pub fn prefix_positions_step_absent(FixedArray[Int], Int, Int) -> Unit
+
+pub fn prefix_positions_step_present(FixedArray[Int], Int, Int) -> Unit
+
+pub fn step_count_nonneg(Int, Int) -> Unit
+
+pub fn step_count_other(Int, Int) -> Unit
+
+pub fn step_count_self(Int) -> Unit
 
 // Errors
 

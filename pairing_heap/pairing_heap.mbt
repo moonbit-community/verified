@@ -19,7 +19,10 @@ pub enum ChildList[T] {
 ///|
 /// The empty heap is valid immediately; the invariant has nothing to check in
 /// the `Empty` case.
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+#warnings("-unused_trait_bound")
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 
@@ -36,6 +39,7 @@ pub fn[T] size(h : Heap[T]) -> Int {
 ///|
 /// A singleton heap is the atomic proof case: one root, no children, and size
 /// exactly one.
+#warnings("-unused_trait_bound")
 fn[T : Compare] singleton(
   value : T,
 ) -> Heap[T] where {
@@ -127,6 +131,7 @@ pub fn[T : Compare] insert(
 /// The minimum is the root value when the heap is non-empty. The proof first
 /// rules out the empty case via the root-count fact, then returns that cached
 /// root.
+#warnings("-unused_trait_bound")
 pub fn[T : Compare] find_min(
   h : Heap[T],
 ) -> T? where {

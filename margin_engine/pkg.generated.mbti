@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/margin_engine"
+
+// Values
+pub fn apply_funding(Account, Int, Int) -> Account
+
+pub fn close_to_restore(Account, Int) -> Account
+
+pub fn equity_value(Account, Int) -> Int
+
+pub fn is_liquidatable(Account, Int) -> Bool
+
+pub fn liquidation_price(Account) -> Int
+
+pub fn margin_buffer(Account, Int) -> Int
+
+pub fn min_close_to_restore(Account, Int) -> Int
+
+pub fn open_account(Int, Int, Int, Int, Int) -> Account
+
+pub fn partial_close(Account, Int, Int) -> Account
+
+// Errors
+
+// Types and methods
+pub struct Account {
+  collateral : Int
+  contracts : Int
+  entry_price : Int
+  funding_debt : Int
+  maintenance_margin_bps : Int
+} derive(Eq)
+
+// Type aliases
+
+// Traits
+
