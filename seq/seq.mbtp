@@ -5,3 +5,30 @@ pub fn[T] Seq::length(self : Seq[T]) -> Int = "length"
 ///|
 #proof_import("seq.Seq")
 pub fn[T] Seq::get(self : Seq[T], idx : Int) -> T = "get"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::empty() -> Seq[T] = "empty"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::append(left : Seq[T], right : Seq[T]) -> Seq[T] = "(++)"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::singleton(v : T) -> Seq[T] = "singleton"
+
+#proof_import("seq.Seq")
+pub fn[T] Seq::set(self : Seq[T], i : Int, v : T) -> Seq[T] = "([<-])"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::eq(left : Seq[T], right : Seq[T]) -> Bool = "(==)"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::tail(self : Seq[T], i : Int) -> Seq[T] = "([_..])"
+
+///|
+#proof_import("seq.Seq")
+pub fn[T] Seq::sub(self : Seq[T], i : Int, j : Int) -> Seq[T] = "([..])"

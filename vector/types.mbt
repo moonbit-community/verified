@@ -1,8 +1,5 @@
-// Logic-only sequence type used by proof imports in `vector.mbtp`.
-
 ///|
-#proof_external("seq.Seq", "seq")
-priv type Seq[T]
+using @seq {type Seq}
 
 ///|
 let num_bits = 5

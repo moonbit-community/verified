@@ -113,8 +113,8 @@ fn[T] Tree::append_right_leaf(
 ) -> (Tree[T], Int) where {
   proof_axiomatized: true,
   proof_require: tree_inv(self, root_level(shift)),
-  proof_require: 0 < leaf.model().seq_length(),
-  proof_require: leaf.model().seq_length() <= 32,
+  proof_require: 0 < @readonlyarray.model(leaf).length(),
+  proof_require: @readonlyarray.model(leaf).length() <= 32,
   proof_ensure: result => append_right_leaf_post(self, shift, leaf, result),
 } {
   let delta = leaf.length()
