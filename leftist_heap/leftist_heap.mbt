@@ -35,7 +35,9 @@ fn min2(a : Int, b : Int) -> Int {
 }
 
 ///|
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 

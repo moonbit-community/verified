@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/seq"
+
+// Values
+pub fn[T] seq_append(Seq[T], Seq[T]) -> Seq[T]
+
+pub fn[T] seq_empty() -> Seq[T]
+
+pub fn[T] seq_eq(Seq[T], Seq[T]) -> Bool
+
+pub fn[T] seq_len(Seq[T]) -> Int
+
+pub fn[T] seq_set(Seq[T], Int, T) -> Seq[T]
+
+pub fn[T] seq_singleton(T) -> Seq[T]
+
+pub fn[T] seq_sub(Seq[T], Int, Int) -> Seq[T]
+
+pub fn[T] seq_tail(Seq[T], Int) -> Seq[T]
+
+// Errors
+
+// Types and methods
+pub type Seq[T]
+pub fn[T] Seq::get(Self[T], Int) -> T
+pub fn[T] Seq::length(Self[T]) -> Int
+pub fn[T] Seq::seq_get(Self[T], Int) -> T
+pub fn[T] Seq::seq_length(Self[T]) -> Int
+
+// Type aliases
+
+// Traits
+

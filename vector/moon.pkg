@@ -1,0 +1,8 @@
+import {
+  "moonbit-community/verified/readonlyarray",
+  "moonbit-community/verified/seq",
+}
+
+options(
+  "proof-enabled": true,
+)

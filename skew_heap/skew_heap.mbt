@@ -16,7 +16,9 @@ fn[T] heap_size(h : Heap[T]) -> Int {
 }
 
 ///|
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 

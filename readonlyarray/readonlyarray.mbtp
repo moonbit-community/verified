@@ -1,0 +1,3 @@
+///|
+#proof_import("moonbit_builtin_prelude.ReadOnlyArray")
+pub fn[T] model(self : ReadOnlyArray[T]) -> @seq.Seq[T] = "model"

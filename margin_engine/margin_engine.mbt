@@ -63,19 +63,13 @@ pub fn open_account(
   proof_require: 0 <= entry_price,
   proof_require: 0 <= funding_debt,
   proof_require: valid_margin_bps(maintenance_margin_bps),
-  proof_require:
-    (collateral - funding_debt) * 10000 >=
-    contracts * entry_price * maintenance_margin_bps,
-  proof_ensure:
-    result =>
-      open_account_post(
-        collateral,
-        contracts,
-        entry_price,
-        funding_debt,
-        maintenance_margin_bps,
-        result,
-      ),
+  proof_require: (collateral - funding_debt) * 10000 >=
+  contracts * entry_price * maintenance_margin_bps,
+  proof_ensure: result => {
+    open_account_post(
+      collateral, contracts, entry_price, funding_debt, maintenance_margin_bps, result,
+    )
+  },
 } {
   let result = {
     collateral,
@@ -85,18 +79,16 @@ pub fn open_account(
     maintenance_margin_bps,
   }
   proof_assert open_account_post(
-    collateral,
-    contracts,
-    entry_price,
-    funding_debt,
-    maintenance_margin_bps,
-    result,
+    collateral, contracts, entry_price, funding_debt, maintenance_margin_bps, result,
   )
   result
 }
 
 ///|
-pub fn equity_value(account : Account, mark : Int) -> Int where {
+pub fn equity_value(
+  account : Account,
+  mark : Int,
+) -> Int where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
   proof_ensure: result => equity_value_post(account, mark, result),
@@ -107,7 +99,10 @@ pub fn equity_value(account : Account, mark : Int) -> Int where {
 }
 
 ///|
-pub fn margin_buffer(account : Account, mark : Int) -> Int where {
+pub fn margin_buffer(
+  account : Account,
+  mark : Int,
+) -> Int where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
   proof_ensure: result => margin_buffer_post(account, mark, result),
@@ -118,7 +113,9 @@ pub fn margin_buffer(account : Account, mark : Int) -> Int where {
 }
 
 ///|
-pub fn liquidation_price(account : Account) -> Int where {
+pub fn liquidation_price(
+  account : Account,
+) -> Int where {
   proof_require: account_inv(account),
   proof_ensure: result => liquidation_price_post(account, result),
 } {
@@ -150,7 +147,8 @@ pub fn apply_funding(
     funding_debt: account.funding_debt + amount,
     maintenance_margin_bps: account.maintenance_margin_bps,
   }
-  proof_assert scaled_buffer(result, mark) == scaled_buffer(account, mark) - amount * 10000
+  proof_assert scaled_buffer(result, mark) ==
+    scaled_buffer(account, mark) - amount * 10000
   proof_assert apply_funding_post(account, amount, mark, result)
   result
 }
@@ -165,21 +163,19 @@ pub fn partial_close(
   proof_require: 0 <= mark,
   proof_require: 0 <= close_units,
   proof_require: close_units <= account.contracts,
-  proof_require:
-    0 <= account.collateral + close_units * (mark - account.entry_price),
+  proof_require: 0 <=
+  account.collateral + close_units * (mark - account.entry_price),
   proof_ensure: result => partial_close_post(account, close_units, mark, result),
 } {
   let result = {
-    collateral:
-      account.collateral + close_units * (mark - account.entry_price),
+    collateral: account.collateral + close_units * (mark - account.entry_price),
     contracts: account.contracts - close_units,
     entry_price: account.entry_price,
     funding_debt: account.funding_debt,
     maintenance_margin_bps: account.maintenance_margin_bps,
   }
   proof_assert equity(result, mark) == equity(account, mark)
-  proof_assert
-    scaled_buffer(result, mark) ==
+  proof_assert scaled_buffer(result, mark) ==
     scaled_buffer(account, mark) +
     close_units * mark * account.maintenance_margin_bps
   proof_assert partial_close_post(account, close_units, mark, result)
@@ -209,15 +205,14 @@ pub fn close_to_restore(
   proof_require: account_inv(account),
   proof_require: 0 < mark,
   proof_require: 0 <= equity(account, mark),
-  proof_require:
-    0 <=
-      account.collateral +
-      required_close_units(account, mark) * (mark - account.entry_price),
+  proof_require: 0 <=
+  account.collateral +
+  required_close_units(account, mark) * (mark - account.entry_price),
   proof_ensure: result => close_to_restore_post(account, mark, result),
 } {
   let close_units = min_close_to_restore(account, mark)
-  proof_assert
-    0 <= account.collateral + close_units * (mark - account.entry_price)
+  proof_assert 0 <=
+    account.collateral + close_units * (mark - account.entry_price)
   proof_assert close_units <= account.contracts
   let result = partial_close(account, close_units, mark)
   proof_assert close_to_restore_post(account, mark, result)
@@ -225,7 +220,10 @@ pub fn close_to_restore(
 }
 
 ///|
-pub fn is_liquidatable(account : Account, mark : Int) -> Bool where {
+pub fn is_liquidatable(
+  account : Account,
+  mark : Int,
+) -> Bool where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
   proof_ensure: result => liquidatable_post(account, mark, result),

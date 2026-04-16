@@ -1,4 +1,8 @@
-fn build_skip_table(needle : Bytes, needle_len : Int) -> FixedArray[Int] where {
+///|
+fn build_skip_table(
+  needle : Bytes,
+  needle_len : Int,
+) -> FixedArray[Int] where {
   proof_require: bytes_len_ok(needle, needle_len),
   proof_require: needle_len > 0,
   proof_ensure: result => skip_table_ok(result, needle),
@@ -21,8 +25,9 @@ fn build_skip_table(needle : Bytes, needle_len : Int) -> FixedArray[Int] where {
     proof_assert i == needle_len - 1
     proof_assert i == bytes_length(needle) - 1
     proof_assert skip_table_prefix_ok(skip, needle, i)
-    proof_assert ∀ c : Int, ∀ s : Int,
-      ((0 <= c) && (c < 256) && (1 <= s) && (s < skip[c])) →
+    proof_assert ∀ c : Int,
+      ∀ s : Int,
+        0 <= c && c < 256 && 1 <= s && s < skip[c] →
         byte_value(needle, bytes_length(needle) - 1 - s) != c
     proof_assert skip_table_ok(skip, needle)
     skip
@@ -34,6 +39,7 @@ fn build_skip_table(needle : Bytes, needle_len : Int) -> FixedArray[Int] where {
   }
 }
 
+///|
 fn matches_at(
   haystack : Bytes,
   needle : Bytes,
@@ -52,14 +58,12 @@ fn matches_at(
     proof_assert bytes_get_int_pre(needle, j)
     proof_assert offset + j < bytes_length(haystack)
     proof_assert bytes_get_int_pre(haystack, offset + j)
-    let new_mismatch =
-      if mismatch == -1 &&
-        haystack[offset + j].to_int() !=
-        needle[j].to_int() {
-        j
-      } else {
-        mismatch
-      }
+    let new_mismatch = if mismatch == -1 &&
+      haystack[offset + j].to_int() != needle[j].to_int() {
+      j
+    } else {
+      mismatch
+    }
     continue j + 1, new_mismatch
   } nobreak {
     proof_assert needle_len == bytes_length(needle)
@@ -70,13 +74,19 @@ fn matches_at(
     if mismatch == -1 {
       proof_assert mismatch != -1 || matched_prefix(haystack, needle, offset, j)
       proof_assert matched_prefix(haystack, needle, offset, j)
-      proof_assert matched_prefix(haystack, needle, offset, bytes_length(needle))
+      proof_assert matched_prefix(
+        haystack,
+        needle,
+        offset,
+        bytes_length(needle),
+      )
       proof_assert match_at(haystack, needle, offset)
     } else {
       proof_assert 0 <= mismatch
       proof_assert mismatch < j
       proof_assert mismatch < bytes_length(needle)
-      proof_assert byte_value(haystack, offset + mismatch) != byte_value(needle, mismatch)
+      proof_assert byte_value(haystack, offset + mismatch) !=
+        byte_value(needle, mismatch)
       proof_assert !match_at(haystack, needle, offset)
     }
     mismatch == -1
@@ -84,7 +94,8 @@ fn matches_at(
     proof_invariant: 0 <= j,
     proof_invariant: mismatch_scan_inv(haystack, needle, offset, j, mismatch),
     proof_invariant: mismatch == -1 || (0 <= mismatch && mismatch < j),
-    proof_invariant: mismatch != -1 || matched_prefix(haystack, needle, offset, j),
+    proof_invariant: mismatch != -1 ||
+    matched_prefix(haystack, needle, offset, j),
     proof_invariant: j <= needle_len,
     proof_invariant: bytes_len_ok(needle, needle_len),
   }

@@ -1,0 +1,32 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/vector"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Tree[T]
+
+pub struct Vector[T] {
+  tree : Tree[T]
+  tail : ReadOnlyArray[T]
+  size : Int
+  shift : Int
+}
+#alias("_[_]")
+pub fn[T : Eq] Vector::at(Self[T], Int) -> T
+pub fn[T : Eq] Vector::get(Self[T], Int) -> T?
+pub fn[T] Vector::is_empty(Self[T]) -> Bool
+pub fn[T] Vector::length(Self[T]) -> Int
+#as_free_fn
+pub fn[T] Vector::new() -> Self[T]
+pub fn[T : Eq] Vector::peek(Self[T]) -> T?
+pub fn[T] Vector::pop(Self[T]) -> Self[T]?
+pub fn[T] Vector::push(Self[T], T) -> Self[T]
+pub fn[T] Vector::set(Self[T], Int, T) -> Self[T]
+
+// Type aliases
+
+// Traits
+
