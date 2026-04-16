@@ -19,7 +19,9 @@ pub enum ChildList[T] {
 ///|
 /// The empty heap is valid immediately; the invariant has nothing to check in
 /// the `Empty` case.
-pub fn[T : Compare] empty() -> Heap[T] where { proof_ensure: result => heap_inv(result) } {
+pub fn[T : Compare] empty() -> Heap[T] where {
+  proof_ensure: result => heap_inv(result),
+} {
   Empty
 }
 
