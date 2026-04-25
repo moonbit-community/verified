@@ -14,7 +14,15 @@ predicate vested_amount_post(
 ) {
   0 <= total &&
   0 < duration &&
-  result == vested_at(total, start, duration, now) &&
+  (
+    (now <= start && result == 0) ||
+    (start + duration <= now && result == total) ||
+    (
+      start < now &&
+      now < start + duration &&
+      result == total * (now - start) / duration
+    )
+  ) &&
   0 <= result &&
   result <= total
 }

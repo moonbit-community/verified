@@ -14,7 +14,12 @@ predicate account_inv(account : Account) {
 predicate healthy_at(account : Account, mark : Int) {
   account_inv(account) &&
   0 <= mark &&
-  0 <= scaled_buffer(account, mark)
+  0 <=
+    (
+      account.collateral - account.funding_debt +
+        account.contracts * (mark - account.entry_price)
+    ) * 10000 -
+      account.contracts * mark * account.maintenance_margin_bps
 }
 
 predicate open_account_post(
@@ -36,31 +41,63 @@ predicate open_account_post(
 predicate equity_value_post(account : Account, mark : Int, result : Int) {
   account_inv(account) &&
   0 <= mark &&
-  result == equity(account, mark)
+  result ==
+    account.collateral - account.funding_debt +
+      account.contracts * (mark - account.entry_price)
 }
 
 predicate margin_buffer_post(account : Account, mark : Int, result : Int) {
   account_inv(account) &&
   0 <= mark &&
-  result == scaled_buffer(account, mark)
+  result ==
+    (
+      account.collateral - account.funding_debt +
+        account.contracts * (mark - account.entry_price)
+    ) * 10000 -
+      account.contracts * mark * account.maintenance_margin_bps
 }
 
 predicate liquidation_price_post(account : Account, result : Int) {
   account_inv(account) &&
   0 <= result &&
   (
-    ((account.contracts == 0 || liquidation_numerator(account) <= 0) &&
+    (
+      (
+        account.contracts == 0 ||
+        account.contracts * account.entry_price * 10000 +
+          account.funding_debt * 10000 -
+          account.collateral * 10000 <=
+          0
+      ) &&
       result == 0) ||
     (
       0 < account.contracts &&
-      0 < liquidation_numerator(account) &&
+      0 <
+        account.contracts * account.entry_price * 10000 +
+          account.funding_debt * 10000 -
+          account.collateral * 10000 &&
       0 < result &&
-      (result - 1) * liquidation_denominator(account) <
-        liquidation_numerator(account) &&
-      liquidation_numerator(account) <=
-        result * liquidation_denominator(account) &&
-      0 <= scaled_buffer(account, result) &&
-      scaled_buffer(account, result - 1) < 0
+      (result - 1) *
+        (account.contracts * (10000 - account.maintenance_margin_bps)) <
+        account.contracts * account.entry_price * 10000 +
+          account.funding_debt * 10000 -
+          account.collateral * 10000 &&
+      account.contracts * account.entry_price * 10000 +
+        account.funding_debt * 10000 -
+        account.collateral * 10000 <=
+        result * (account.contracts * (10000 - account.maintenance_margin_bps)) &&
+      0 <=
+        (
+          account.collateral - account.funding_debt +
+            account.contracts * (result - account.entry_price)
+        ) * 10000 -
+          account.contracts * result * account.maintenance_margin_bps &&
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (result - 1 - account.entry_price)
+      ) * 10000 -
+        account.contracts * (result - 1) * account.maintenance_margin_bps <
+        0
     )
   )
 }
@@ -77,7 +114,17 @@ predicate apply_funding_post(
   result.entry_price == account.entry_price &&
   result.funding_debt == account.funding_debt + amount &&
   result.maintenance_margin_bps == account.maintenance_margin_bps &&
-  scaled_buffer(result, mark) == scaled_buffer(account, mark) - amount * 10000
+  (
+    result.collateral - result.funding_debt +
+      result.contracts * (mark - result.entry_price)
+  ) * 10000 - result.contracts * mark * result.maintenance_margin_bps ==
+    (
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (mark - account.entry_price)
+      ) * 10000 -
+        account.contracts * mark * account.maintenance_margin_bps
+    ) - amount * 10000
 }
 
 predicate partial_close_post(
@@ -94,10 +141,21 @@ predicate partial_close_post(
   result.entry_price == account.entry_price &&
   result.funding_debt == account.funding_debt &&
   result.maintenance_margin_bps == account.maintenance_margin_bps &&
-  equity(result, mark) == equity(account, mark) &&
-  scaled_buffer(result, mark) ==
-    scaled_buffer(account, mark) +
-    close_units * mark * account.maintenance_margin_bps
+  result.collateral - result.funding_debt +
+    result.contracts * (mark - result.entry_price) ==
+    account.collateral - account.funding_debt +
+      account.contracts * (mark - account.entry_price) &&
+  (
+    result.collateral - result.funding_debt +
+      result.contracts * (mark - result.entry_price)
+  ) * 10000 - result.contracts * mark * result.maintenance_margin_bps ==
+    (
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (mark - account.entry_price)
+      ) * 10000 -
+        account.contracts * mark * account.maintenance_margin_bps
+    ) + close_units * mark * account.maintenance_margin_bps
 }
 
 predicate min_close_frontier(
@@ -108,8 +166,13 @@ predicate min_close_frontier(
   if result == 0 {
     true
   } else {
-    scaled_buffer(account, mark) +
-      (result - 1) * mark * account.maintenance_margin_bps <
+    (
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (mark - account.entry_price)
+      ) * 10000 -
+        account.contracts * mark * account.maintenance_margin_bps
+    ) + (result - 1) * mark * account.maintenance_margin_bps <
       0
   }
 }
@@ -121,12 +184,19 @@ predicate min_close_to_restore_post(
 ) {
   account_inv(account) &&
   0 < mark &&
-  0 <= equity(account, mark) &&
-  result == required_close_units(account, mark) &&
+  0 <=
+    account.collateral - account.funding_debt +
+      account.contracts * (mark - account.entry_price) &&
   0 <= result &&
   result <= account.contracts &&
   0 <=
-    scaled_buffer(account, mark) +
+    (
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (mark - account.entry_price)
+      ) * 10000 -
+        account.contracts * mark * account.maintenance_margin_bps
+    ) +
       result * mark * account.maintenance_margin_bps &&
   min_close_frontier(account, mark, result)
 }
@@ -137,8 +207,12 @@ predicate close_to_restore_post(
   result : Account,
 ) {
   healthy_at(result, mark) &&
-  equity(result, mark) == equity(account, mark) &&
-  result.contracts + required_close_units(account, mark) == account.contracts &&
+  result.collateral - result.funding_debt +
+    result.contracts * (mark - result.entry_price) ==
+    account.collateral - account.funding_debt +
+      account.contracts * (mark - account.entry_price) &&
+  min_close_to_restore_post(account, mark, account.contracts - result.contracts) &&
+  result.contracts <= account.contracts &&
   result.funding_debt == account.funding_debt &&
   result.entry_price == account.entry_price
 }
@@ -146,5 +220,13 @@ predicate close_to_restore_post(
 predicate liquidatable_post(account : Account, mark : Int, result : Bool) {
   account_inv(account) &&
   0 <= mark &&
-  result == (healthy_at(account, mark) == false)
+  result ==
+    (
+      (
+        account.collateral - account.funding_debt +
+          account.contracts * (mark - account.entry_price)
+      ) * 10000 -
+        account.contracts * mark * account.maintenance_margin_bps <
+        0
+    )
 }

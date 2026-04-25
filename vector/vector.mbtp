@@ -3,6 +3,19 @@
 fn[T] readonly_tree_model(self : ReadOnlyArray[Tree[T]]) -> Seq[Tree[T]] = "model"
 
 ///|
+lemma[T] seq_eq_refl(s : Seq[T]) where {
+  proof_ensure: s.eq(s),
+} {
+}
+
+///|
+lemma[T] seq_eq_empty_of_length(s : Seq[T]) where {
+  proof_require: s.length() == 0,
+  proof_ensure: s.eq(Seq::empty()),
+} {
+}
+
+///|
 fn root_level(shift : Int) -> Int {
   if shift <= 0 {
     0
@@ -16,14 +29,16 @@ fn root_level(shift : Int) -> Int {
 /// - a single tree at some logical height `level`
 /// - a forest of sibling trees at that same height
 ///
-/// We assign 33 "points" to each remaining tree level and 1 point to each
-/// remaining sibling in a forest. The constant 33 is deliberate: a node has at
+/// We assign 34 "points" to each remaining tree level and 1 point to each
+/// remaining sibling in a forest. The constant 34 is deliberate: a node has at
 /// most 32 children, so descending from `tree_model(..., level)` to
 /// `forest_model(children, level - 1)` still decreases:
 ///
-///   33 * (level + 1) > 33 * level + length(children)
+///   34 * (level + 1) > 34 * level + length(children) + 1
 ///
-/// because `length(children) <= 32`.
+/// because `length(children) <= 32`. The extra point leaves room for the
+/// non-recursive `tree_inv` / `tree_model` wrappers around the recursive inner
+/// definitions.
 ///
 /// The other recursive calls also decrease:
 /// - `forest_model(cs, level) -> tree_model(cs[0], level)` drops the sibling
@@ -36,13 +51,18 @@ fn tree_measure(level : Int) -> Int {
   if level < 0 {
     0
   } else {
-    33 * (level + 1)
+    34 * (level + 1)
   }
 }
 
 ///|
 fn[T] forest_measure(level : Int, cs : Seq[Tree[T]]) -> Int {
-  tree_measure(level) + cs.length()
+  tree_measure(level) + cs.length() + 1
+}
+
+///|
+fn tree_wrapper_measure(level : Int) -> Int {
+  tree_measure(level) + 1
 }
 
 ///|
@@ -58,7 +78,7 @@ predicate[T] forest_inv(cs : Seq[Tree[T]], level : Int) where {
 }
 
 ///|
-predicate[T] tree_inv(self : Tree[T], level : Int) where {
+predicate[T] tree_inv_inner(self : Tree[T], level : Int) where {
   proof_decrease: tree_measure(level),
 } {
   match self {
@@ -76,12 +96,22 @@ predicate[T] tree_inv(self : Tree[T], level : Int) where {
 }
 
 ///|
+predicate[T] tree_inv(self : Tree[T], level : Int) where {
+  proof_decrease: tree_wrapper_measure(level),
+} {
+  match self {
+    Empty => true
+    _ => tree_inv_inner(self, level)
+  }
+}
+
+///|
 predicate[T] vector_inv(self : Vector[T]) {
   0 <= self.shift &&
   tree_inv(self.tree, root_level(self.shift)) &&
   @readonlyarray.model(self.tail).length() <= 32 &&
-  tree_model(self.tree, root_level(self.shift)).length() == self.size - self.tail.length() &&
-  self.size == self.model().length()
+  self.size == tree_model(self.tree, root_level(self.shift)).length() +
+    @readonlyarray.model(self.tail).length()
 }
 
 ///|
@@ -98,7 +128,7 @@ fn[T] forest_model(cs : Seq[Tree[T]], level : Int) -> Seq[T] where {
 }
 
 ///|
-fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
+fn[T] tree_model_inner(self : Tree[T], level : Int) -> Seq[T] where {
   proof_decrease: tree_measure(level),
 } {
   match self {
@@ -110,6 +140,16 @@ fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
       } else {
         forest_model(readonly_tree_model(children), level - 1)
       }
+  }
+}
+
+///|
+fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
+  proof_decrease: tree_wrapper_measure(level),
+} {
+  match self {
+    Empty => Seq::empty()
+    _ => tree_model_inner(self, level)
   }
 }
 
@@ -213,16 +253,8 @@ predicate[T] append_right_leaf_post(
 }
 
 ///|
-predicate[T] empty_tree_post(result : Tree[T]) {
-  match result {
-    Empty => true
-    _ => false
-  }
-}
-
-///|
 predicate[T] new_post(result : Vector[T]) {
-  vector_inv(result) && result.model().length() == 0
+  vector_inv(result) && result.model().eq(Seq::empty())
 }
 
 ///|
@@ -300,7 +332,7 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
       match self.tree {
         Empty =>
           result.model().eq(
-            @readonlyarray.model(self.tail).append(Seq::singleton(value)),
+            tree_model(Leaf(self.tail), root_level(0)).append(Seq::singleton(value)),
           )
         _ =>
           result.model().eq(
@@ -314,7 +346,6 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
     )
   )
 }
-
 ///|
 predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
   vector_inv(self) &&

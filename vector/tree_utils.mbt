@@ -1,11 +1,4 @@
 ///|
-fn[T] Tree::empty() -> Tree[T] where {
-  proof_ensure: result => empty_tree_post(result),
-} {
-  Empty
-}
-
-///|
 fn[T] new_branch_left(leaf : ReadOnlyArray[T], shift : Int) -> Tree[T] {
   match shift {
     0 => Leaf(leaf)

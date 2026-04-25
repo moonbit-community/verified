@@ -390,7 +390,14 @@ fn[T : Compare] remove_min(
     Node(l, y, r, _) =>
       match l {
         Empty => {
+          proof_assert avl_inv(r)
+          proof_assert t.model().mem(y)
+          proof_assert t.model().eq(r.model().add(y))
           proof_assert elements_subset(r, t)
+          proof_assert all_gt(y, r.model())
+          proof_assert height(r) <= height(t)
+          proof_assert height(t) <= height(r) + 1
+          proof_assert remove_min_post(t, (y, r))
           (y, r)
         }
         Node(_, _, _, _) => {
@@ -412,6 +419,12 @@ fn[T : Compare] remove_min(
           proof_assert height(l) <= height(l1) + 1
           proof_assert height(t1) <= height(t)
           proof_assert height(t) <= height(t1) + 1
+          proof_assert t.model().eq(l1.model().add(m).union(r.model()).add(y))
+          proof_assert insert_elements_eq(y, m, l1.model(), r.model())
+          proof_assert t1
+            .model()
+            .add(m)
+            .eq(l1.model().union(r.model()).add(y).add(m))
           proof_assert t.model().eq(t1.model().add(m))
           proof_assert elements_subset(t1, t)
           proof_assert remove_min_post(t, (m, t1))
@@ -441,15 +454,34 @@ pub fn[T : Compare] insert(
   proof_ensure: result => height(result) <= height(t) + 1,
 } {
   match t {
-    Empty => mk(Empty, x, Empty)
+    Empty => {
+      let result = mk(Empty, x, Empty)
+      proof_assert result.model().eq(t.model().add(x))
+      proof_assert height(t) <= height(result)
+      proof_assert height(result) <= height(t) + 1
+      result
+    }
     Node(l, y, r, _) =>
       if x < y {
         let l1 = insert(x, l)
-        balance(l1, y, r)
+        proof_assert l1.model().eq(l.model().add(x))
+        proof_assert balance_pre(l1, y, r)
+        let result = balance(l1, y, r)
+        proof_assert result.model().eq(l1.model().union(r.model()).add(y))
+        proof_assert insert_elements_eq(y, x, l.model(), r.model())
+        proof_assert result.model().eq(t.model().add(x))
+        result
       } else if y < x {
         let r1 = insert(x, r)
-        balance(l, y, r1)
+        proof_assert r1.model().eq(r.model().add(x))
+        proof_assert balance_pre(l, y, r1)
+        let result = balance(l, y, r1)
+        proof_assert result.model().eq(l.model().union(r1.model()).add(y))
+        proof_assert insert_elements_eq_right(y, x, l.model(), r.model())
+        proof_assert result.model().eq(t.model().add(x))
+        result
       } else {
+        proof_assert t.model().eq(t.model().add(x))
         t
       }
   }

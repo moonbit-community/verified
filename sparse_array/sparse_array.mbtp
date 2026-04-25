@@ -181,6 +181,13 @@ predicate[T : Eq] fmap_eq_hyp_local(m1 : Fmap[Int, T], m2 : Fmap[Int, T]) {
 }
 
 ///|
+lemma[T : Eq] fmap_eq_intro_local(m1 : Fmap[Int, T], m2 : Fmap[Int, T]) where {
+  proof_require: fmap_eq_hyp_local(m1, m2),
+  proof_ensure: m1.eq(m2),
+} {
+}
+
+///|
 lemma[T : Eq] model_mem_value(
   sa : SparseArray[T],
   idx : Int,
@@ -198,6 +205,16 @@ lemma[T : Eq] model_find_value(
   proof_require: valid_idx(idx),
   proof_require: model(sa).mem(idx),
   proof_ensure: model(sa).find(idx).equal(sa.data[rank_value(sa.bitmap, idx, 0)]),
+} {
+}
+
+///|
+lemma[T : Eq] model_mem_valid(
+  sa : SparseArray[T],
+  idx : Int,
+) where {
+  proof_require: model(sa).mem(idx),
+  proof_ensure: valid_idx(idx),
 } {
 }
 
@@ -242,6 +259,39 @@ lemma rank_strict_before(
 }
 
 ///|
+lemma rank_present_before_prefix(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_idx(i),
+  proof_require: valid_idx(j),
+  proof_require: i < j,
+  proof_require: mem_value(bitmap, i),
+  proof_ensure: rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+  proof_assert prefix_domain(bitmap, j).mem(i)
+  proof_assert prefix_domain(bitmap, i).mem(i) == false
+  proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+}
+
+///|
+lemma rank_monotone(
+  bitmap : UInt,
+  i : Int,
+  j : Int,
+) where {
+  proof_require: valid_prefix_idx(i),
+  proof_require: valid_prefix_idx(j),
+  proof_require: i <= j,
+  proof_ensure: rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0),
+} {
+  proof_assert prefix_domain(bitmap, i).subset(prefix_domain(bitmap, j))
+  proof_assert rank_value(bitmap, i, 0) <= rank_value(bitmap, j, 0)
+}
+
+///|
 lemma rank_distinct_present(
   bitmap : UInt,
   i : Int,
@@ -254,6 +304,14 @@ lemma rank_distinct_present(
   proof_require: i != j,
   proof_ensure: rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0),
 } {
+  if i < j {
+    rank_strict_before(bitmap, i, j)
+    proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+  } else {
+    proof_assert j < i
+    rank_strict_before(bitmap, j, i)
+    proof_assert rank_value(bitmap, j, 0) < rank_value(bitmap, i, 0)
+  }
   proof_assert rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0)
 }
 
@@ -711,7 +769,7 @@ predicate[T : Eq] add_post(
 }
 
 ///|
-lemma[T : Eq] add_post_lemma(
+lemma[T : Eq] add_find_self(
   _sa : SparseArray[T],
   _idx : Int,
   _value : T,
@@ -722,17 +780,62 @@ lemma[T : Eq] add_post_lemma(
   proof_require: model(_sa).mem(_idx) == false,
   proof_require: bitmap_add_post(_sa.bitmap, _idx, _res.bitmap),
   proof_require: add_data_ok(_sa, _idx, _value, _res),
-  proof_ensure: add_post(_sa, _idx, _value, _res),
+  proof_ensure: model(_res).find(_idx).equal(_value),
 } {
-  proof_assert sparse_array_inv(_res)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) == model(_sa).add(_idx, _value).mem(j)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) →
-      model(_res).find(j).equal(model(_sa).add(_idx, _value).find(j))
-  proof_assert fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
-  proof_assert model(_res).eq(model(_sa).add(_idx, _value))
-  proof_assert add_post(_sa, _idx, _value, _res)
+  proof_assert mem_value(_sa.bitmap, _idx) == false
+  proof_assert rank_value(_res.bitmap, _idx, 0) ==
+    rank_value(_sa.bitmap, _idx, 0)
+  proof_assert model(_res).mem(_idx)
+  proof_assert model(_res).find(_idx).equal(_value)
+}
+
+///|
+lemma[T : Eq] add_find_other(
+  _sa : SparseArray[T],
+  _idx : Int,
+  _value : T,
+  _res : SparseArray[T],
+  j : Int,
+) where {
+  proof_require: sparse_array_inv(_sa),
+  proof_require: valid_idx(_idx),
+  proof_require: valid_idx(j),
+  proof_require: model(_sa).mem(_idx) == false,
+  proof_require: model(_res).mem(j),
+  proof_require: j != _idx,
+  proof_require: bitmap_add_post(_sa.bitmap, _idx, _res.bitmap),
+  proof_require: add_data_ok(_sa, _idx, _value, _res),
+  proof_ensure: model(_res).find(j).equal(model(_sa).find(j)),
+} {
+  proof_assert mem_value(_sa.bitmap, _idx) == false
+  proof_assert mem_value(_res.bitmap, j)
+  proof_assert mem_value(_sa.bitmap, j)
+  if j <= _idx {
+    proof_assert j < _idx
+    proof_assert rank_value(_sa.bitmap, j, 0) <
+      rank_value(_sa.bitmap, _idx, 0)
+    proof_assert rank_value(_res.bitmap, j, 0) ==
+      rank_value(_sa.bitmap, j, 0)
+    proof_assert _res.data[rank_value(_res.bitmap, j, 0)].equal(
+      _sa.data[rank_value(_sa.bitmap, j, 0)],
+    )
+  } else {
+    proof_assert _idx < j
+    proof_assert rank_value(_sa.bitmap, _idx, 0) <=
+      rank_value(_sa.bitmap, j, 0)
+    proof_assert rank_value(_res.bitmap, j, 0) ==
+      rank_value(_sa.bitmap, j, 0) + 1
+    proof_assert _res.data[rank_value(_res.bitmap, j, 0)].equal(
+      _sa.data[rank_value(_sa.bitmap, j, 0)],
+    )
+  }
+  proof_assert model(_res).find(j).equal(
+    _res.data[rank_value(_res.bitmap, j, 0)],
+  )
+  proof_assert model(_sa).find(j).equal(
+    _sa.data[rank_value(_sa.bitmap, j, 0)],
+  )
+  proof_assert model(_res).find(j).equal(model(_sa).find(j))
 }
 
 ///|
@@ -841,28 +944,52 @@ predicate[T : Eq] remove_post(
 }
 
 ///|
-lemma[T : Eq] remove_post_lemma(
+lemma[T : Eq] remove_find_preserved(
   _sa : SparseArray[T],
   _idx : Int,
   _res : SparseArray[T],
+  j : Int,
 ) where {
   proof_require: sparse_array_inv(_sa),
   proof_require: valid_idx(_idx),
+  proof_require: valid_idx(j),
   proof_require: model(_sa).mem(_idx),
+  proof_require: model(_res).mem(j),
+  proof_require: j != _idx,
   proof_require: singleton_len_inv(_sa) == false,
   proof_require: bitmap_remove_post(_sa.bitmap, _idx, _res.bitmap),
   proof_require: remove_data_ok(_sa, _idx, _res),
-  proof_ensure: remove_post(_sa, _idx, _res),
+  proof_ensure: model(_res).find(j).equal(model(_sa).find(j)),
 } {
-  proof_assert sparse_array_inv(_res)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) == model(_sa).remove(_idx).mem(j)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) →
-      model(_res).find(j).equal(model(_sa).remove(_idx).find(j))
-  proof_assert fmap_eq_hyp_local(model(_res), model(_sa).remove(_idx))
-  proof_assert model(_res).eq(model(_sa).remove(_idx))
-  proof_assert remove_post(_sa, _idx, _res)
+  proof_assert mem_value(_sa.bitmap, _idx)
+  proof_assert mem_value(_res.bitmap, j)
+  proof_assert mem_value(_sa.bitmap, j)
+  if j <= _idx {
+    proof_assert j < _idx
+    proof_assert rank_value(_sa.bitmap, j, 0) <
+      rank_value(_sa.bitmap, _idx, 0)
+    proof_assert rank_value(_res.bitmap, j, 0) ==
+      rank_value(_sa.bitmap, j, 0)
+    proof_assert _res.data[rank_value(_res.bitmap, j, 0)].equal(
+      _sa.data[rank_value(_sa.bitmap, j, 0)],
+    )
+  } else {
+    proof_assert _idx < j
+    proof_assert rank_value(_sa.bitmap, _idx, 0) <
+      rank_value(_sa.bitmap, j, 0)
+    proof_assert rank_value(_res.bitmap, j, 0) + 1 ==
+      rank_value(_sa.bitmap, j, 0)
+    proof_assert _res.data[rank_value(_res.bitmap, j, 0)].equal(
+      _sa.data[rank_value(_sa.bitmap, j, 0)],
+    )
+  }
+  proof_assert model(_res).find(j).equal(
+    _res.data[rank_value(_res.bitmap, j, 0)],
+  )
+  proof_assert model(_sa).find(j).equal(
+    _sa.data[rank_value(_sa.bitmap, j, 0)],
+  )
+  proof_assert model(_res).find(j).equal(model(_sa).find(j))
 }
 
 ///|

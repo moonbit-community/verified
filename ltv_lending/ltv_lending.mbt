@@ -6,12 +6,6 @@ pub struct Position {
 } derive(Eq)
 
 ///|
-#proof_pure
-fn buffer(position : Position) -> Int {
-  position.collateral * position.max_ltv_bps - position.debt * 10000
-}
-
-///|
 pub fn max_safe_debt(
   collateral : Int,
   max_ltv_bps : Int,
@@ -58,7 +52,12 @@ pub fn borrow(
     debt: position.debt + extra_debt,
     max_ltv_bps: position.max_ltv_bps,
   }
-  proof_assert buffer(result) == buffer(position) - extra_debt * 10000
+  proof_assert (position.debt + extra_debt) * 10000 ==
+    position.debt * 10000 + extra_debt * 10000
+  proof_assert result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    position.collateral * position.max_ltv_bps -
+    position.debt * 10000 -
+    extra_debt * 10000
   proof_assert borrow_post(position, extra_debt, result)
   result
 }
@@ -78,7 +77,12 @@ pub fn repay(
     debt: position.debt - payment,
     max_ltv_bps: position.max_ltv_bps,
   }
-  proof_assert buffer(result) == buffer(position) + payment * 10000
+  proof_assert (position.debt - payment) * 10000 ==
+    position.debt * 10000 - payment * 10000
+  proof_assert result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    position.collateral * position.max_ltv_bps -
+    position.debt * 10000 +
+    payment * 10000
   proof_assert repay_post(position, payment, result)
   result
 }
@@ -99,8 +103,13 @@ pub fn add_collateral(
     debt: position.debt,
     max_ltv_bps: position.max_ltv_bps,
   }
-  proof_assert buffer(result) ==
-    buffer(position) + extra_collateral * position.max_ltv_bps
+  proof_assert (position.collateral + extra_collateral) * position.max_ltv_bps ==
+    position.collateral * position.max_ltv_bps +
+    extra_collateral * position.max_ltv_bps
+  proof_assert result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    position.collateral * position.max_ltv_bps -
+    position.debt * 10000 +
+    extra_collateral * position.max_ltv_bps
   proof_assert add_collateral_post(position, extra_collateral, result)
   result
 }

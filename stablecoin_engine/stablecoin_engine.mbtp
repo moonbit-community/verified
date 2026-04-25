@@ -10,11 +10,13 @@ predicate engine_inv(engine : Engine) {
 }
 
 predicate healthy(engine : Engine) {
-  engine_inv(engine) && 0 <= headroom(engine)
+  engine_inv(engine) &&
+  0 <= engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
 }
 
 predicate liquidatable(engine : Engine) {
-  engine_inv(engine) && headroom(engine) < 0
+  engine_inv(engine) &&
+  engine.collateral * 10000 - engine.debt * engine.min_ratio_bps < 0
 }
 
 predicate open_engine_post(
@@ -41,12 +43,12 @@ predicate max_mintable_post(collateral : Int, min_ratio_bps : Int, result : Int)
 
 predicate safety_buffer_post(engine : Engine, result : Int) {
   engine_inv(engine) &&
-  result == headroom(engine)
+  result == engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
 }
 
 predicate equity_value_post(engine : Engine, result : Int) {
   engine_inv(engine) &&
-  result == equity(engine)
+  result == engine.collateral + engine.reserve - engine.debt
 }
 
 predicate mint_post(engine : Engine, amount : Int, result : Engine) {
@@ -55,8 +57,12 @@ predicate mint_post(engine : Engine, amount : Int, result : Engine) {
   result.debt == engine.debt + amount &&
   result.reserve == engine.reserve &&
   result.min_ratio_bps == engine.min_ratio_bps &&
-  headroom(result) == headroom(engine) - amount * engine.min_ratio_bps &&
-  equity(result) == equity(engine) - amount
+  result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    (
+      engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+    ) - amount * engine.min_ratio_bps &&
+  result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt - amount
 }
 
 predicate repay_post(engine : Engine, amount : Int, result : Engine) {
@@ -65,8 +71,12 @@ predicate repay_post(engine : Engine, amount : Int, result : Engine) {
   result.debt + amount == engine.debt &&
   result.reserve == engine.reserve &&
   result.min_ratio_bps == engine.min_ratio_bps &&
-  headroom(result) == headroom(engine) + amount * engine.min_ratio_bps &&
-  equity(result) == equity(engine) + amount
+  result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    (
+      engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+    ) + amount * engine.min_ratio_bps &&
+  result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
 }
 
 predicate add_collateral_post(engine : Engine, amount : Int, result : Engine) {
@@ -75,8 +85,12 @@ predicate add_collateral_post(engine : Engine, amount : Int, result : Engine) {
   result.debt == engine.debt &&
   result.reserve == engine.reserve &&
   result.min_ratio_bps == engine.min_ratio_bps &&
-  headroom(result) == headroom(engine) + amount * 10000 &&
-  equity(result) == equity(engine) + amount
+  result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    (
+      engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+    ) + amount * 10000 &&
+  result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
 }
 
 predicate withdraw_post(engine : Engine, amount : Int, result : Engine) {
@@ -85,8 +99,12 @@ predicate withdraw_post(engine : Engine, amount : Int, result : Engine) {
   result.debt == engine.debt &&
   result.reserve == engine.reserve &&
   result.min_ratio_bps == engine.min_ratio_bps &&
-  headroom(result) == headroom(engine) - amount * 10000 &&
-  equity(result) == equity(engine) - amount
+  result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    (
+      engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+    ) - amount * 10000 &&
+  result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt - amount
 }
 
 predicate add_reserve_post(engine : Engine, amount : Int, result : Engine) {
@@ -95,12 +113,15 @@ predicate add_reserve_post(engine : Engine, amount : Int, result : Engine) {
   result.debt == engine.debt &&
   result.reserve == engine.reserve + amount &&
   result.min_ratio_bps == engine.min_ratio_bps &&
-  headroom(result) == headroom(engine) &&
-  equity(result) == equity(engine) + amount
+  result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 - engine.debt * engine.min_ratio_bps &&
+  result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
 }
 
 predicate liquidatable_post(engine : Engine, result : Bool) {
-  result == (healthy(engine) == false)
+  engine_inv(engine) &&
+  result == (engine.collateral * 10000 - engine.debt * engine.min_ratio_bps < 0)
 }
 
 predicate liquidate_all_post(engine : Engine, result : LiquidationResult) {

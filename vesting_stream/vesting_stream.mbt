@@ -46,7 +46,29 @@ pub fn vested_amount(
     vested_amount_post(total, start, duration, now, result)
   },
 } {
-  let result = vested_at(total, start, duration, now)
+  let result = if now <= start {
+    let result = 0
+    proof_assert 0 <= result
+    proof_assert result <= total
+    result
+  } else if start + duration <= now {
+    let result = total
+    proof_assert 0 <= result
+    proof_assert result <= total
+    result
+  } else {
+    let elapsed = now - start
+    proof_assert start < now
+    proof_assert now < start + duration
+    proof_assert 0 < elapsed
+    proof_assert elapsed < duration
+    proof_assert 0 <= total * elapsed
+    proof_assert total * elapsed <= total * duration
+    let result = total * elapsed / duration
+    proof_assert 0 <= result
+    proof_assert result <= total
+    result
+  }
   proof_assert vested_amount_post(total, start, duration, now, result)
   result
 }

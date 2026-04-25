@@ -12,7 +12,21 @@ fn[T] Vector::tail_offset(
 pub fn[T] Vector::new() -> Vector[T] where {
   proof_ensure: result => new_post(result),
 } {
-  { tree: Tree::empty(), tail: [], size: 0, shift: 0 }
+  let tree = Empty
+  let result = { tree, tail: [], size: 0, shift: 0 }
+  proof_assert @readonlyarray.model(result.tail).length() == 0
+  proof_assert 0 <= result.shift
+  proof_assert root_level(result.shift) == 0
+  proof_assert tree_inv(result.tree, root_level(result.shift))
+  proof_assert tree_model(result.tree, root_level(result.shift)).length() == 0
+  proof_assert result.size ==
+    tree_model(result.tree, root_level(result.shift)).length() +
+    @readonlyarray.model(result.tail).length()
+  proof_assert vector_inv(result)
+  proof_assert result.model().length() == 0
+  proof_assert result.model().eq(Seq::empty())
+  proof_assert new_post(result)
+  result
 }
 
 ///|
@@ -134,24 +148,73 @@ pub fn[T] Vector::push(
   proof_ensure: result => push_post_model(self, value, result),
 } {
   if self.tail.length() < 32 {
-    {
+    let new_tail = immutable_push(self.tail, value)
+    let result = {
       tree: self.tree,
-      tail: immutable_push(self.tail, value),
+      tail: new_tail,
       size: self.size + 1,
       shift: self.shift,
     }
+    proof_assert @readonlyarray.model(new_tail).eq(
+      @readonlyarray.model(self.tail).append(Seq::singleton(value)),
+    )
+    proof_assert result
+      .model()
+      .eq(
+        tree_model(self.tree, root_level(self.shift)).append(
+          @readonlyarray.model(self.tail).append(Seq::singleton(value)),
+        ),
+      )
+    proof_assert push_post_model(self, value, result)
+    result
   } else {
     match self.tree {
-      Empty =>
-        {
+      Empty => {
+        let new_tail = immutable_push([], value)
+        let result = {
           tree: Leaf(self.tail),
-          tail: immutable_push([], value),
+          tail: new_tail,
           size: self.size + 1,
           shift: 0,
         }
+        proof_assert 32 <= @readonlyarray.model(self.tail).length()
+        proof_assert @readonlyarray.model(self.tail).length() <= 32
+        proof_assert @readonlyarray.model(self.tail).length() == 32
+        proof_assert @readonlyarray.model(self.tail).eq(
+          @readonlyarray.model(self.tail),
+        )
+        proof_assert @readonlyarray.model(new_tail).eq(Seq::singleton(value))
+        proof_assert result
+          .model()
+          .eq(
+            tree_model(Leaf(self.tail), root_level(0)).append(
+              Seq::singleton(value),
+            ),
+          )
+        proof_assert push_post_model(self, value, result)
+        result
+      }
       _ => {
         let (tree, shift) = self.tree.append_right_leaf(self.shift, self.tail)
-        { tree, tail: immutable_push([], value), size: self.size + 1, shift }
+        let new_tail = immutable_push([], value)
+        let result = { tree, tail: new_tail, size: self.size + 1, shift }
+        proof_assert append_right_leaf_post(
+          self.tree,
+          self.shift,
+          self.tail,
+          (tree, shift),
+        )
+        proof_assert @readonlyarray.model(new_tail).eq(Seq::singleton(value))
+        proof_assert @readonlyarray.model(self.tail).length() == 32
+        proof_assert result
+          .model()
+          .eq(
+            tree_model(self.tree, root_level(self.shift))
+            .append(@readonlyarray.model(self.tail))
+            .append(Seq::singleton(value)),
+          )
+        proof_assert push_post_model(self, value, result)
+        result
       }
     }
   }

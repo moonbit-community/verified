@@ -393,6 +393,17 @@ lemma[T : Compare] insert_elements_eq_lemma(a : T, b : T, s1 : Fset[T], s2 : Fse
   proof_assert insert_elements_eq(a, b, s1, s2)
 }
 
+predicate[T : Compare] insert_elements_eq_right(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) {
+  s1.union(s2.add(b)).add(a).eq(s1.union(s2).add(a).add(b))
+}
+
+///|
+lemma[T : Compare] insert_elements_eq_right_lemma(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) where {
+  proof_ensure: insert_elements_eq_right(a, b, s1, s2),
+} {
+  proof_assert insert_elements_eq_right(a, b, s1, s2)
+}
+
 ///|
 predicate[T : Compare] delete_left_eq(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) {
   s1.union(s2).add(y).remove(x).eq(s1.remove(x).union(s2).add(y))

@@ -14,11 +14,11 @@ predicate quote_post(pool : Pool, amount_in : Int, result : Int) {
   0 <= result &&
   result < pool.reserve_out &&
   result *
-    (pool.reserve_in * 10000 + amount_in * fee_multiplier(pool.fee_bps)) <=
-    amount_in * fee_multiplier(pool.fee_bps) * pool.reserve_out &&
-  amount_in * fee_multiplier(pool.fee_bps) * pool.reserve_out <
+    (pool.reserve_in * 10000 + amount_in * (10000 - pool.fee_bps)) <=
+    amount_in * (10000 - pool.fee_bps) * pool.reserve_out &&
+  amount_in * (10000 - pool.fee_bps) * pool.reserve_out <
     (result + 1) *
-      (pool.reserve_in * 10000 + amount_in * fee_multiplier(pool.fee_bps))
+      (pool.reserve_in * 10000 + amount_in * (10000 - pool.fee_bps))
 }
 
 predicate swap_post(pool : Pool, amount_in : Int, result : SwapResult) {
