@@ -160,6 +160,14 @@ fn[T : Compare] balance_left_double(
           proof_assert height(lr) == 1 + max2(height(lrl), height(lrr))
           proof_assert height(l) == 1 + max2(height(ll), height(lr))
           proof_assert max2(height(l), height(r)) <= height(result)
+          proof_assert height(l) >= height(r) + 2
+          proof_assert height(ll) <= height(l) - 1
+          proof_assert height(lrl) <= height(l) - 1
+          proof_assert height(lrr) <= height(l) - 1
+          proof_assert height(nl) <= height(l)
+          proof_assert height(nr) <= height(l)
+          proof_assert height(result) <= 1 + height(l)
+          proof_assert height(result) <= 1 + max2(height(l), height(r))
           result
         }
       }
