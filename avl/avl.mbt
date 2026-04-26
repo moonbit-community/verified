@@ -149,7 +149,18 @@ fn[T : Compare] balance_left_double(
             .union(nr.model())
             .add(lrx)
             .eq(l.model().union(r.model()).add(x))
-          mk(nl, lrx, nr)
+          let result = mk(nl, lrx, nr)
+          proof_assert height(result) == 1 + max2(height(nl), height(nr))
+          proof_assert height(nl) <= height(result) - 1
+          proof_assert height(nr) <= height(result) - 1
+          proof_assert height(r) <= height(nr) - 1
+          proof_assert height(lrl) <= height(nl) - 1
+          proof_assert height(lrr) <= height(nr) - 1
+          proof_assert height(ll) <= height(nl) - 1
+          proof_assert height(lr) == 1 + max2(height(lrl), height(lrr))
+          proof_assert height(l) == 1 + max2(height(ll), height(lr))
+          proof_assert max2(height(l), height(r)) <= height(result)
+          result
         }
       }
   }
@@ -552,6 +563,14 @@ pub fn[T : Compare] delete(
             proof_assert t.model().eq(l.model().union(r.model()).add(y))
             proof_assert all_lt(l.model(), s)
             let t1 = balance(l, s, r1)
+            proof_assert t1.model().eq(l.model().union(r1.model()).add(s))
+            proof_assert l
+              .model()
+              .union(r1.model())
+              .add(s)
+              .eq(l.model().union(r1.model().add(s)))
+            proof_assert l.model().union(r1.model().add(s)).eq(l.model().union(r.model()))
+            proof_assert t1.model().eq(l.model().union(r.model()))
             proof_assert delete_eq_eq(y, l.model(), r.model())
             proof_assert t1.model().eq(t.model().remove(x))
             proof_assert height(t) <= height(t1) + 1
