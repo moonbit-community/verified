@@ -85,6 +85,9 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(va, merged)
         let result = make_node(va, merged, la)
         proof_assert merge_post(Node(va, la, ra), b, result)
+        proof_assert heap_inv(result)
+        proof_assert counts_sum(a, b, result)
+        proof_assert size_model(result) == size_model(a) + size_model(b)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -93,6 +96,9 @@ pub fn[T : Compare] merge(
         proof_assert all_ge(vb, merged)
         let result = make_node(vb, merged, lb)
         proof_assert merge_post(a, Node(vb, lb, rb), result)
+        proof_assert heap_inv(result)
+        proof_assert counts_sum(a, b, result)
+        proof_assert size_model(result) == size_model(a) + size_model(b)
         proof_assert merge_post(a, b, result)
         result
       }

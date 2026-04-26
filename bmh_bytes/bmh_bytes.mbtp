@@ -1,11 +1,11 @@
 ///|
 fn bytes_length(xs : Bytes) -> Int {
-  @bytes.model(xs).length()
+  @bytes.model(xs).length().to_int()
 }
 
 ///|
 fn byte_value(xs : Bytes, idx : Int) -> Int {
-  @bytes.model(xs).get(idx).to_int()
+  @bytes.model(xs).get(@mathint.int_model(idx)).to_int()
 }
 
 ///|
@@ -204,6 +204,23 @@ pub lemma skip_step_excludes(
       proof_assert match_at(haystack, needle, k) == false
     }
   }
+}
+
+///|
+pub lemma skip_step_preserves_no_match_before(
+  haystack : Bytes,
+  needle : Bytes,
+  skip : FixedArray[Int],
+  offset : Int,
+  last : Int,
+  shift : Int,
+) where {
+  proof_require: skip_step_pre(haystack, needle, skip, offset, last, shift),
+  proof_ensure: no_match_before(haystack, needle, offset + shift),
+} {
+  proof_assert ∀ k : Int,
+    ((0 <= k) && (k < offset + shift) && valid_offset(haystack, needle, k)) →
+      !match_at(haystack, needle, k)
 }
 
 ///|

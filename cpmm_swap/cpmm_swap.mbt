@@ -12,12 +12,6 @@ pub struct SwapResult {
 } derive(Eq)
 
 ///|
-#proof_pure
-fn fee_multiplier(fee_bps : Int) -> Int {
-  10000 - fee_bps
-}
-
-///|
 pub fn make_pool(reserve_in : Int, reserve_out : Int, fee_bps : Int) -> Pool {
   { reserve_in, reserve_out, fee_bps }
 }
@@ -31,10 +25,13 @@ pub fn quote_amount_out(
   proof_require: 0 < amount_in,
   proof_ensure: result => quote_post(pool, amount_in, result),
 } {
-  let effective_in = amount_in * fee_multiplier(pool.fee_bps)
+  let fee = 10000 - pool.fee_bps
+  let effective_in = amount_in * fee
   let numerator = effective_in * pool.reserve_out
   let denominator = pool.reserve_in * 10000 + effective_in
   let result = numerator / denominator
+  proof_assert fee == fee_multiplier(pool.fee_bps)
+  proof_assert effective_in == amount_in * fee_multiplier(pool.fee_bps)
   proof_assert 0 < fee_multiplier(pool.fee_bps)
   proof_assert 0 < denominator
   proof_assert result * denominator <= numerator
@@ -60,7 +57,8 @@ pub fn swap_x_for_y(
     reserve_out: pool.reserve_out - amount_out,
     fee_bps: pool.fee_bps,
   }
-  let fee = fee_multiplier(pool.fee_bps)
+  let fee = 10000 - pool.fee_bps
+  proof_assert fee == fee_multiplier(pool.fee_bps)
   proof_assert 0 < fee
   proof_assert fee <= 10000
   proof_assert fee * (pool.reserve_in + amount_in) <=

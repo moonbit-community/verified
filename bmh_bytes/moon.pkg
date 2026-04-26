@@ -1,5 +1,6 @@
 import {
   "moonbit-community/verified/bytes",
+  "moonbit-community/verified/mathint",
   "moonbit-community/verified/seq",
 }
 

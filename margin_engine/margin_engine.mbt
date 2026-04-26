@@ -8,49 +8,6 @@ pub struct Account {
 } derive(Eq)
 
 ///|
-#proof_pure
-fn equity(account : Account, mark : Int) -> Int {
-  account.collateral -
-  account.funding_debt +
-  account.contracts * (mark - account.entry_price)
-}
-
-///|
-#proof_pure
-fn scaled_buffer(account : Account, mark : Int) -> Int {
-  equity(account, mark) * 10000 -
-  account.contracts * mark * account.maintenance_margin_bps
-}
-
-///|
-#proof_pure
-fn liquidation_numerator(account : Account) -> Int {
-  account.contracts * account.entry_price * 10000 +
-  account.funding_debt * 10000 -
-  account.collateral * 10000
-}
-
-///|
-#proof_pure
-fn liquidation_denominator(account : Account) -> Int {
-  account.contracts * (10000 - account.maintenance_margin_bps)
-}
-
-///|
-#proof_pure
-fn required_close_units(account : Account, mark : Int) -> Int {
-  if mark <= 0 || account.maintenance_margin_bps <= 0 {
-    0
-  } else if scaled_buffer(account, mark) >= 0 {
-    0
-  } else {
-    let numerator = -scaled_buffer(account, mark)
-    let denominator = mark * account.maintenance_margin_bps
-    (numerator + denominator - 1) / denominator
-  }
-}
-
-///|
 pub fn open_account(
   collateral : Int,
   contracts : Int,
@@ -93,7 +50,10 @@ pub fn equity_value(
   proof_require: 0 <= mark,
   proof_ensure: result => equity_value_post(account, mark, result),
 } {
-  let result = equity(account, mark)
+  let result = account.collateral -
+    account.funding_debt +
+    account.contracts * (mark - account.entry_price)
+  proof_assert result == equity(account, mark)
   proof_assert equity_value_post(account, mark, result)
   result
 }
@@ -107,7 +67,13 @@ pub fn margin_buffer(
   proof_require: 0 <= mark,
   proof_ensure: result => margin_buffer_post(account, mark, result),
 } {
-  let result = scaled_buffer(account, mark)
+  let result = (
+    account.collateral -
+    account.funding_debt +
+    account.contracts * (mark - account.entry_price)
+  ) * 10000 -
+  account.contracts * mark * account.maintenance_margin_bps
+  proof_assert result == scaled_buffer(account, mark)
   proof_assert margin_buffer_post(account, mark, result)
   result
 }
@@ -119,11 +85,17 @@ pub fn liquidation_price(
   proof_require: account_inv(account),
   proof_ensure: result => liquidation_price_post(account, result),
 } {
-  let result = if account.contracts == 0 || liquidation_numerator(account) <= 0 {
+  let numerator = account.contracts * account.entry_price * 10000 +
+    account.funding_debt * 10000 -
+    account.collateral * 10000
+  proof_assert numerator == liquidation_numerator(account)
+  let result = if account.contracts == 0 || numerator <= 0 {
     0
   } else {
-    let denominator = liquidation_denominator(account)
-    (liquidation_numerator(account) + denominator - 1) / denominator
+    let denominator = account.contracts *
+      (10000 - account.maintenance_margin_bps)
+    proof_assert denominator == liquidation_denominator(account)
+    (numerator + denominator - 1) / denominator
   }
   proof_assert liquidation_price_post(account, result)
   result
@@ -192,7 +164,23 @@ pub fn min_close_to_restore(
   proof_require: 0 <= equity(account, mark),
   proof_ensure: result => min_close_to_restore_post(account, mark, result),
 } {
-  let result = required_close_units(account, mark)
+  let buffer = (
+    account.collateral -
+    account.funding_debt +
+    account.contracts * (mark - account.entry_price)
+  ) * 10000 -
+  account.contracts * mark * account.maintenance_margin_bps
+  proof_assert buffer == scaled_buffer(account, mark)
+  let result = if mark <= 0 || account.maintenance_margin_bps <= 0 {
+    0
+  } else if buffer >= 0 {
+    0
+  } else {
+    let numerator = -buffer
+    let denominator = mark * account.maintenance_margin_bps
+    (numerator + denominator - 1) / denominator
+  }
+  proof_assert result == required_close_units(account, mark)
   proof_assert min_close_to_restore_post(account, mark, result)
   result
 }
@@ -228,7 +216,13 @@ pub fn is_liquidatable(
   proof_require: 0 <= mark,
   proof_ensure: result => liquidatable_post(account, mark, result),
 } {
-  let result = scaled_buffer(account, mark) < 0
+  let result = (
+    account.collateral -
+    account.funding_debt +
+    account.contracts * (mark - account.entry_price)
+  ) * 10000 -
+  account.contracts * mark * account.maintenance_margin_bps < 0
+  proof_assert result == (scaled_buffer(account, mark) < 0)
   proof_assert liquidatable_post(account, mark, result)
   result
 }

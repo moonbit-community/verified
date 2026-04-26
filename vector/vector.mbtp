@@ -42,18 +42,18 @@ fn tree_measure(level : Int) -> Int {
 
 ///|
 fn[T] forest_measure(level : Int, cs : Seq[Tree[T]]) -> Int {
-  tree_measure(level) + cs.length()
+  tree_measure(level) + cs.length().to_int()
 }
 
 ///|
 predicate[T] forest_inv(cs : Seq[Tree[T]], level : Int) where {
   proof_decrease: forest_measure(level, cs),
 } {
-  if cs.length() == 0 {
+  if cs.length() == @mathint.int_model(0) {
     true
   } else {
-    tree_inv(cs.get(0), level) &&
-    forest_inv(cs.tail(1), level)
+    tree_inv(cs.get(@mathint.int_model(0)), level) &&
+    forest_inv(cs.tail(@mathint.int_model(1)), level)
   }
 }
 
@@ -65,12 +65,12 @@ predicate[T] tree_inv(self : Tree[T], level : Int) where {
     Empty => true
     Leaf(values) =>
       level == 0 &&
-      0 < @readonlyarray.model(values).length() &&
-      @readonlyarray.model(values).length() <= 32
+      @mathint.int_model(0) < @readonlyarray.model(values).length() &&
+      @readonlyarray.model(values).length() <= @mathint.int_model(32)
     Node(children, _sizes) =>
       level > 0 &&
-      0 < readonly_tree_model(children).length() &&
-      readonly_tree_model(children).length() <= 32 &&
+      @mathint.int_model(0) < readonly_tree_model(children).length() &&
+      readonly_tree_model(children).length() <= @mathint.int_model(32) &&
       forest_inv(readonly_tree_model(children), level - 1)
   }
 }
@@ -79,20 +79,21 @@ predicate[T] tree_inv(self : Tree[T], level : Int) where {
 predicate[T] vector_inv(self : Vector[T]) {
   0 <= self.shift &&
   tree_inv(self.tree, root_level(self.shift)) &&
-  @readonlyarray.model(self.tail).length() <= 32 &&
-  tree_model(self.tree, root_level(self.shift)).length() == self.size - self.tail.length() &&
-  self.size == self.model().length()
+  @readonlyarray.model(self.tail).length() <= @mathint.int_model(32) &&
+  tree_model(self.tree, root_level(self.shift)).length() ==
+  @mathint.int_model(self.size - self.tail.length()) &&
+  @mathint.int_model(self.size) == self.model().length()
 }
 
 ///|
 fn[T] forest_model(cs : Seq[Tree[T]], level : Int) -> Seq[T] where {
   proof_decrease: forest_measure(level, cs),
 } {
-  if cs.length() == 0 {
+  if cs.length() == @mathint.int_model(0) {
     Seq::empty()
   } else {
-    tree_model(cs.get(0), level).append(
-      forest_model(cs.tail(1), level),
+    tree_model(cs.get(@mathint.int_model(0)), level).append(
+      forest_model(cs.tail(@mathint.int_model(1)), level),
     )
   }
 }
@@ -105,7 +106,8 @@ fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
     Empty => Seq::empty()
     Leaf(values) => @readonlyarray.model(values)
     Node(children, _sizes) =>
-      if level <= 0 || 32 < readonly_tree_model(children).length() {
+      if level <= 0 ||
+        @mathint.int_model(32) < readonly_tree_model(children).length() {
         Seq::empty()
       } else {
         forest_model(readonly_tree_model(children), level - 1)
@@ -122,19 +124,20 @@ fn[T] Vector::model(self : Vector[T]) -> Seq[T] {
 
 ///|
 predicate[T] valid_index_model(self : Vector[T], index : Int) {
-  0 <= index && index < self.model().length()
+  0 <= index && @mathint.int_model(index) < self.model().length()
 }
 
 ///|
 predicate[T] tree_valid_index_model(self : Tree[T], shift : Int, index : Int) {
-  0 <= index && index < tree_model(self, root_level(shift)).length()
+  0 <= index &&
+  @mathint.int_model(index) < tree_model(self, root_level(shift)).length()
 }
 
 ///|
 predicate[T : Eq] tree_get_post(self : Tree[T], shift : Int, index : Int, result : T) {
   tree_inv(self, root_level(shift)) &&
   tree_valid_index_model(self, shift, index) &&
-  result == tree_model(self, root_level(shift)).get(index)
+  result == tree_model(self, root_level(shift)).get(@mathint.int_model(index))
 }
 
 ///|
@@ -145,9 +148,9 @@ predicate[T] immutable_set_post(
   result : ReadOnlyArray[T],
 ) {
   0 <= index &&
-  index < @readonlyarray.model(arr).length() &&
+  @mathint.int_model(index) < @readonlyarray.model(arr).length() &&
   @readonlyarray.model(result).eq(
-    @readonlyarray.model(arr).set(index, value),
+    @readonlyarray.model(arr).set(@mathint.int_model(index), value),
   )
 }
 
@@ -171,9 +174,9 @@ predicate[T] immutable_slice_post(
 ) {
   0 <= start &&
   start <= stop &&
-  stop <= @readonlyarray.model(arr).length() &&
+  @mathint.int_model(stop) <= @readonlyarray.model(arr).length() &&
   @readonlyarray.model(result).eq(
-    @readonlyarray.model(arr).sub(start, stop),
+    @readonlyarray.model(arr).sub(@mathint.int_model(start), @mathint.int_model(stop)),
   )
 }
 
@@ -189,7 +192,7 @@ predicate[T] tree_set_post(
   tree_valid_index_model(self, shift, index) &&
   tree_inv(result, root_level(shift)) &&
   tree_model(result, root_level(shift)).eq(
-    tree_model(self, root_level(shift)).set(index, value),
+    tree_model(self, root_level(shift)).set(@mathint.int_model(index), value),
   )
 }
 
@@ -203,8 +206,8 @@ predicate[T] append_right_leaf_post(
   match result {
     (new_tree, new_shift) =>
       tree_inv(self, root_level(shift)) &&
-      0 < @readonlyarray.model(leaf).length() &&
-      @readonlyarray.model(leaf).length() <= 32 &&
+      @mathint.int_model(0) < @readonlyarray.model(leaf).length() &&
+      @readonlyarray.model(leaf).length() <= @mathint.int_model(32) &&
       tree_inv(new_tree, root_level(new_shift)) &&
       tree_model(new_tree, root_level(new_shift)).eq(
         tree_model(self, root_level(shift)).append(@readonlyarray.model(leaf)),
@@ -222,7 +225,7 @@ predicate[T] empty_tree_post(result : Tree[T]) {
 
 ///|
 predicate[T] new_post(result : Vector[T]) {
-  vector_inv(result) && result.model().length() == 0
+  vector_inv(result) && result.model().length() == @mathint.int_model(0)
 }
 
 ///|
@@ -232,19 +235,19 @@ predicate[T] tail_offset_post(self : Vector[T], result : Int) {
 
 ///|
 predicate[T] length_post(self : Vector[T], result : Int) {
-  vector_inv(self) && result == self.model().length()
+  vector_inv(self) && @mathint.int_model(result) == self.model().length()
 }
 
 ///|
 predicate[T] is_empty_post(self : Vector[T], result : Bool) {
-  vector_inv(self) && result == (self.model().length() == 0)
+  vector_inv(self) && result == (self.model().length() == @mathint.int_model(0))
 }
 
 ///|
 predicate[T : Eq] at_post(self : Vector[T], index : Int, result : T) {
   vector_inv(self) &&
   valid_index_model(self, index) &&
-  result == self.model().get(index)
+  result == self.model().get(@mathint.int_model(index))
 }
 
 ///|
@@ -254,7 +257,7 @@ predicate[T : Eq] get_post_model(self : Vector[T], index : Int, result : Option[
     None => !valid_index_model(self, index)
     Some(value) =>
       valid_index_model(self, index) &&
-      value == self.model().get(index)
+      value == self.model().get(@mathint.int_model(index))
   }
 }
 
@@ -262,10 +265,10 @@ predicate[T : Eq] get_post_model(self : Vector[T], index : Int, result : Option[
 predicate[T : Eq] peek_post_model(self : Vector[T], result : Option[T]) {
   vector_inv(self) &&
   match result {
-    None => self.model().length() == 0
+    None => self.model().length() == @mathint.int_model(0)
     Some(value) =>
-      0 < self.model().length() &&
-      value == self.model().get(self.model().length() - 1)
+      @mathint.int_model(0) < self.model().length() &&
+      value == self.model().get(self.model().length() - @mathint.int_model(1))
   }
 }
 
@@ -279,7 +282,7 @@ predicate[T] set_post_model(
   vector_inv(self) &&
   valid_index_model(self, index) &&
   vector_inv(result) &&
-  result.model().eq(self.model().set(index, value))
+  result.model().eq(self.model().set(@mathint.int_model(index), value))
 }
 
 ///|
@@ -288,7 +291,7 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
   vector_inv(result) &&
   (
     (
-      @readonlyarray.model(self.tail).length() < 32 &&
+      @readonlyarray.model(self.tail).length() < @mathint.int_model(32) &&
       result.model().eq(
         tree_model(self.tree, root_level(self.shift)).append(
           @readonlyarray.model(self.tail).append(Seq::singleton(value)),
@@ -296,7 +299,7 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
       )
     ) ||
     (
-      32 <= @readonlyarray.model(self.tail).length() &&
+      @mathint.int_model(32) <= @readonlyarray.model(self.tail).length() &&
       match self.tree {
         Empty =>
           result.model().eq(
@@ -318,8 +321,8 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
 ///|
 predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
   vector_inv(self) &&
-  @readonlyarray.model(self.tail).length() == 1 &&
-  1 < self.model().length() &&
+  @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
+  @mathint.int_model(1) < self.model().length() &&
   vector_inv(result) &&
   result.model().eq(tree_model(self.tree, root_level(self.shift)))
 }
@@ -327,11 +330,14 @@ predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
 ///|
 predicate[T] pop_tree_only_post(self : Vector[T], result : Vector[T]) {
   vector_inv(self) &&
-  @readonlyarray.model(self.tail).length() == 0 &&
-  1 < self.model().length() &&
+  @readonlyarray.model(self.tail).length() == @mathint.int_model(0) &&
+  @mathint.int_model(1) < self.model().length() &&
   vector_inv(result) &&
   result.model().eq(
-    self.model().sub(0, self.model().length() - 1),
+    self.model().sub(
+      @mathint.int_model(0),
+      self.model().length() - @mathint.int_model(1),
+    ),
   )
 }
 
@@ -339,33 +345,33 @@ predicate[T] pop_tree_only_post(self : Vector[T], result : Vector[T]) {
 predicate[T] pop_post_model(self : Vector[T], result : Option[Vector[T]]) {
   vector_inv(self) &&
   match result {
-    None => self.model().length() == 0
+    None => self.model().length() == @mathint.int_model(0)
     Some(value) =>
-      0 < self.model().length() &&
+      @mathint.int_model(0) < self.model().length() &&
       (
         (
-          self.model().length() == 1 &&
+          self.model().length() == @mathint.int_model(1) &&
           vector_inv(value) &&
-          value.model().length() == 0
+          value.model().length() == @mathint.int_model(0)
         ) ||
         (
-          1 < @readonlyarray.model(self.tail).length() &&
+          @mathint.int_model(1) < @readonlyarray.model(self.tail).length() &&
           vector_inv(value) &&
           value.model().eq(
             tree_model(self.tree, root_level(self.shift)).append(
               @readonlyarray.model(self.tail).sub(
-                0,
-                @readonlyarray.model(self.tail).length() - 1,
+                @mathint.int_model(0),
+                @readonlyarray.model(self.tail).length() - @mathint.int_model(1),
               ),
             ),
           )
         ) ||
         (
-          @readonlyarray.model(self.tail).length() == 1 &&
+          @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
           pop_singleton_tail_post(self, value)
         ) ||
         (
-          @readonlyarray.model(self.tail).length() == 0 &&
+          @readonlyarray.model(self.tail).length() == @mathint.int_model(0) &&
           pop_tree_only_post(self, value)
         )
       )

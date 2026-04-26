@@ -1,3 +1,37 @@
+///|
+fn headroom(engine : Engine) -> Int {
+  engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+}
+
+///|
+fn equity(engine : Engine) -> Int {
+  engine.collateral + engine.reserve - engine.debt
+}
+
+///|
+fn deficit_after_collateral(engine : Engine) -> Int {
+  if engine.debt <= engine.collateral {
+    0
+  } else {
+    engine.debt - engine.collateral
+  }
+}
+
+///|
+fn reserve_used_to_close(engine : Engine) -> Int {
+  if deficit_after_collateral(engine) <= engine.reserve {
+    deficit_after_collateral(engine)
+  } else {
+    engine.reserve
+  }
+}
+
+///|
+fn uncovered_debt(engine : Engine) -> Int {
+  deficit_after_collateral(engine) - reserve_used_to_close(engine)
+}
+
+///|
 predicate valid_ratio_bps(min_ratio_bps : Int) {
   10000 <= min_ratio_bps && min_ratio_bps <= 30000
 }

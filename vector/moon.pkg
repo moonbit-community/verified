@@ -1,4 +1,5 @@
 import {
+  "moonbit-community/verified/mathint",
   "moonbit-community/verified/readonlyarray",
   "moonbit-community/verified/seq",
 }

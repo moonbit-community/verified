@@ -49,12 +49,6 @@ pub struct LiquidationResult {
 /// integer-safe form by multiplying both sides by `10000 * debt`, which is
 /// also the common currency every other operation uses to reason about ratio
 /// changes.
-#proof_pure
-fn headroom(engine : Engine) -> Int {
-  engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
-}
-
-///|
 /// The net ownership value of the vault: total resources (collateral plus
 /// reserve) minus the outstanding debt. This is what stakeholders would end up
 /// with if the debt were repaid in full at par. It only appears in
@@ -62,52 +56,20 @@ fn headroom(engine : Engine) -> Int {
 /// each action shifts the books — for example, minting new stablecoin drops
 /// equity by the minted amount because the new debt creates a matching
 /// liability without adding any resources.
-#proof_pure
-fn equity(engine : Engine) -> Int {
-  engine.collateral + engine.reserve - engine.debt
-}
-
-///|
 /// The amount of debt that cannot be covered by seizing the full collateral
 /// alone. Zero whenever the collateral is at least the debt. This is the
 /// quantity that a liquidation has to cover out of the reserve (and possibly
 /// leave behind as bad debt).
-#proof_pure
-fn deficit_after_collateral(engine : Engine) -> Int {
-  if engine.debt <= engine.collateral {
-    0
-  } else {
-    engine.debt - engine.collateral
-  }
-}
-
-///|
 /// How much of the reserve actually gets consumed by a full liquidation:
 /// the deficit if the reserve can cover it, otherwise the entire reserve.
 /// Equivalently `min(deficit_after_collateral, reserve)`, written as an
 /// explicit `if` so the proof obligations stay first-order.
-#proof_pure
-fn reserve_used_to_close(engine : Engine) -> Int {
-  if deficit_after_collateral(engine) <= engine.reserve {
-    deficit_after_collateral(engine)
-  } else {
-    engine.reserve
-  }
-}
-
-///|
 /// The residual bad debt left over after seizing collateral and draining as
 /// much of the reserve as needed. Always non-negative, and by construction is
 /// zero in the case where the reserve covered the deficit completely. This is
 /// where the `reserve == 0 || debt == 0` disjunction in
 /// `liquidate_all_post` comes from: at least one of the two sides must have
 /// hit zero before the computation stopped.
-#proof_pure
-fn uncovered_debt(engine : Engine) -> Int {
-  deficit_after_collateral(engine) - reserve_used_to_close(engine)
-}
-
-///|
 /// The permissive constructor. It only asks for the base balance invariant
 /// (non-negative values and a valid ratio) and crucially does *not* require
 /// the resulting engine to be healthy. That makes it the right tool for
@@ -194,7 +156,8 @@ pub fn safety_buffer(
   proof_require: engine_inv(engine),
   proof_ensure: result => safety_buffer_post(engine, result),
 } {
-  let result = headroom(engine)
+  let result = engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+  proof_assert result == headroom(engine)
   proof_assert safety_buffer_post(engine, result)
   result
 }
@@ -211,7 +174,8 @@ pub fn equity_value(
   proof_require: engine_inv(engine),
   proof_ensure: result => equity_value_post(engine, result),
 } {
-  let result = equity(engine)
+  let result = engine.collateral + engine.reserve - engine.debt
+  proof_assert result == equity(engine)
   proof_assert equity_value_post(engine, result)
   result
 }
@@ -373,7 +337,8 @@ pub fn is_liquidatable(
   proof_require: engine_inv(engine),
   proof_ensure: result => liquidatable_post(engine, result),
 } {
-  let result = headroom(engine) < 0
+  let result = engine.collateral * 10000 - engine.debt * engine.min_ratio_bps < 0
+  proof_assert result == (headroom(engine) < 0)
   proof_assert liquidatable_post(engine, result)
   result
 }
@@ -407,12 +372,20 @@ pub fn liquidate_all(
   proof_require: liquidatable(engine),
   proof_ensure: result => liquidate_all_post(engine, result),
 } {
-  let reserve_used = if deficit_after_collateral(engine) <= engine.reserve {
-    deficit_after_collateral(engine)
+  let deficit = if engine.debt <= engine.collateral {
+    0
+  } else {
+    engine.debt - engine.collateral
+  }
+  proof_assert deficit == deficit_after_collateral(engine)
+  let reserve_used = if deficit <= engine.reserve {
+    deficit
   } else {
     engine.reserve
   }
-  let remaining_bad_debt = deficit_after_collateral(engine) - reserve_used
+  proof_assert reserve_used == reserve_used_to_close(engine)
+  let remaining_bad_debt = deficit - reserve_used
+  proof_assert remaining_bad_debt == uncovered_debt(engine)
   let next_engine = {
     collateral: 0,
     debt: remaining_bad_debt,
@@ -420,8 +393,6 @@ pub fn liquidate_all(
     min_ratio_bps: engine.min_ratio_bps,
   }
   let result = { reserve_used, remaining_bad_debt, next_engine }
-  proof_assert reserve_used == reserve_used_to_close(engine)
-  proof_assert remaining_bad_debt == uncovered_debt(engine)
   proof_assert liquidate_all_post(engine, result)
   result
 }

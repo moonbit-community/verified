@@ -1,3 +1,7 @@
+import {
+  "moonbit-community/verified/mathint",
+}
+
 options(
   "proof-enabled": true,
 )

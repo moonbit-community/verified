@@ -1,3 +1,17 @@
+///|
+fn vested_at(total : Int, start : Int, duration : Int, now : Int) -> Int {
+  if now <= start {
+    0
+  } else {
+    if start + duration <= now {
+      total
+    } else {
+      total * (now - start) / duration
+    }
+  }
+}
+
+///|
 predicate stream_inv(stream : Stream) {
   0 <= stream.total &&
   0 < stream.duration &&

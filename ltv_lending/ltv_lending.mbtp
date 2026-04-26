@@ -1,3 +1,7 @@
+fn buffer(position : Position) -> Int {
+  position.collateral * position.max_ltv_bps - position.debt * 10000
+}
+
 predicate valid_bps(max_ltv_bps : Int) {
   0 <= max_ltv_bps && max_ltv_bps <= 10000
 }
