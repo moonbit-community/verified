@@ -49,7 +49,10 @@ predicate borrow_post(
   result.collateral == position.collateral &&
   result.debt == position.debt + extra_debt &&
   result.max_ltv_bps == position.max_ltv_bps &&
-  buffer(result) == buffer(position) - extra_debt * 10000
+  result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    (
+      position.collateral * position.max_ltv_bps - position.debt * 10000
+    ) - extra_debt * 10000
 }
 
 predicate repay_post(
@@ -61,7 +64,10 @@ predicate repay_post(
   result.collateral == position.collateral &&
   result.debt + payment == position.debt &&
   result.max_ltv_bps == position.max_ltv_bps &&
-  buffer(result) == buffer(position) + payment * 10000
+  result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    (
+      position.collateral * position.max_ltv_bps - position.debt * 10000
+    ) + payment * 10000
 }
 
 predicate add_collateral_post(
@@ -73,7 +79,10 @@ predicate add_collateral_post(
   result.collateral == position.collateral + extra_collateral &&
   result.debt == position.debt &&
   result.max_ltv_bps == position.max_ltv_bps &&
-  buffer(result) == buffer(position) + extra_collateral * position.max_ltv_bps
+  result.collateral * result.max_ltv_bps - result.debt * 10000 ==
+    (
+      position.collateral * position.max_ltv_bps - position.debt * 10000
+    ) + extra_collateral * position.max_ltv_bps
 }
 
 predicate liquidatable_post(position : Position, result : Bool) {

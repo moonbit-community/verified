@@ -264,6 +264,18 @@ lemma[T : Compare] merge_post_make_node_left(
   proof_require: make_node_post(value, left, merged, res),
   proof_ensure: merge_post(Node(value, stored_rank, left, right), other, res),
 } {
+  proof_assert heap_inv(res)
+  proof_assert size_model(merged) == size_model(right) + size_model(other)
+  proof_assert size_model(res) == size_model(left) + size_model(merged) + 1
+  proof_assert size_model(res) == size_model(Node(value, stored_rank, left, right)) + size_model(other)
+  proof_assert ∀ y : T,
+    count(merged, y) == count(right, y) + count(other, y)
+  proof_assert ∀ y : T,
+    count(res, y) == count(left, y) + count(merged, y) + root_once(y, value)
+  proof_assert ∀ y : T,
+    count(res, y) == count(Node(value, stored_rank, left, right), y) + count(other, y)
+  proof_assert counts_sum(Node(value, stored_rank, left, right), other, res)
+  proof_assert merge_post(Node(value, stored_rank, left, right), other, res)
 }
 
 ///|
@@ -280,6 +292,18 @@ lemma[T : Compare] merge_post_make_node_right(
   proof_require: make_node_post(value, left, merged, res),
   proof_ensure: merge_post(other, Node(value, stored_rank, left, right), res),
 } {
+  proof_assert heap_inv(res)
+  proof_assert size_model(merged) == size_model(other) + size_model(right)
+  proof_assert size_model(res) == size_model(left) + size_model(merged) + 1
+  proof_assert size_model(res) == size_model(other) + size_model(Node(value, stored_rank, left, right))
+  proof_assert ∀ y : T,
+    count(merged, y) == count(other, y) + count(right, y)
+  proof_assert ∀ y : T,
+    count(res, y) == count(left, y) + count(merged, y) + root_once(y, value)
+  proof_assert ∀ y : T,
+    count(res, y) == count(other, y) + count(Node(value, stored_rank, left, right), y)
+  proof_assert counts_sum(other, Node(value, stored_rank, left, right), res)
+  proof_assert merge_post(other, Node(value, stored_rank, left, right), res)
 }
 
 ///|

@@ -42,32 +42,6 @@ pub struct LiquidationResult {
 } derive(Eq)
 
 ///|
-/// The scaled signed distance from the liquidation edge. Positive values mean
-/// the vault sits above the minimum ratio, zero means it is exactly at the
-/// edge, and negative means it has crossed into liquidatable territory. The
-/// expression rearranges `collateral / debt >= min_ratio_bps / 10000` into an
-/// integer-safe form by multiplying both sides by `10000 * debt`, which is
-/// also the common currency every other operation uses to reason about ratio
-/// changes.
-#proof_pure
-fn headroom(engine : Engine) -> Int {
-  engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
-}
-
-///|
-/// The net ownership value of the vault: total resources (collateral plus
-/// reserve) minus the outstanding debt. This is what stakeholders would end up
-/// with if the debt were repaid in full at par. It only appears in
-/// post-conditions so that mint/repay/withdraw etc. can pin down exactly how
-/// each action shifts the books — for example, minting new stablecoin drops
-/// equity by the minted amount because the new debt creates a matching
-/// liability without adding any resources.
-#proof_pure
-fn equity(engine : Engine) -> Int {
-  engine.collateral + engine.reserve - engine.debt
-}
-
-///|
 /// The amount of debt that cannot be covered by seizing the full collateral
 /// alone. Zero whenever the collateral is at least the debt. This is the
 /// quantity that a liquidation has to cover out of the reserve (and possibly
@@ -155,6 +129,8 @@ pub fn open_engine(
   },
 } {
   let result = { collateral, debt, reserve, min_ratio_bps }
+  proof_assert 0 <= collateral * 10000 - debt * min_ratio_bps
+  proof_assert healthy(result)
   proof_assert open_engine_post(
     collateral, debt, reserve, min_ratio_bps, result,
   )
@@ -194,7 +170,7 @@ pub fn safety_buffer(
   proof_require: engine_inv(engine),
   proof_ensure: result => safety_buffer_post(engine, result),
 } {
-  let result = headroom(engine)
+  let result = engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
   proof_assert safety_buffer_post(engine, result)
   result
 }
@@ -211,7 +187,7 @@ pub fn equity_value(
   proof_require: engine_inv(engine),
   proof_ensure: result => equity_value_post(engine, result),
 } {
-  let result = equity(engine)
+  let result = engine.collateral + engine.reserve - engine.debt
   proof_assert equity_value_post(engine, result)
   result
 }
@@ -242,9 +218,14 @@ pub fn mint(
     reserve: engine.reserve,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  proof_assert headroom(result) ==
-    headroom(engine) - amount * engine.min_ratio_bps
-  proof_assert equity(result) == equity(engine) - amount
+  proof_assert (engine.debt + amount) * engine.min_ratio_bps ==
+    engine.debt * engine.min_ratio_bps + amount * engine.min_ratio_bps
+  proof_assert result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 -
+    engine.debt * engine.min_ratio_bps -
+    amount * engine.min_ratio_bps
+  proof_assert result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt - amount
   proof_assert mint_post(engine, amount, result)
   result
 }
@@ -271,9 +252,14 @@ pub fn repay(
     reserve: engine.reserve,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  proof_assert headroom(result) ==
-    headroom(engine) + amount * engine.min_ratio_bps
-  proof_assert equity(result) == equity(engine) + amount
+  proof_assert (engine.debt - amount) * engine.min_ratio_bps ==
+    engine.debt * engine.min_ratio_bps - amount * engine.min_ratio_bps
+  proof_assert result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 -
+    engine.debt * engine.min_ratio_bps +
+    amount * engine.min_ratio_bps
+  proof_assert result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
   proof_assert repay_post(engine, amount, result)
   result
 }
@@ -298,8 +284,14 @@ pub fn add_collateral(
     reserve: engine.reserve,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  proof_assert headroom(result) == headroom(engine) + amount * 10000
-  proof_assert equity(result) == equity(engine) + amount
+  proof_assert (engine.collateral + amount) * 10000 ==
+    engine.collateral * 10000 + amount * 10000
+  proof_assert result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 -
+    engine.debt * engine.min_ratio_bps +
+    amount * 10000
+  proof_assert result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
   proof_assert add_collateral_post(engine, amount, result)
   result
 }
@@ -328,8 +320,14 @@ pub fn withdraw_collateral(
     reserve: engine.reserve,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  proof_assert headroom(result) == headroom(engine) - amount * 10000
-  proof_assert equity(result) == equity(engine) - amount
+  proof_assert (engine.collateral - amount) * 10000 ==
+    engine.collateral * 10000 - amount * 10000
+  proof_assert result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 -
+    engine.debt * engine.min_ratio_bps -
+    amount * 10000
+  proof_assert result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt - amount
   proof_assert withdraw_post(engine, amount, result)
   result
 }
@@ -354,8 +352,10 @@ pub fn add_reserve(
     reserve: engine.reserve + amount,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  proof_assert headroom(result) == headroom(engine)
-  proof_assert equity(result) == equity(engine) + amount
+  proof_assert result.collateral * 10000 - result.debt * result.min_ratio_bps ==
+    engine.collateral * 10000 - engine.debt * engine.min_ratio_bps
+  proof_assert result.collateral + result.reserve - result.debt ==
+    engine.collateral + engine.reserve - engine.debt + amount
   proof_assert add_reserve_post(engine, amount, result)
   result
 }
@@ -373,7 +373,8 @@ pub fn is_liquidatable(
   proof_require: engine_inv(engine),
   proof_ensure: result => liquidatable_post(engine, result),
 } {
-  let result = headroom(engine) < 0
+  let result = engine.collateral * 10000 - engine.debt * engine.min_ratio_bps <
+    0
   proof_assert liquidatable_post(engine, result)
   result
 }

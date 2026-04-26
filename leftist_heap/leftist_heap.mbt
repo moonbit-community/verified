@@ -99,8 +99,14 @@ pub fn[T : Compare] merge(
   proof_ensure: result => merge_post(a, b, result),
 } {
   match (a, b) {
-    (Empty, _) => b
-    (_, Empty) => a
+    (Empty, _) => {
+      proof_assert merge_post(a, b, b)
+      b
+    }
+    (_, Empty) => {
+      proof_assert merge_post(a, b, a)
+      a
+    }
     (Node(va, ra_rank, la, ra), Node(vb, rb_rank, lb, rb)) =>
       if va <= vb {
         let merged = merge(ra, b)

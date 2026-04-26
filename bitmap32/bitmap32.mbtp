@@ -181,6 +181,14 @@ pub lemma rank_distinct_present(bitmap : UInt, i : Int, j : Int) where {
   proof_require: i != j,
   proof_ensure: rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0),
 } {
+  if i < j {
+    rank_strict_before(bitmap, i, j)
+    proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+  } else {
+    proof_assert j < i
+    rank_strict_before(bitmap, j, i)
+    proof_assert rank_value(bitmap, j, 0) < rank_value(bitmap, i, 0)
+  }
   proof_assert rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0)
 }
 
