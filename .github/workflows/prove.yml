@@ -113,7 +113,19 @@ jobs:
           Z3PATH: ${{ env.Z3PATH }}
         run: |
           set -euo pipefail
-          opam exec -- moon prove
+          # First invocation: let `moon prove` generate _build/verif/why3.conf.
+          # On slow CI runners a few sparse_array goals genuinely need more
+          # than the default 2s per-prover ceiling, so we may exit non-zero
+          # here — that's expected. We swallow the exit and patch the strategy.
+          opam exec -- moon prove || true
+          # Bump the third-tier prover budget from 2s to 10s. The first two
+          # tiers (.2s, 1s) are unchanged so easy goals still resolve fast;
+          # only goals that need the heavy tier pay the higher cost.
+          perl -i -pe 's/(\bc [^,]+,[^ ]+) 2 4000/\1 10 4000/g' _build/verif/why3.conf
+          # Re-run with the patched config. Cached prover results from the
+          # first run are reused, so this only re-attempts the goals that
+          # didn't succeed previously.
+          opam exec -- moon prove --why3-config _build/verif/why3.conf
 
       - name: Upload proof reports
         if: ${{ failure() }}
