@@ -118,14 +118,14 @@ jobs:
           # sparse_array goal is expected here and will be cleared on the
           # second pass.
           opam exec -- moon prove || true
-          # Append a fourth strategy tier with a generous 90s budget. Crucially
-          # we APPEND rather than replace the existing 2s tier — goals that
-          # already succeeded in the 2s tier will not re-run, so we avoid the
-          # solver-flake risk that comes from raising existing tier limits.
-          # Only goals that fail every prior tier reach this new tier.
+          # Append a fourth strategy tier with a 240s budget. We APPEND rather
+          # than replace the existing 2s tier so that goals which already
+          # succeed in the 2s tier do not re-run (raising existing tier limits
+          # was found to flake other goals via solver non-determinism). Only
+          # goals that fail every prior tier reach this new tier.
           perl -i -pe '
             s{(c Alt-Ergo,([0-9.]+) 2 4000 \| c Z3,([0-9.]+) 2 4000 \| c CVC5,([0-9.]+) 2 4000)}
-             {$1\nc Alt-Ergo,$2 90 4000 | c Z3,$3 90 4000 | c CVC5,$4 90 4000}
+             {$1\nc Alt-Ergo,$2 240 4000 | c Z3,$3 240 4000 | c CVC5,$4 240 4000}
           ' _build/verif/why3.conf
           opam exec -- moon prove --why3-config _build/verif/why3.conf
 
