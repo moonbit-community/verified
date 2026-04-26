@@ -431,3 +431,17 @@ lemma[T : Compare] delete_right_eq_lemma(x : T, y : T, s1 : Fset[T], s2 : Fset[T
 } {
 
 }
+
+///|
+predicate[T : Compare] delete_eq_eq(x : T, s1 : Fset[T], s2 : Fset[T]) {
+  s1.union(s2).add(x).remove(x).eq(s1.union(s2))
+}
+
+///|
+lemma[T : Compare] delete_eq_eq_lemma(x : T, s1 : Fset[T], s2 : Fset[T]) where {
+  proof_require: all_lt(s1, x),
+  proof_require: all_gt(x, s2),
+  proof_ensure: delete_eq_eq(x, s1, s2),
+} {
+
+}

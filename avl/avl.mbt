@@ -470,6 +470,8 @@ pub fn[T : Compare] insert(
         proof_assert result.model().eq(l1.model().union(r.model()).add(y))
         proof_assert insert_elements_eq(y, x, l.model(), r.model())
         proof_assert result.model().eq(t.model().add(x))
+        proof_assert height(t) <= height(result)
+        proof_assert height(result) <= height(t) + 1
         result
       } else if y < x {
         let r1 = insert(x, r)
@@ -479,9 +481,13 @@ pub fn[T : Compare] insert(
         proof_assert result.model().eq(l.model().union(r1.model()).add(y))
         proof_assert insert_elements_eq_right(y, x, l.model(), r.model())
         proof_assert result.model().eq(t.model().add(x))
+        proof_assert height(t) <= height(result)
+        proof_assert height(result) <= height(t) + 1
         result
       } else {
         proof_assert t.model().eq(t.model().add(x))
+        proof_assert height(t) <= height(t)
+        proof_assert height(t) <= height(t) + 1
         t
       }
   }
@@ -514,18 +520,27 @@ pub fn[T : Compare] delete(
         let l1 = delete(x, l)
         let t1 = balance(l1, y, r)
         proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
+        proof_assert delete_left_eq(x, y, l.model(), r.model())
         proof_assert t1.model().eq(t.model().remove(x))
+        proof_assert height(t) <= height(t1) + 1
+        proof_assert height(t1) <= height(t)
         t1
       } else if y < x {
         let r1 = delete(x, r)
         let t1 = balance(l, y, r1)
         proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
+        proof_assert delete_right_eq(x, y, l.model(), r.model())
         proof_assert t1.model().eq(t.model().remove(x))
+        proof_assert height(t) <= height(t1) + 1
+        proof_assert height(t1) <= height(t)
         t1
       } else {
         match r {
           Empty => {
+            proof_assert delete_eq_eq(x, l.model(), r.model())
             proof_assert l.model().eq(t.model().remove(x))
+            proof_assert height(t) <= height(l) + 1
+            proof_assert height(l) <= height(t)
             l
           }
           Node(_, _, _, _) => {
@@ -537,7 +552,10 @@ pub fn[T : Compare] delete(
             proof_assert t.model().eq(l.model().union(r.model()).add(y))
             proof_assert all_lt(l.model(), s)
             let t1 = balance(l, s, r1)
+            proof_assert delete_eq_eq(y, l.model(), r.model())
             proof_assert t1.model().eq(t.model().remove(x))
+            proof_assert height(t) <= height(t1) + 1
+            proof_assert height(t1) <= height(t)
             t1
           }
         }
