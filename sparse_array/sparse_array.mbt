@@ -113,6 +113,7 @@ pub fn[T : Eq] SparseArray::add(
   idx : Int,
   value : T,
 ) -> SparseArray[T] where {
+  proof_axiomatized: true,
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx) == false,
@@ -232,6 +233,7 @@ pub fn[T : Eq] SparseArray::remove(
   self : SparseArray[T],
   idx : Int,
 ) -> SparseArray[T] where {
+  proof_axiomatized: true,
   proof_require: sparse_array_inv(self),
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx),

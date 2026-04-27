@@ -1,3 +1,7 @@
+fn fee_multiplier(fee_bps : Int) -> Int {
+  10000 - fee_bps
+}
+
 predicate valid_fee_bps(fee_bps : Int) {
   0 <= fee_bps && fee_bps < 10000
 }

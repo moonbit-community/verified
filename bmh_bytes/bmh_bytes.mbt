@@ -131,6 +131,7 @@ pub fn boyer_moore_horspool_find(
       proof_assert !match_at(haystack, needle, i)
       proof_assert 1 <= shift
       proof_assert shift <= needle_len
+      proof_assert skip_step_pre(haystack, needle, skip, i, last, shift)
       proof_assert no_match_before(haystack, needle, i + shift)
       continue i + shift
     } nobreak {

@@ -110,6 +110,9 @@ pub fn[T : Compare] merge(
         let result = make_node(va, la, merged)
         proof_assert make_node_post(va, la, merged, result)
         proof_assert merge_post(Node(va, ra_rank, la, ra), b, result)
+        proof_assert heap_inv(result)
+        proof_assert counts_sum(a, b, result)
+        proof_assert size_model(result) == size_model(a) + size_model(b)
         proof_assert merge_post(a, b, result)
         result
       } else {
@@ -120,6 +123,9 @@ pub fn[T : Compare] merge(
         let result = make_node(vb, lb, merged)
         proof_assert make_node_post(vb, lb, merged, result)
         proof_assert merge_post(a, Node(vb, rb_rank, lb, rb), result)
+        proof_assert heap_inv(result)
+        proof_assert counts_sum(a, b, result)
+        proof_assert size_model(result) == size_model(a) + size_model(b)
         proof_assert merge_post(a, b, result)
         result
       }

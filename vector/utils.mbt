@@ -6,7 +6,7 @@ fn[T] immutable_set(
 ) -> ReadOnlyArray[T] where {
   proof_axiomatized: true,
   proof_require: 0 <= i,
-  proof_require: i < @readonlyarray.model(arr).length(),
+  proof_require: @mathint.int_model(i) < @readonlyarray.model(arr).length(),
   proof_ensure: result => immutable_set_post(arr, i, v, result),
 } {
   ReadOnlyArray::makei(arr.length(), fn(j) { if j == i { v } else { arr[j] } })
@@ -49,7 +49,7 @@ fn[T] immutable_slice(
   proof_axiomatized: true,
   proof_require: 0 <= start,
   proof_require: start <= stop,
-  proof_require: stop <= @readonlyarray.model(arr).length(),
+  proof_require: @mathint.int_model(stop) <= @readonlyarray.model(arr).length(),
   proof_ensure: result => immutable_slice_post(arr, start, stop, result),
 } {
   let len = stop - start

@@ -6,12 +6,6 @@ pub struct Position {
 } derive(Eq)
 
 ///|
-#proof_pure
-fn buffer(position : Position) -> Int {
-  position.collateral * position.max_ltv_bps - position.debt * 10000
-}
-
-///|
 pub fn max_safe_debt(
   collateral : Int,
   max_ltv_bps : Int,

@@ -1,3 +1,46 @@
+///|
+fn equity(account : Account, mark : Int) -> Int {
+  account.collateral -
+  account.funding_debt +
+  account.contracts * (mark - account.entry_price)
+}
+
+///|
+fn scaled_buffer(account : Account, mark : Int) -> Int {
+  equity(account, mark) * 10000 -
+  account.contracts * mark * account.maintenance_margin_bps
+}
+
+///|
+fn liquidation_numerator(account : Account) -> Int {
+  account.contracts * account.entry_price * 10000 +
+  account.funding_debt * 10000 -
+  account.collateral * 10000
+}
+
+///|
+fn liquidation_denominator(account : Account) -> Int {
+  account.contracts * (10000 - account.maintenance_margin_bps)
+}
+
+///|
+fn required_close_units(account : Account, mark : Int) -> Int {
+  if mark <= 0 || account.maintenance_margin_bps <= 0 {
+    0
+  } else {
+    if scaled_buffer(account, mark) >= 0 {
+      0
+    } else {
+      (
+        -scaled_buffer(account, mark) +
+        mark * account.maintenance_margin_bps -
+        1
+      ) / (mark * account.maintenance_margin_bps)
+    }
+  }
+}
+
+///|
 predicate valid_margin_bps(maintenance_margin_bps : Int) {
   0 < maintenance_margin_bps &&
   maintenance_margin_bps < 10000

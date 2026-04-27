@@ -7,18 +7,6 @@ pub struct Stream {
 } derive(Eq)
 
 ///|
-#proof_pure
-fn vested_at(total : Int, start : Int, duration : Int, now : Int) -> Int {
-  if now <= start {
-    0
-  } else if start + duration <= now {
-    total
-  } else {
-    total * (now - start) / duration
-  }
-}
-
-///|
 pub fn create_stream(
   total : Int,
   start : Int,
@@ -46,7 +34,14 @@ pub fn vested_amount(
     vested_amount_post(total, start, duration, now, result)
   },
 } {
-  let result = vested_at(total, start, duration, now)
+  let result = if now <= start {
+    0
+  } else if start + duration <= now {
+    total
+  } else {
+    total * (now - start) / duration
+  }
+  proof_assert result == vested_at(total, start, duration, now)
   proof_assert vested_amount_post(total, start, duration, now, result)
   result
 }
@@ -59,7 +54,14 @@ pub fn claimable(
   proof_require: stream_inv(stream),
   proof_ensure: result => claimable_post(stream, now, result),
 } {
-  let vested = vested_at(stream.total, stream.start, stream.duration, now)
+  let vested = if now <= stream.start {
+    0
+  } else if stream.start + stream.duration <= now {
+    stream.total
+  } else {
+    stream.total * (now - stream.start) / stream.duration
+  }
+  proof_assert vested == vested_at(stream.total, stream.start, stream.duration, now)
   let result = if vested <= stream.released {
     0
   } else {
@@ -77,7 +79,14 @@ pub fn release(
   proof_require: stream_inv(stream),
   proof_ensure: result => release_post(stream, now, result),
 } {
-  let vested = vested_at(stream.total, stream.start, stream.duration, now)
+  let vested = if now <= stream.start {
+    0
+  } else if stream.start + stream.duration <= now {
+    stream.total
+  } else {
+    stream.total * (now - stream.start) / stream.duration
+  }
+  proof_assert vested == vested_at(stream.total, stream.start, stream.duration, now)
   let released = if vested <= stream.released {
     stream.released
   } else {

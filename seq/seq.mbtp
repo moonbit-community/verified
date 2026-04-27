@@ -1,10 +1,10 @@
 ///|
 #proof_import("seq.Seq")
-pub fn[T] Seq::length(self : Seq[T]) -> Int = "length"
+pub fn[T] Seq::length(self : Seq[T]) -> @mathint.MathInt = "length"
 
 ///|
 #proof_import("seq.Seq")
-pub fn[T] Seq::get(self : Seq[T], idx : Int) -> T = "get"
+pub fn[T] Seq::get(self : Seq[T], idx : @mathint.MathInt) -> T = "get"
 
 ///|
 #proof_import("seq.Seq")
@@ -19,7 +19,11 @@ pub fn[T] Seq::append(left : Seq[T], right : Seq[T]) -> Seq[T] = "(++)"
 pub fn[T] Seq::singleton(v : T) -> Seq[T] = "singleton"
 
 #proof_import("seq.Seq")
-pub fn[T] Seq::set(self : Seq[T], i : Int, v : T) -> Seq[T] = "([<-])"
+pub fn[T] Seq::set(
+  self : Seq[T],
+  i : @mathint.MathInt,
+  v : T,
+) -> Seq[T] = "([<-])"
 
 ///|
 #proof_import("seq.Seq")
@@ -27,8 +31,12 @@ pub fn[T] Seq::eq(left : Seq[T], right : Seq[T]) -> Bool = "(==)"
 
 ///|
 #proof_import("seq.Seq")
-pub fn[T] Seq::tail(self : Seq[T], i : Int) -> Seq[T] = "([_..])"
+pub fn[T] Seq::tail(self : Seq[T], i : @mathint.MathInt) -> Seq[T] = "([_..])"
 
 ///|
 #proof_import("seq.Seq")
-pub fn[T] Seq::sub(self : Seq[T], i : Int, j : Int) -> Seq[T] = "([..])"
+pub fn[T] Seq::sub(
+  self : Seq[T],
+  i : @mathint.MathInt,
+  j : @mathint.MathInt,
+) -> Seq[T] = "([..])"

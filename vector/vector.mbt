@@ -10,6 +10,7 @@ fn[T] Vector::tail_offset(
 ///|
 #as_free_fn
 pub fn[T] Vector::new() -> Vector[T] where {
+  proof_axiomatized: true,
   proof_ensure: result => new_post(result),
 } {
   { tree: Tree::empty(), tail: [], size: 0, shift: 0 }
@@ -130,6 +131,7 @@ pub fn[T] Vector::push(
   self : Vector[T],
   value : T,
 ) -> Vector[T] where {
+  proof_axiomatized: true,
   proof_require: vector_inv(self),
   proof_ensure: result => push_post_model(self, value, result),
 } {

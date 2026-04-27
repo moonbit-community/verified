@@ -1,0 +1,134 @@
+///|
+#proof_import("int.Int")
+pub fn MathInt::zero() -> MathInt = "zero"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::one() -> MathInt = "one"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::equal(self : MathInt, other : MathInt) -> Bool = "(=)"
+
+///|
+pub fn MathInt::not_equal(self : MathInt, other : MathInt) -> Bool {
+  !self.equal(other)
+}
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::compare(self : MathInt, other : MathInt) -> Int = "(-)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::op_lt(self : MathInt, other : MathInt) -> Bool = "(<)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::op_le(self : MathInt, other : MathInt) -> Bool = "(<=)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::op_gt(self : MathInt, other : MathInt) -> Bool = "(>)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::op_ge(self : MathInt, other : MathInt) -> Bool = "(>=)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::add(self : MathInt, other : MathInt) -> MathInt = "(+)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::sub(self : MathInt, other : MathInt) -> MathInt = "(-)"
+
+///|
+#proof_import("int.Int")
+pub fn MathInt::mul(self : MathInt, other : MathInt) -> MathInt = "(*)"
+
+///|
+#proof_import("int.ComputerDivision")
+pub fn MathInt::div(self : MathInt, other : MathInt) -> MathInt = "div"
+
+///|
+#proof_import("int.ComputerDivision")
+pub fn MathInt::mod(self : MathInt, other : MathInt) -> MathInt = "mod"
+
+///|
+pub fn MathInt::neg(self : MathInt) -> MathInt {
+  MathInt::zero().sub(self)
+}
+
+///|
+#proof_import("moonbit_builtin_prelude.Int")
+pub fn int_model(self : Int) -> MathInt = "model"
+
+///|
+#proof_import("moonbit_builtin_prelude.Int")
+pub fn MathInt::to_int(self : MathInt) -> Int = "of_int"
+
+///|
+pub impl Eq for MathInt with equal(self : MathInt, other : MathInt) -> Bool {
+  MathInt::equal(self, other)
+}
+
+///|
+pub impl Eq for MathInt with not_equal(self : MathInt, other : MathInt) -> Bool {
+  MathInt::not_equal(self, other)
+}
+
+///|
+pub impl Compare for MathInt with compare(self : MathInt, other : MathInt) -> Int {
+  MathInt::compare(self, other)
+}
+
+///|
+pub impl Compare for MathInt with op_lt(self : MathInt, other : MathInt) -> Bool {
+  MathInt::op_lt(self, other)
+}
+
+///|
+pub impl Compare for MathInt with op_le(self : MathInt, other : MathInt) -> Bool {
+  MathInt::op_le(self, other)
+}
+
+///|
+pub impl Compare for MathInt with op_gt(self : MathInt, other : MathInt) -> Bool {
+  MathInt::op_gt(self, other)
+}
+
+///|
+pub impl Compare for MathInt with op_ge(self : MathInt, other : MathInt) -> Bool {
+  MathInt::op_ge(self, other)
+}
+
+///|
+pub impl Add for MathInt with add(self : MathInt, other : MathInt) -> MathInt {
+  MathInt::add(self, other)
+}
+
+///|
+pub impl Sub for MathInt with sub(self : MathInt, other : MathInt) -> MathInt {
+  MathInt::sub(self, other)
+}
+
+///|
+pub impl Mul for MathInt with mul(self : MathInt, other : MathInt) -> MathInt {
+  MathInt::mul(self, other)
+}
+
+///|
+pub impl Div for MathInt with div(self : MathInt, other : MathInt) -> MathInt {
+  MathInt::div(self, other)
+}
+
+///|
+pub impl Mod for MathInt with mod(self : MathInt, other : MathInt) -> MathInt {
+  MathInt::mod(self, other)
+}
+
+///|
+pub impl Neg for MathInt with neg(self : MathInt) -> MathInt {
+  MathInt::neg(self)
+}

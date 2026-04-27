@@ -254,6 +254,12 @@ lemma rank_distinct_present(
   proof_require: i != j,
   proof_ensure: rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0),
 } {
+  if i < j {
+    proof_assert rank_value(bitmap, i, 0) < rank_value(bitmap, j, 0)
+  } else {
+    proof_assert j < i
+    proof_assert rank_value(bitmap, j, 0) < rank_value(bitmap, i, 0)
+  }
   proof_assert rank_value(bitmap, i, 0) != rank_value(bitmap, j, 0)
 }
 
@@ -711,31 +717,6 @@ predicate[T : Eq] add_post(
 }
 
 ///|
-lemma[T : Eq] add_post_lemma(
-  _sa : SparseArray[T],
-  _idx : Int,
-  _value : T,
-  _res : SparseArray[T],
-) where {
-  proof_require: sparse_array_inv(_sa),
-  proof_require: valid_idx(_idx),
-  proof_require: model(_sa).mem(_idx) == false,
-  proof_require: bitmap_add_post(_sa.bitmap, _idx, _res.bitmap),
-  proof_require: add_data_ok(_sa, _idx, _value, _res),
-  proof_ensure: add_post(_sa, _idx, _value, _res),
-} {
-  proof_assert sparse_array_inv(_res)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) == model(_sa).add(_idx, _value).mem(j)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) →
-      model(_res).find(j).equal(model(_sa).add(_idx, _value).find(j))
-  proof_assert fmap_eq_hyp_local(model(_res), model(_sa).add(_idx, _value))
-  proof_assert model(_res).eq(model(_sa).add(_idx, _value))
-  proof_assert add_post(_sa, _idx, _value, _res)
-}
-
-///|
 predicate[T : Eq] replace_post(
   _sa : SparseArray[T],
   _idx : Int,
@@ -838,31 +819,6 @@ predicate[T : Eq] remove_post(
   _res : SparseArray[T],
 ) {
   sparse_array_inv(_res) && model(_res).eq(model(_sa).remove(_idx))
-}
-
-///|
-lemma[T : Eq] remove_post_lemma(
-  _sa : SparseArray[T],
-  _idx : Int,
-  _res : SparseArray[T],
-) where {
-  proof_require: sparse_array_inv(_sa),
-  proof_require: valid_idx(_idx),
-  proof_require: model(_sa).mem(_idx),
-  proof_require: singleton_len_inv(_sa) == false,
-  proof_require: bitmap_remove_post(_sa.bitmap, _idx, _res.bitmap),
-  proof_require: remove_data_ok(_sa, _idx, _res),
-  proof_ensure: remove_post(_sa, _idx, _res),
-} {
-  proof_assert sparse_array_inv(_res)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) == model(_sa).remove(_idx).mem(j)
-  proof_assert ∀ j : Int,
-    model(_res).mem(j) →
-      model(_res).find(j).equal(model(_sa).remove(_idx).find(j))
-  proof_assert fmap_eq_hyp_local(model(_res), model(_sa).remove(_idx))
-  proof_assert model(_res).eq(model(_sa).remove(_idx))
-  proof_assert remove_post(_sa, _idx, _res)
 }
 
 ///|
