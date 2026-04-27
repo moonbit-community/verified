@@ -171,16 +171,39 @@ pub fn min_close_to_restore(
   ) * 10000 -
   account.contracts * mark * account.maintenance_margin_bps
   proof_assert buffer == scaled_buffer(account, mark)
-  let result = if mark <= 0 || account.maintenance_margin_bps <= 0 {
-    0
-  } else if buffer >= 0 {
+  proof_assert 0 < account.maintenance_margin_bps
+  proof_assert 0 < mark * account.maintenance_margin_bps
+  let result = if buffer >= 0 {
     0
   } else {
     let numerator = -buffer
     let denominator = mark * account.maintenance_margin_bps
-    (numerator + denominator - 1) / denominator
+    proof_assert denominator == mark * account.maintenance_margin_bps
+    proof_assert 0 < numerator
+    proof_assert 0 < denominator
+    proof_assert numerator <= account.contracts * denominator
+    let close_units = (numerator + denominator - 1) / denominator
+    proof_assert 0 <= account.contracts
+    proof_assert numerator + denominator - 1 <=
+      account.contracts * denominator + denominator - 1
+    proof_assert account.contracts * denominator + denominator - 1 <
+      (account.contracts + 1) * denominator
+    proof_assert numerator + denominator - 1 <
+      (account.contracts + 1) * denominator
+    proof_assert close_units < account.contracts + 1
+    proof_assert close_units <= account.contracts
+    close_units
   }
   proof_assert result == required_close_units(account, mark)
+  proof_assert account_inv(account)
+  proof_assert 0 < mark
+  proof_assert 0 <= equity(account, mark)
+  proof_assert 0 <= result
+  proof_assert result <= account.contracts
+  proof_assert 0 <=
+    scaled_buffer(account, mark) +
+    result * mark * account.maintenance_margin_bps
+  proof_assert min_close_frontier(account, mark, result)
   proof_assert min_close_to_restore_post(account, mark, result)
   result
 }

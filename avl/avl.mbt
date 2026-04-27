@@ -149,7 +149,11 @@ fn[T : Compare] balance_left_double(
             .union(nr.model())
             .add(lrx)
             .eq(l.model().union(r.model()).add(x))
-          mk(nl, lrx, nr)
+          let result = mk(nl, lrx, nr)
+          proof_assert height(result) == 1 + max2(height(nl), height(nr))
+          proof_assert height(result) <= 1 + max2(height(l), height(r))
+          proof_assert max2(height(l), height(r)) <= height(result)
+          result
         }
       }
   }
@@ -226,7 +230,11 @@ fn[T : Compare] balance_right_double(
             .union(nr.model())
             .add(rlx)
             .eq(l.model().union(r.model()).add(x))
-          mk(nl, rlx, nr)
+          let result = mk(nl, rlx, nr)
+          proof_assert height(result) == 1 + max2(height(nl), height(nr))
+          proof_assert height(result) <= 1 + max2(height(l), height(r))
+          proof_assert max2(height(l), height(r)) <= height(result)
+          result
         }
       }
   }

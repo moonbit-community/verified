@@ -63,6 +63,9 @@ pub fn push(
     Cons(_, min, _) => if value < min { value } else { min }
   }
   let result = Cons(value, new_min, s)
+  proof_assert stack_inv(result)
+  proof_assert count(result, value) == count(s, value) + 1
+  proof_assert ∀ y : Int, y != value → count(result, y) == count(s, y)
   proof_assert push_post(s, value, result)
   result
 }
