@@ -110,110 +110,6 @@ predicate[T : Compare] elements_subset(t1 : Tree[T], t2 : Tree[T]) {
   ∀ y : T, t1.model().mem(y) → t2.model().mem(y)
 }
 
-///|
-lemma[T : Compare] elements_subset_all_lt(t1 : Tree[T], t2 : Tree[T], x : T) where {
-  proof_require: elements_subset(t1, t2),
-  proof_require: all_lt(t2.model(), x),
-  proof_ensure: all_lt(t1.model(), x),
-} {
-}
-
-///|
-lemma[T : Compare] elements_subset_all_gt(x : T, t1 : Tree[T], t2 : Tree[T]) where {
-  proof_require: elements_subset(t1, t2),
-  proof_require: all_gt(x, t2.model()),
-  proof_ensure: all_gt(x, t1.model()),
-} {
-}
-
-///|
-lemma[T : Compare] elements_subset_trans(t1 : Tree[T], t2 : Tree[T], t3 : Tree[T]) where {
-  proof_require: elements_subset(t1, t2),
-  proof_require: elements_subset(t2, t3),
-  proof_ensure: elements_subset(t1, t3),
-} {
-}
-
-///|
-lemma[T : Compare] all_gt_add(x : T, y : T, s : Fset[T]) where {
-  proof_require: x < y,
-  proof_require: all_gt(x, s),
-  proof_ensure: all_gt(x, s.add(y)),
-} {
-
-}
-
-///|
-lemma[T : Compare] all_gt_union(x : T, s1 : Fset[T], s2 : Fset[T]) where {
-  proof_require: all_gt(x, s1),
-  proof_require: all_gt(x, s2),
-  proof_ensure: all_gt(x, s1.union(s2)),
-} {
-  
-}
-
-///|
-lemma[T : Compare] all_gt_weaken(x : T, y : T, s : Fset[T]) where {
-  proof_require: x < y,
-  proof_require: all_gt(y, s),
-  proof_ensure: all_gt(x, s),
-} {
-
-}
-
-///|
-lemma[T : Compare] all_lt_add(s : Fset[T], x : T, y : T) where {
-  proof_require: y < x,
-  proof_require: all_lt(s, x),
-  proof_ensure: all_lt(s.add(y), x),
-} {
-
-}
-
-///|
-lemma[T : Compare] all_lt_union(s1 : Fset[T], s2 : Fset[T], x : T) where {
-  proof_require: all_lt(s1, x),
-  proof_require: all_lt(s2, x),
-  proof_ensure: all_lt(s1.union(s2), x),
-} {
-
-}
-
-///|
-lemma[T : Compare] all_lt_weaken(s : Fset[T], x : T, y : T) where {
-  proof_require: all_lt(s, x),
-  proof_require: x < y,
-  proof_ensure: all_lt(s, y),
-} {
-
-}
-
-predicate[T : Compare] single_rotation_mem_post(
-  a : T,
-  b : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  z : T
-) {
-  s1.union(s2.union(s3).add(b)).add(a).mem(z) ==
-  s1.union(s2).add(a).union(s3).add(b).mem(z)
-}
-
-///|
-lemma[T : Compare] single_rotation_mem(
-  a : T,
-  b : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  z : T
-) where {
-  proof_ensure: single_rotation_mem_post(a, b, s1, s2, s3, z),
-} {
-  proof_assert single_rotation_mem_post(a, b, s1, s2, s3, z)
-}
-
 predicate[T : Compare] single_rotation_eq(
   a : T,
   b : T,
@@ -237,36 +133,6 @@ lemma[T : Compare] single_rotation_eq_lemma(
   proof_ensure: single_rotation_eq(a, b, s1, s2, s3),
 } {
   proof_assert single_rotation_eq(a, b, s1, s2, s3)
-}
-
-predicate[T : Compare] double_rotation_mem_lr_post(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T],
-  z : T
-) {
-  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
-  s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c).mem(z)
-}
-
-///|
-lemma[T : Compare] double_rotation_mem_lr(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T],
-  z : T
-) where {
-  proof_ensure: double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z),
-} {
-  proof_assert double_rotation_mem_lr_post(a, b, c, s1, s2, s3, s4, z)
 }
 
 predicate[T : Compare] double_rotation_eq_lr(
@@ -298,36 +164,6 @@ lemma[T : Compare] double_rotation_eq_lr_lemma(
   proof_assert double_rotation_eq_lr(a, b, c, s1, s2, s3, s4)
 }
 
-predicate[T : Compare] double_rotation_mem_rl_post(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T],
-  z : T
-) {
-  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).mem(z) ==
-  s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b).mem(z)
-}
-
-///|
-lemma[T : Compare] double_rotation_mem_rl(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T],
-  z : T
-) where {
-  proof_ensure: double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z),
-} {
-  proof_assert double_rotation_mem_rl_post(a, b, c, s1, s2, s3, s4, z)
-}
-
 predicate[T : Compare] double_rotation_eq_rl(
   a : T,
   b : T,
@@ -355,31 +191,6 @@ lemma[T : Compare] double_rotation_eq_rl_lemma(
   proof_ensure: double_rotation_eq_rl(a, b, c, s1, s2, s3, s4),
 } {
   proof_assert double_rotation_eq_rl(a, b, c, s1, s2, s3, s4)
-}
-
-///|
-predicate[T : Compare] insert_elements_mem_post(
-  a : T,
-  b : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  z : T
-) {
-  s1.add(b).union(s2).add(a).mem(z) ==
-  s1.union(s2).add(a).add(b).mem(z)
-}
-
-///|
-lemma[T : Compare] insert_elements_mem(
-  a : T,
-  b : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  z : T
-) where {
-  proof_ensure: insert_elements_mem_post(a, b, s1, s2, z),
-} {
-  proof_assert insert_elements_mem_post(a, b, s1, s2, z)
 }
 
 predicate[T : Compare] insert_elements_eq(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) {

@@ -390,8 +390,20 @@ fn[T : Compare] remove_min(
     Node(l, y, r, _) =>
       match l {
         Empty => {
+          proof_assert avl_inv(r)
+          proof_assert t.model().mem(y)
+          proof_assert t.model().eq(r.model().add(y))
           proof_assert elements_subset(r, t)
-          (y, r)
+          proof_assert all_gt(y, r.model())
+          proof_assert height(r) <= height(t)
+          proof_assert height(r) <= 1
+          proof_assert height(t) == 1 + max2(0, height(r))
+          proof_assert 0 <= height(r)
+          proof_assert max2(0, height(r)) == height(r)
+          proof_assert height(t) <= height(r) + 1
+          let result = (y, r)
+          proof_assert remove_min_post(t, result)
+          result
         }
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
@@ -414,8 +426,9 @@ fn[T : Compare] remove_min(
           proof_assert height(t) <= height(t1) + 1
           proof_assert t.model().eq(t1.model().add(m))
           proof_assert elements_subset(t1, t)
-          proof_assert remove_min_post(t, (m, t1))
-          (m, t1)
+          let result = (m, t1)
+          proof_assert remove_min_post(t, result)
+          result
         }
       }
   }
@@ -560,6 +573,8 @@ pub fn[T : Compare] delete(
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert t1.model().eq(t.model().remove(x))
+            proof_assert height(t) == 1 + max2(height(l), height(r))
+            proof_assert max2(height(l), height(r)) <= max2(height(l), height(r1)) + 1
             proof_assert height(t1) <= height(t)
             proof_assert height(t) <= height(t1) + 1
             t1
