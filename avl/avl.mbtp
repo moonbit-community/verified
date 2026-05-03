@@ -68,14 +68,14 @@ predicate[T : Compare] mk_pre(l : Tree[T], x : T, r : Tree[T]) {
 ///|
 predicate[T : Compare] mk_post(l : Tree[T], x : T, r : Tree[T], result : Tree[T]) {
   avl_inv(result) &&
-  result.model().eq(l.model().union(r.model()).add(x)) &&
+  result.model() == l.model().union(r.model()).add(x) &&
   height(result) == 1 + max2(height(l), height(r))
 }
 
 ///|
 predicate[T : Compare] rebalance_post(l : Tree[T], x : T, r : Tree[T], result : Tree[T]) {
   avl_inv(result) &&
-  result.model().eq(l.model().union(r.model()).add(x)) &&
+  result.model() == l.model().union(r.model()).add(x) &&
   height(result) <= 1 + max2(height(l), height(r)) &&
   max2(height(l), height(r)) <= height(result)
 }
@@ -129,7 +129,7 @@ predicate[T : Compare] remove_min_post(t : Tree[T], result : (T, Tree[T])) {
     (x, t1) =>
       avl_inv(t1) &&
       t.model().mem(x) &&
-      t.model().eq(t1.model().add(x)) &&
+      t.model() == t1.model().add(x) &&
       elements_subset(t1, t) &&
       all_gt(x, t1.model()) &&
       height(t1) <= height(t) &&
@@ -140,7 +140,7 @@ predicate[T : Compare] remove_min_post(t : Tree[T], result : (T, Tree[T])) {
 ///|
 predicate[T : Compare] insert_post(x : T, t : Tree[T], result : Tree[T]) {
   avl_inv(result) &&
-  result.model().eq(t.model().add(x)) &&
+  result.model() == t.model().add(x) &&
   height(t) <= height(result) &&
   height(result) <= height(t) + 1
 }
@@ -148,7 +148,7 @@ predicate[T : Compare] insert_post(x : T, t : Tree[T], result : Tree[T]) {
 ///|
 predicate[T : Compare] delete_post(x : T, t : Tree[T], result : Tree[T]) {
   avl_inv(result) &&
-  result.model().eq(t.model().remove(x)) &&
+  result.model() == t.model().remove(x) &&
   height(t) <= height(result) + 1 &&
   height(result) <= height(t)
 }

@@ -94,11 +94,10 @@ fn[T : Compare] balance_left_double(
           let nr = mk(lrr, x, r)
           proof_assert all_lt(nl.model(), lrx)
           proof_assert all_gt(lrx, nr.model())
-          proof_assert nl
-            .model()
-            .union(nr.model())
-            .add(lrx)
-            .eq(l.model().union(r.model()).add(x))
+          proof_assert (
+            nl.model().union(nr.model()).add(lrx) ==
+            l.model().union(r.model()).add(x)
+          )
           let result = mk(nl, lrx, nr)
           proof_assert rebalance_post(l, x, r, result)
           result
@@ -136,11 +135,10 @@ fn[T : Compare] balance_right_double(
           let nr = mk(rlr, rx, rr)
           proof_assert all_lt(nl.model(), rlx)
           proof_assert all_gt(rlx, nr.model())
-          proof_assert nl
-            .model()
-            .union(nr.model())
-            .add(rlx)
-            .eq(l.model().union(r.model()).add(x))
+          proof_assert (
+            nl.model().union(nr.model()).add(rlx) ==
+            l.model().union(r.model()).add(x)
+          )
           let result = mk(nl, rlx, nr)
           proof_assert rebalance_post(l, x, r, result)
           result
@@ -269,7 +267,7 @@ fn[T : Compare] remove_min(
         }
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
-          proof_assert l.model().eq(l1.model().add(m))
+          proof_assert l.model() == l1.model().add(m)
           proof_assert balance_pre(l1, y, r)
           let t1 = balance(l1, y, r)
           let result = (m, t1)
@@ -360,7 +358,7 @@ pub fn[T : Compare] delete(
           }
           Node(_, _, _, _) => {
             let (s, r1) = remove_min(r)
-            proof_assert r.model().eq(r1.model().add(s))
+            proof_assert r.model() == r1.model().add(s)
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert delete_post(x, t, t1)
