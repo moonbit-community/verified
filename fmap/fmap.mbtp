@@ -73,6 +73,11 @@ pub fn[V : Eq] Fmap::eq(self : Fmap[Int, V], other : Fmap[Int, V]) -> Bool {
 }
 
 ///|
+pub impl[V : Eq] Eq for Fmap[Int, V] with equal(self : Fmap[Int, V], other : Fmap[Int, V]) -> Bool {
+  raw_fmap_eq(self, other)
+}
+
+///|
 pub fn[V : Eq] Fmap::size(self : Fmap[Int, V]) -> Int {
   raw_fmap_size(self)
 }

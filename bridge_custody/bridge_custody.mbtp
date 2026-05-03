@@ -9,13 +9,13 @@ predicate bridge_inv(bridge : Bridge) {
 predicate empty_post(reserve : Int, result : Bridge) {
   bridge_inv(result) &&
   result.reserve == reserve &&
-  model(result).eq(@fset.fset_empty())
+  model(result) == @fset.fset_empty()
 }
 
 predicate deposit_post(bridge : Bridge, amount : Int, result : Bridge) {
   bridge_inv(result) &&
   result.reserve == bridge.reserve + amount &&
-  model(result).eq(model(bridge))
+  model(result) == model(bridge)
 }
 
 predicate nonce_used_post(bridge : Bridge, nonce : Int, result : Bool) {
@@ -32,7 +32,7 @@ predicate execute_withdraw_post(
 ) {
   bridge_inv(result) &&
   result.reserve == bridge.reserve - amount &&
-  model(result).eq(model(bridge).add(nonce)) &&
+  model(result) == model(bridge).add(nonce) &&
   @bitmap32.count_value(result.used_nonces, 0) ==
     @bitmap32.count_value(bridge.used_nonces, 0) + 1
 }

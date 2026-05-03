@@ -32,7 +32,7 @@ pub fn empty(
   let used_nonces = @bitmap32.zero_uint()
   let result = { reserve, used_nonces }
   proof_assert bridge_inv(result)
-  proof_assert model(result).eq(@fset.fset_empty())
+  proof_assert model(result) == @fset.fset_empty()
   proof_assert empty_post(reserve, result)
   result
 }

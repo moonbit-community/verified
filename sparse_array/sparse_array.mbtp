@@ -111,9 +111,9 @@ lemma prefix_domain_step_present(
 ) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx),
-  proof_ensure: prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx)),
+  proof_ensure: prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx).add(idx),
 } {
-  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx))
+  proof_assert prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx).add(idx)
 }
 
 ///|
@@ -123,9 +123,9 @@ lemma prefix_domain_step_absent(
 ) where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx) == false,
-  proof_ensure: prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx)),
+  proof_ensure: prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx),
 } {
-  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx))
+  proof_assert prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx)
 }
 
 ///|
@@ -138,7 +138,7 @@ lemma rank_step_present(
   proof_ensure:
     rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0) + 1,
 } {
-  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx).add(idx))
+  proof_assert prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx).add(idx)
   proof_assert prefix_domain(bitmap, idx).mem(idx) == false
   proof_assert rank_value(bitmap, idx + 1, 0) == prefix_domain(bitmap, idx).add(idx).cardinal()
   proof_assert prefix_domain(bitmap, idx).add(idx).cardinal() == rank_value(bitmap, idx, 0) + 1
@@ -154,7 +154,7 @@ lemma rank_step_absent(
   proof_ensure:
     rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0),
 } {
-  proof_assert prefix_domain(bitmap, idx + 1).eq(prefix_domain(bitmap, idx))
+  proof_assert prefix_domain(bitmap, idx + 1) == prefix_domain(bitmap, idx)
   proof_assert rank_value(bitmap, idx + 1, 0) == rank_value(bitmap, idx, 0)
 }
 
@@ -163,9 +163,9 @@ lemma empty_domain(
   bitmap : UInt,
 ) where {
   proof_require: empty_bitmap_inv(bitmap),
-  proof_ensure: domain(bitmap).eq(@fset.fset_empty()),
+  proof_ensure: domain(bitmap) == @fset.fset_empty(),
 } {
-  proof_assert domain(bitmap).eq(@fset.fset_empty())
+  proof_assert domain(bitmap) == @fset.fset_empty()
 }
 
 fn[T : Eq] model(sa : SparseArray[T]) -> Fmap[Int, T] {
@@ -283,7 +283,7 @@ predicate[T : Eq] get_post(sa : SparseArray[T], idx : Int, result : Option[T]) {
 
 predicate[T : Eq] singleton_post(_res : SparseArray[T], _idx : Int, _value : T) {
   sparse_array_inv(_res) &&
-  model(_res).eq(Fmap::empty().add(_idx, _value))
+  model(_res) == Fmap::empty().add(_idx, _value)
 }
 
 ///|
@@ -375,7 +375,7 @@ lemma singleton_rank_zero(
   proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_ensure: rank_value(bitmap, idx, 0) == 0,
 } {
-  proof_assert prefix_domain(bitmap, idx).eq(@fset.fset_empty())
+  proof_assert prefix_domain(bitmap, idx) == @fset.fset_empty()
   proof_assert rank_value(bitmap, idx, 0) == 0
 }
 
@@ -387,7 +387,7 @@ lemma singleton_count_one(
   proof_require: singleton_bitmap_inv(bitmap, idx),
   proof_ensure: count_value(bitmap, 0) == 1,
 } {
-  proof_assert domain(bitmap).eq(@fset.fset_empty().add(idx))
+  proof_assert domain(bitmap) == @fset.fset_empty().add(idx)
   proof_assert count_value(bitmap, 0) == @fset.fset_empty().add(idx).cardinal()
   proof_assert count_value(bitmap, 0) == 1
 }
@@ -398,13 +398,13 @@ lemma singleton_domain(
   idx : Int,
 ) where {
   proof_require: singleton_bitmap_inv(bitmap, idx),
-  proof_ensure: domain(bitmap).eq(@fset.fset_empty().add(idx)),
+  proof_ensure: domain(bitmap) == @fset.fset_empty().add(idx),
 } {
   proof_assert ∀ i : Int,
     domain(bitmap).mem(i) == (i == idx)
   proof_assert ∀ i : Int,
     @fset.fset_empty().add(idx).mem(i) == (i == idx)
-  proof_assert domain(bitmap).eq(@fset.fset_empty().add(idx))
+  proof_assert domain(bitmap) == @fset.fset_empty().add(idx)
 }
 
 ///|
@@ -430,11 +430,11 @@ lemma domain_add_eq(
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx) == false,
   proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
-  proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).add(idx)),
+  proof_ensure: domain(new_bitmap) == domain(old_bitmap).add(idx),
 } {
   proof_assert ∀ i : Int,
     domain(new_bitmap).mem(i) == domain(old_bitmap).add(idx).mem(i)
-  proof_assert domain(new_bitmap).eq(domain(old_bitmap).add(idx))
+  proof_assert domain(new_bitmap) == domain(old_bitmap).add(idx)
 }
 
 ///|
@@ -448,7 +448,7 @@ lemma count_add_one(
   proof_require: bitmap_add_post(old_bitmap, idx, new_bitmap),
   proof_ensure: count_value(new_bitmap, 0) == count_value(old_bitmap, 0) + 1,
 } {
-  proof_assert domain(new_bitmap).eq(domain(old_bitmap).add(idx))
+  proof_assert domain(new_bitmap) == domain(old_bitmap).add(idx)
   proof_assert domain(old_bitmap).mem(idx) == false
   proof_assert domain(new_bitmap).cardinal() == domain(old_bitmap).add(idx).cardinal()
   proof_assert domain(old_bitmap).add(idx).cardinal() == domain(old_bitmap).cardinal() + 1
@@ -470,7 +470,7 @@ lemma rank_add_before(
 } {
   proof_assert ∀ i : Int,
     prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).mem(i)
-  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j))
+  proof_assert prefix_domain(new_bitmap, j) == prefix_domain(old_bitmap, j)
   proof_assert rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0)
 }
 
@@ -490,7 +490,7 @@ lemma rank_add_after(
 } {
   proof_assert ∀ i : Int,
     prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).add(idx).mem(i)
-  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j).add(idx))
+  proof_assert prefix_domain(new_bitmap, j) == prefix_domain(old_bitmap, j).add(idx)
   proof_assert prefix_domain(old_bitmap, j).mem(idx) == false
   proof_assert rank_value(new_bitmap, j, 0) == prefix_domain(old_bitmap, j).add(idx).cardinal()
   proof_assert prefix_domain(old_bitmap, j).add(idx).cardinal() == rank_value(old_bitmap, j, 0) + 1
@@ -506,11 +506,11 @@ lemma domain_remove_eq(
   proof_require: valid_idx(idx),
   proof_require: mem_value(old_bitmap, idx),
   proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
-  proof_ensure: domain(new_bitmap).eq(domain(old_bitmap).remove(idx)),
+  proof_ensure: domain(new_bitmap) == domain(old_bitmap).remove(idx),
 } {
   proof_assert ∀ i : Int,
     domain(new_bitmap).mem(i) == domain(old_bitmap).remove(idx).mem(i)
-  proof_assert domain(new_bitmap).eq(domain(old_bitmap).remove(idx))
+  proof_assert domain(new_bitmap) == domain(old_bitmap).remove(idx)
 }
 
 ///|
@@ -524,7 +524,7 @@ lemma count_remove_one(
   proof_require: bitmap_remove_post(old_bitmap, idx, new_bitmap),
   proof_ensure: count_value(new_bitmap, 0) + 1 == count_value(old_bitmap, 0),
 } {
-  proof_assert domain(new_bitmap).eq(domain(old_bitmap).remove(idx))
+  proof_assert domain(new_bitmap) == domain(old_bitmap).remove(idx)
   proof_assert domain(old_bitmap).mem(idx)
   proof_assert domain(new_bitmap).cardinal() == domain(old_bitmap).remove(idx).cardinal()
   proof_assert domain(old_bitmap).remove(idx).cardinal() + 1 == domain(old_bitmap).cardinal()
@@ -546,7 +546,7 @@ lemma rank_remove_before(
 } {
   proof_assert ∀ i : Int,
     prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).mem(i)
-  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j))
+  proof_assert prefix_domain(new_bitmap, j) == prefix_domain(old_bitmap, j)
   proof_assert rank_value(new_bitmap, j, 0) == rank_value(old_bitmap, j, 0)
 }
 
@@ -566,7 +566,7 @@ lemma rank_remove_after(
 } {
   proof_assert ∀ i : Int,
     prefix_domain(new_bitmap, j).mem(i) == prefix_domain(old_bitmap, j).remove(idx).mem(i)
-  proof_assert prefix_domain(new_bitmap, j).eq(prefix_domain(old_bitmap, j).remove(idx))
+  proof_assert prefix_domain(new_bitmap, j) == prefix_domain(old_bitmap, j).remove(idx)
   proof_assert prefix_domain(old_bitmap, j).mem(idx)
   proof_assert rank_value(new_bitmap, j, 0) == prefix_domain(old_bitmap, j).remove(idx).cardinal()
   proof_assert prefix_domain(old_bitmap, j).remove(idx).cardinal() + 1 == rank_value(old_bitmap, j, 0)
@@ -713,7 +713,7 @@ predicate[T : Eq] add_post(
   _value : T,
   _res : SparseArray[T],
 ) {
-  sparse_array_inv(_res) && model(_res).eq(model(_sa).add(_idx, _value))
+  sparse_array_inv(_res) && model(_res) == model(_sa).add(_idx, _value)
 }
 
 ///|
@@ -792,7 +792,7 @@ predicate[T : Eq] remove_empty_post(
   _idx : Int,
   _res : SparseArray[T],
 ) {
-  sparse_array_inv(_res) && model(_res).eq(model(_sa).remove(_idx))
+  sparse_array_inv(_res) && model(_res) == model(_sa).remove(_idx)
 }
 
 ///|
@@ -818,7 +818,7 @@ predicate[T : Eq] remove_post(
   _idx : Int,
   _res : SparseArray[T],
 ) {
-  sparse_array_inv(_res) && model(_res).eq(model(_sa).remove(_idx))
+  sparse_array_inv(_res) && model(_res) == model(_sa).remove(_idx)
 }
 
 ///|

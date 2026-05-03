@@ -30,6 +30,11 @@ pub fn[T] Seq::set(
 pub fn[T] Seq::eq(left : Seq[T], right : Seq[T]) -> Bool = "(==)"
 
 ///|
+pub impl[T] Eq for Seq[T] with equal(self : Seq[T], other : Seq[T]) -> Bool {
+  Seq::eq(self, other)
+}
+
+///|
 #proof_import("seq.Seq")
 pub fn[T] Seq::tail(self : Seq[T], i : @mathint.MathInt) -> Seq[T] = "([_..])"
 

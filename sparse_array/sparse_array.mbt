@@ -84,7 +84,7 @@ pub fn[T : Eq] singleton(
   proof_assert count_value(result.bitmap, 0) == 1
   proof_assert rank_value(result.bitmap, idx, 0) == 0
   proof_assert sparse_array_inv(result)
-  proof_assert domain(result.bitmap).eq(@fset.fset_empty().add(idx))
+  proof_assert domain(result.bitmap) == @fset.fset_empty().add(idx)
   proof_assert model(result).mem(idx)
   proof_assert model(result).find(idx).equal(value)
   proof_assert singleton_post(result, idx, value)
@@ -118,7 +118,7 @@ pub fn[T : Eq] SparseArray::add(
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx) == false,
   proof_ensure: result => sparse_array_inv(result),
-  proof_ensure: result => model(result).eq(model(self).add(idx, value)),
+  proof_ensure: result => model(result) == model(self).add(idx, value),
 } {
   let old_data = self.data
   let old_len = old_data.length()
@@ -238,7 +238,7 @@ pub fn[T : Eq] SparseArray::remove(
   proof_require: valid_idx(idx),
   proof_require: model(self).mem(idx),
   proof_ensure: result => sparse_array_inv(result),
-  proof_ensure: result => model(result).eq(model(self).remove(idx)),
+  proof_ensure: result => model(result) == model(self).remove(idx),
 } {
   let old_data = self.data
   let old_len = old_data.length()
