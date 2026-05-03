@@ -90,34 +90,17 @@ fn[T : Compare] balance_left_double(
       match lr {
         Empty => panic()
         Node(lrl, lrx, lrr, _) => {
-          proof_assert all_lt(lr.model(), x)
-          proof_assert -1 <= height(ll) - height(lrl) &&
-            height(ll) - height(lrl) <= 1
-          proof_assert all_gt(lx, lrl.model())
           let nl = mk(ll, lx, lrl)
-          proof_assert all_lt(lrr.model(), x)
-          proof_assert all_gt(x, r.model())
-          proof_assert -1 <= height(lrr) - height(r) &&
-            height(lrr) - height(r) <= 1
           let nr = mk(lrr, x, r)
-          proof_assert all_lt(ll.model(), lrx)
-          proof_assert all_lt(lrl.model(), lrx)
-          proof_assert all_lt(ll.model().union(lrl.model()), lrx)
           proof_assert all_lt(nl.model(), lrx)
-          proof_assert all_gt(lrx, lrr.model())
-          proof_assert all_gt(lrx, r.model())
-          proof_assert all_gt(lrx, lrr.model().union(r.model()))
           proof_assert all_gt(lrx, nr.model())
-          proof_assert -1 <= height(nl) - height(nr) &&
-            height(nl) - height(nr) <= 1
           proof_assert nl
             .model()
             .union(nr.model())
             .add(lrx)
             .eq(l.model().union(r.model()).add(x))
           let result = mk(nl, lrx, nr)
-          proof_assert height(result) <= 1 + max2(height(l), height(r))
-          proof_assert max2(height(l), height(r)) <= height(result)
+          proof_assert rebalance_post(l, x, r, result)
           result
         }
       }
@@ -149,32 +132,17 @@ fn[T : Compare] balance_right_double(
           proof_assert rlx < rx
           proof_assert all_lt(l.model(), rlx)
           proof_assert all_gt(rlx, rr.model())
-          proof_assert -1 <= height(l) - height(rll) &&
-            height(l) - height(rll) <= 1
-          proof_assert all_gt(x, rl.model())
           let nl = mk(l, x, rll)
-          proof_assert -1 <= height(rlr) - height(rr) &&
-            height(rlr) - height(rr) <= 1
-          proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
-          proof_assert all_lt(l.model(), rlx)
-          proof_assert all_lt(rll.model(), rlx)
-          proof_assert all_lt(l.model().union(rll.model()), rlx)
           proof_assert all_lt(nl.model(), rlx)
-          proof_assert all_gt(rlx, rlr.model())
-          proof_assert all_gt(rlx, rr.model())
-          proof_assert all_gt(rlx, rlr.model().union(rr.model()))
           proof_assert all_gt(rlx, nr.model())
-          proof_assert -1 <= height(nl) - height(nr) &&
-            height(nl) - height(nr) <= 1
           proof_assert nl
             .model()
             .union(nr.model())
             .add(rlx)
             .eq(l.model().union(r.model()).add(x))
           let result = mk(nl, rlx, nr)
-          proof_assert height(result) <= 1 + max2(height(l), height(r))
-          proof_assert max2(height(l), height(r)) <= height(result)
+          proof_assert rebalance_post(l, x, r, result)
           result
         }
       }
@@ -302,18 +270,10 @@ fn[T : Compare] remove_min(
         Node(_, _, _, _) => {
           let (m, l1) = remove_min(l)
           proof_assert l.model().eq(l1.model().add(m))
-          proof_assert elements_subset(l, t)
-          proof_assert elements_subset(l1, t)
-          proof_assert m < y
-          proof_assert all_gt(m, r.model())
           proof_assert balance_pre(l1, y, r)
           let t1 = balance(l1, y, r)
-          proof_assert all_gt(m, l1.model().union(r.model()))
-          proof_assert all_gt(m, t1.model())
-          proof_assert height(t1) <= height(t)
-          proof_assert height(t) <= height(t1) + 1
-          proof_assert t.model().eq(t1.model().add(m))
           let result = (m, t1)
+          proof_assert remove_min_post(t, result)
           result
         }
       }
@@ -344,19 +304,14 @@ pub fn[T : Compare] insert(
         proof_assert all_lt(l1.model(), y)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert insert_elements_eq(y, x, l.model(), r.model())
-        proof_assert t1.model().eq(t.model().add(x))
-        proof_assert height(t) <= height(t1)
-        proof_assert height(t1) <= height(t) + 1
+        proof_assert insert_post(x, t, t1)
         t1
       } else if y < x {
         let r1 = insert(x, r)
         proof_assert all_gt(y, r1.model())
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert t1.model().eq(t.model().add(x))
-        proof_assert height(t) <= height(t1)
-        proof_assert height(t1) <= height(t) + 1
+        proof_assert insert_post(x, t, t1)
         t1
       } else {
         t
@@ -386,43 +341,29 @@ pub fn[T : Compare] delete(
     Node(l, y, r, _) =>
       if x < y {
         let l1 = delete(x, l)
-        proof_assert all_lt(l1.model(), y)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert delete_left_eq(x, y, l.model(), r.model())
-        proof_assert t1.model().eq(t.model().remove(x))
-        proof_assert height(t1) <= height(t)
-        proof_assert height(t) <= height(t1) + 1
+        proof_assert delete_post(x, t, t1)
         t1
       } else if y < x {
         let r1 = delete(x, r)
-        proof_assert all_gt(y, r1.model())
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert delete_right_eq(x, y, l.model(), r.model())
-        proof_assert t1.model().eq(t.model().remove(x))
-        proof_assert height(t1) <= height(t)
-        proof_assert height(t) <= height(t1) + 1
+        proof_assert delete_post(x, t, t1)
         t1
       } else {
         proof_assert x == y
         match r {
           Empty => {
-            proof_assert l.model().eq(t.model().remove(x))
-            proof_assert height(t) <= height(l) + 1
-            proof_assert height(l) <= height(t)
+            proof_assert delete_post(x, t, l)
             l
           }
           Node(_, _, _, _) => {
             let (s, r1) = remove_min(r)
-            proof_assert y < s
             proof_assert r.model().eq(r1.model().add(s))
-            proof_assert all_lt(l.model(), s)
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
-            proof_assert t1.model().eq(t.model().remove(x))
-            proof_assert height(t1) <= height(t)
-            proof_assert height(t) <= height(t1) + 1
+            proof_assert delete_post(x, t, t1)
             t1
           }
         }

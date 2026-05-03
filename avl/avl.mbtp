@@ -172,16 +172,3 @@ lemma[T : Compare] height_nonneg_lemma(t : Tree[T]) where {
 predicate[T : Compare] elements_subset(t1 : Tree[T], t2 : Tree[T]) {
   ∀ y : T, t1.model().mem(y) → t2.model().mem(y)
 }
-
-predicate[T : Compare] insert_elements_eq(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) {
-  s1.add(b).union(s2).add(a).eq(s1.union(s2).add(a).add(b))
-}
-
-///|
-predicate[T : Compare] delete_left_eq(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) {
-  s1.union(s2).add(y).remove(x).eq(s1.remove(x).union(s2).add(y))
-}
-
-predicate[T : Compare] delete_right_eq(x : T, y : T, s1 : Fset[T], s2 : Fset[T]) {
-  s1.union(s2).add(y).remove(x).eq(s1.union(s2.remove(x)).add(y))
-}
