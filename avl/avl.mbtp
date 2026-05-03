@@ -173,46 +173,6 @@ predicate[T : Compare] elements_subset(t1 : Tree[T], t2 : Tree[T]) {
   ∀ y : T, t1.model().mem(y) → t2.model().mem(y)
 }
 
-predicate[T : Compare] single_rotation_eq(
-  a : T,
-  b : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T]
-) {
-  s1.union(s2.union(s3).add(b)).add(a).eq(
-    s1.union(s2).add(a).union(s3).add(b),
-  )
-}
-
-predicate[T : Compare] double_rotation_eq_lr(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T]
-) {
-  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
-    s1.union(s2.union(s3).add(a)).add(b).union(s4).add(c),
-  )
-}
-
-predicate[T : Compare] double_rotation_eq_rl(
-  a : T,
-  b : T,
-  c : T,
-  s1 : Fset[T],
-  s2 : Fset[T],
-  s3 : Fset[T],
-  s4 : Fset[T]
-) {
-  s1.union(s2).add(b).union(s3.union(s4).add(c)).add(a).eq(
-    s1.union(s2.union(s3).add(a).union(s4).add(c)).add(b),
-  )
-}
-
 predicate[T : Compare] insert_elements_eq(a : T, b : T, s1 : Fset[T], s2 : Fset[T]) {
   s1.add(b).union(s2).add(a).eq(s1.union(s2).add(a).add(b))
 }
