@@ -46,14 +46,8 @@ fn[T : Compare] mk(
   x : T,
   r : Tree[T],
 ) -> Tree[T] where {
-  proof_require: avl_inv(l),
-  proof_require: avl_inv(r),
-  proof_require: all_lt(l.model(), x),
-  proof_require: all_gt(x, r.model()),
-  proof_require: balanced_heights(l, r),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => height(result) == 1 + max2(height(l), height(r)),
+  proof_require: mk_pre(l, x, r),
+  proof_ensure: result => mk_post(l, x, r, result),
 } {
   Node(l, x, r, 1 + max2(height(l), height(r)))
 }
@@ -87,13 +81,8 @@ fn[T : Compare] balance_left_double(
   x : T,
   r : Tree[T],
 ) -> Tree[T] where {
-  proof_require: balance_pre(l, x, r),
-  proof_require: left_heavy(l, r),
-  proof_require: left_double_case(l),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
-  proof_ensure: result => max2(height(l), height(r)) <= height(result),
+  proof_require: left_double_pre(l, x, r),
+  proof_ensure: result => rebalance_post(l, x, r, result),
 } {
   match l {
     Empty => panic()
@@ -115,16 +104,12 @@ fn[T : Compare] balance_left_double(
           proof_assert all_gt(lx, lrl.model())
           proof_assert all_lt(ll.model(), lx) && all_gt(lx, lrl.model())
           let nl = mk(ll, lx, lrl)
-          proof_assert nl.model().eq(ll.model().union(lrl.model()).add(lx))
-          proof_assert height(nl) == 1 + max2(height(ll), height(lrl))
           proof_assert elements_subset(lrr, lr)
           proof_assert all_lt(lrr.model(), x)
           proof_assert all_gt(x, r.model())
           proof_assert -1 <= height(lrr) - height(r) &&
             height(lrr) - height(r) <= 1
           let nr = mk(lrr, x, r)
-          proof_assert nr.model().eq(lrr.model().union(r.model()).add(x))
-          proof_assert height(nr) == 1 + max2(height(lrr), height(r))
           proof_assert all_lt(ll.model(), lrx)
           proof_assert all_lt(lrl.model(), lrx)
           proof_assert all_lt(ll.model().union(lrl.model()), lrx)
@@ -150,7 +135,6 @@ fn[T : Compare] balance_left_double(
             .add(lrx)
             .eq(l.model().union(r.model()).add(x))
           let result = mk(nl, lrx, nr)
-          proof_assert height(result) == 1 + max2(height(nl), height(nr))
           proof_assert height(result) <= 1 + max2(height(l), height(r))
           proof_assert max2(height(l), height(r)) <= height(result)
           result
@@ -171,13 +155,8 @@ fn[T : Compare] balance_right_double(
   x : T,
   r : Tree[T],
 ) -> Tree[T] where {
-  proof_require: balance_pre(l, x, r),
-  proof_require: right_heavy(l, r),
-  proof_require: right_double_case(r),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
-  proof_ensure: result => max2(height(l), height(r)) <= height(result),
+  proof_require: right_double_pre(l, x, r),
+  proof_ensure: result => rebalance_post(l, x, r, result),
 } {
   match r {
     Empty => panic()
@@ -199,13 +178,11 @@ fn[T : Compare] balance_right_double(
           proof_assert all_gt(x, rl.model())
           proof_assert all_lt(l.model(), x) && all_gt(x, rll.model())
           let nl = mk(l, x, rll)
-          proof_assert nl.model().eq(l.model().union(rll.model()).add(x))
           proof_assert elements_subset(rlr, rl)
           proof_assert -1 <= height(rlr) - height(rr) &&
             height(rlr) - height(rr) <= 1
           proof_assert all_lt(rlr.model(), rx) && all_gt(rx, rr.model())
           let nr = mk(rlr, rx, rr)
-          proof_assert nr.model().eq(rlr.model().union(rr.model()).add(rx))
           proof_assert all_lt(l.model(), rlx)
           proof_assert all_lt(rll.model(), rlx)
           proof_assert all_lt(l.model().union(rll.model()), rlx)
@@ -231,7 +208,6 @@ fn[T : Compare] balance_right_double(
             .add(rlx)
             .eq(l.model().union(r.model()).add(x))
           let result = mk(nl, rlx, nr)
-          proof_assert height(result) == 1 + max2(height(nl), height(nr))
           proof_assert height(result) <= 1 + max2(height(l), height(r))
           proof_assert max2(height(l), height(r)) <= height(result)
           result
@@ -253,13 +229,8 @@ fn[T : Compare] balance_left_single(
   x : T,
   r : Tree[T],
 ) -> Tree[T] where {
-  proof_require: balance_pre(l, x, r),
-  proof_require: left_heavy(l, r),
-  proof_require: !left_double_case(l),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
-  proof_ensure: result => max2(height(l), height(r)) <= height(result),
+  proof_require: left_single_pre(l, x, r),
+  proof_ensure: result => rebalance_post(l, x, r, result),
 } {
   match l {
     Empty => panic()
@@ -272,7 +243,6 @@ fn[T : Compare] balance_left_single(
       proof_assert -1 <= height(lr) - height(r) && height(lr) - height(r) <= 1
       proof_assert all_lt(lr.model(), x) && all_gt(x, r.model())
       let nr = mk(lr, x, r)
-      proof_assert nr.model().eq(lr.model().union(r.model()).add(x))
       proof_assert -1 <= height(ll) - height(nr) && height(ll) - height(nr) <= 1
       proof_assert single_rotation_eq(lx, x, ll.model(), lr.model(), r.model())
       proof_assert ll
@@ -297,13 +267,8 @@ fn[T : Compare] balance_right_single(
   x : T,
   r : Tree[T],
 ) -> Tree[T] where {
-  proof_require: balance_pre(l, x, r),
-  proof_require: right_heavy(l, r),
-  proof_require: !right_double_case(r),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
-  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
-  proof_ensure: result => max2(height(l), height(r)) <= height(result),
+  proof_require: right_single_pre(l, x, r),
+  proof_ensure: result => rebalance_post(l, x, r, result),
 } {
   match r {
     Empty => panic()
@@ -316,7 +281,6 @@ fn[T : Compare] balance_right_single(
       proof_assert -1 <= height(l) - height(rl) && height(l) - height(rl) <= 1
       proof_assert all_lt(l.model(), x) && all_gt(x, rl.model())
       let nl = mk(l, x, rl)
-      proof_assert nl.model().eq(l.model().union(rl.model()).add(x))
       proof_assert -1 <= height(nl) - height(rr) && height(nl) - height(rr) <= 1
       proof_assert single_rotation_eq(x, rx, l.model(), rl.model(), rr.model())
       proof_assert nl
@@ -343,13 +307,10 @@ fn[T : Compare] balance(
   r : Tree[T],
 ) -> Tree[T] where {
   proof_require: balance_pre(l, x, r),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(l.model().union(r.model()).add(x)),
+  proof_ensure: result => rebalance_post(l, x, r, result),
   proof_ensure: result => {
     !balanced_heights(l, r) || height(result) == 1 + max2(height(l), height(r))
   },
-  proof_ensure: result => height(result) <= 1 + max2(height(l), height(r)),
-  proof_ensure: result => max2(height(l), height(r)) <= height(result),
 } {
   if height(l) > height(r) + 1 {
     match l {
@@ -389,8 +350,7 @@ fn[T : Compare] remove_min(
   t : Tree[T],
 ) -> (T, Tree[T]) where {
   proof_decrease: t,
-  proof_require: avl_inv(t),
-  proof_require: non_empty(t),
+  proof_require: remove_min_pre(t),
   proof_ensure: result => remove_min_post(t, result),
 } {
   match t {
@@ -456,10 +416,7 @@ pub fn[T : Compare] insert(
 ) -> Tree[T] where {
   proof_decrease: t,
   proof_require: avl_inv(t),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(t.model().add(x)),
-  proof_ensure: result => height(t) <= height(result),
-  proof_ensure: result => height(result) <= height(t) + 1,
+  proof_ensure: result => insert_post(x, t, result),
 } {
   match t {
     Empty => mk(Empty, x, Empty)
@@ -473,11 +430,8 @@ pub fn[T : Compare] insert(
         proof_assert all_lt(l1.model(), y)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert t1.model().eq(l1.model().union(r.model()).add(y))
         proof_assert insert_elements_eq(y, x, l.model(), r.model())
         proof_assert t1.model().eq(t.model().add(x))
-        proof_assert height(t) == 1 + max2(height(l), height(r))
-        proof_assert max2(height(l), height(r)) <= max2(height(l1), height(r))
         proof_assert height(t) <= height(t1)
         proof_assert height(t1) <= height(t) + 1
         t1
@@ -490,10 +444,7 @@ pub fn[T : Compare] insert(
         proof_assert all_gt(y, r1.model())
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert t1.model().eq(l.model().union(r1.model()).add(y))
         proof_assert t1.model().eq(t.model().add(x))
-        proof_assert height(t) == 1 + max2(height(l), height(r))
-        proof_assert max2(height(l), height(r)) <= max2(height(l), height(r1))
         proof_assert height(t) <= height(t1)
         proof_assert height(t1) <= height(t) + 1
         t1
@@ -518,10 +469,7 @@ pub fn[T : Compare] delete(
 ) -> Tree[T] where {
   proof_decrease: t,
   proof_require: avl_inv(t),
-  proof_ensure: result => avl_inv(result),
-  proof_ensure: result => result.model().eq(t.model().remove(x)),
-  proof_ensure: result => height(t) <= height(result) + 1,
-  proof_ensure: result => height(result) <= height(t),
+  proof_ensure: result => delete_post(x, t, result),
 } {
   match t {
     Empty => Empty
@@ -535,10 +483,8 @@ pub fn[T : Compare] delete(
         proof_assert all_lt(l1.model(), y)
         proof_assert balance_pre(l1, y, r)
         let t1 = balance(l1, y, r)
-        proof_assert t1.model().eq(l.model().remove(x).union(r.model()).add(y))
         proof_assert delete_left_eq(x, y, l.model(), r.model())
         proof_assert t1.model().eq(t.model().remove(x))
-        proof_assert height(t) == 1 + max2(height(l), height(r))
         proof_assert height(t1) <= height(t)
         proof_assert height(t) <= height(t1) + 1
         t1
@@ -551,10 +497,8 @@ pub fn[T : Compare] delete(
         proof_assert all_gt(y, r1.model())
         proof_assert balance_pre(l, y, r1)
         let t1 = balance(l, y, r1)
-        proof_assert t1.model().eq(l.model().union(r.model().remove(x)).add(y))
         proof_assert delete_right_eq(x, y, l.model(), r.model())
         proof_assert t1.model().eq(t.model().remove(x))
-        proof_assert height(t) == 1 + max2(height(l), height(r))
         proof_assert height(t1) <= height(t)
         proof_assert height(t) <= height(t1) + 1
         t1
@@ -581,8 +525,6 @@ pub fn[T : Compare] delete(
             proof_assert balance_pre(l, s, r1)
             let t1 = balance(l, s, r1)
             proof_assert t1.model().eq(t.model().remove(x))
-            proof_assert height(t) == 1 + max2(height(l), height(r))
-            proof_assert max2(height(l), height(r)) <= max2(height(l), height(r1)) + 1
             proof_assert height(t1) <= height(t)
             proof_assert height(t) <= height(t1) + 1
             t1
