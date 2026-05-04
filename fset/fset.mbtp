@@ -64,6 +64,11 @@ pub fn[T : Eq] Fset::eq(self : Fset[T], other : Fset[T]) -> Bool {
 }
 
 ///|
+pub impl[T : Eq] Eq for Fset[T] with equal(self : Fset[T], other : Fset[T]) -> Bool {
+  raw_fset_eq(self, other)
+}
+
+///|
 pub fn[T : Eq] Fset::remove(self : Fset[T], x : T) -> Fset[T] {
   raw_fset_remove(x, self)
 }
