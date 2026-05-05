@@ -76,11 +76,27 @@ predicate[T] tree_inv(self : Tree[T], level : Int) where {
 }
 
 ///|
+predicate[T] vector_tree_inv(self : Tree[T], level : Int) {
+  match self {
+    Empty => true
+    _ => tree_inv(self, level)
+  }
+}
+
+///|
+fn[T] vector_tree_model(self : Tree[T], level : Int) -> Seq[T] {
+  match self {
+    Empty => Seq::empty()
+    _ => tree_model(self, level)
+  }
+}
+
+///|
 predicate[T] vector_inv(self : Vector[T]) {
   0 <= self.shift &&
-  tree_inv(self.tree, root_level(self.shift)) &&
+  vector_tree_inv(self.tree, root_level(self.shift)) &&
   @readonlyarray.model(self.tail).length() <= @mathint.int_model(32) &&
-  tree_model(self.tree, root_level(self.shift)).length() ==
+  vector_tree_model(self.tree, root_level(self.shift)).length() ==
   @mathint.int_model(self.size - self.tail.length()) &&
   @mathint.int_model(self.size) == self.model().length()
 }
@@ -117,7 +133,7 @@ fn[T] tree_model(self : Tree[T], level : Int) -> Seq[T] where {
 
 ///|
 fn[T] Vector::model(self : Vector[T]) -> Seq[T] {
-  tree_model(self.tree, root_level(self.shift)).append(
+  vector_tree_model(self.tree, root_level(self.shift)).append(
     @readonlyarray.model(self.tail),
   )
 }
@@ -188,8 +204,14 @@ predicate[T] tree_set_post(
   tree_inv(self, root_level(shift)) &&
   tree_valid_index_model(self, shift, index) &&
   tree_inv(result, root_level(shift)) &&
+  vector_tree_inv(result, root_level(shift)) &&
   tree_model(result, root_level(shift)) ==
-    tree_model(self, root_level(shift)).set(@mathint.int_model(index), value)
+    tree_model(self, root_level(shift)).set(@mathint.int_model(index), value) &&
+  vector_tree_model(result, root_level(shift)) ==
+    vector_tree_model(self, root_level(shift)).set(
+      @mathint.int_model(index),
+      value,
+    )
 }
 
 ///|
@@ -205,8 +227,91 @@ predicate[T] append_right_leaf_post(
       @mathint.int_model(0) < @readonlyarray.model(leaf).length() &&
       @readonlyarray.model(leaf).length() <= @mathint.int_model(32) &&
       tree_inv(new_tree, root_level(new_shift)) &&
+      vector_tree_inv(new_tree, root_level(new_shift)) &&
       tree_model(new_tree, root_level(new_shift)) ==
-        tree_model(self, root_level(shift)).append(@readonlyarray.model(leaf))
+        tree_model(self, root_level(shift)).append(@readonlyarray.model(leaf)) &&
+      vector_tree_model(new_tree, root_level(new_shift)) ==
+        vector_tree_model(self, root_level(shift)).append(
+          @readonlyarray.model(leaf),
+        )
+  }
+}
+
+///|
+fn[T] tree_last_leaf_model(self : Tree[T], level : Int) -> Seq[T] where {
+  proof_decrease: tree_measure(level),
+} {
+  match self {
+    Empty => Seq::empty()
+    Leaf(values) => @readonlyarray.model(values)
+    Node(children, _sizes) =>
+      if level <= 0 ||
+        readonly_tree_model(children).length() == @mathint.int_model(0) ||
+        @mathint.int_model(32) < readonly_tree_model(children).length() {
+        Seq::empty()
+      } else {
+        tree_last_leaf_model(
+          readonly_tree_model(children).get(
+            readonly_tree_model(children).length() - @mathint.int_model(1),
+          ),
+          level - 1,
+        )
+      }
+  }
+}
+
+///|
+fn[T] tree_without_last_leaf_model(self : Tree[T], level : Int) -> Seq[T] {
+  tree_model(self, level).sub(
+    @mathint.int_model(0),
+    tree_model(self, level).length() - tree_last_leaf_model(self, level).length(),
+  )
+}
+
+///|
+predicate[T] last_leaf_elements_post(
+  self : Tree[T],
+  shift : Int,
+  result : ReadOnlyArray[T],
+) {
+  tree_inv(self, root_level(shift)) &&
+  @mathint.int_model(0) < tree_model(self, root_level(shift)).length() &&
+  @readonlyarray.model(result) ==
+    tree_last_leaf_model(self, root_level(shift)) &&
+  @mathint.int_model(0) < @readonlyarray.model(result).length() &&
+  @readonlyarray.model(result).length() <= @mathint.int_model(32) &&
+  tree_model(self, root_level(shift)) ==
+    tree_without_last_leaf_model(self, root_level(shift)).append(
+      @readonlyarray.model(result),
+    )
+}
+
+///|
+predicate[T] pop_rightmost_leaf_post(
+  self : Tree[T],
+  shift : Int,
+  result : Tree[T],
+) {
+  tree_inv(self, root_level(shift)) &&
+  @mathint.int_model(0) < tree_model(self, root_level(shift)).length() &&
+  vector_tree_inv(result, root_level(shift)) &&
+  vector_tree_model(result, root_level(shift)) ==
+    tree_without_last_leaf_model(self, root_level(shift))
+}
+
+///|
+predicate[T] shrink_top_post(
+  self : Tree[T],
+  shift : Int,
+  result : (Tree[T], Int),
+) {
+  match result {
+    (new_tree, new_shift) =>
+      vector_tree_inv(self, root_level(shift)) &&
+      0 <= new_shift &&
+      vector_tree_inv(new_tree, root_level(new_shift)) &&
+      vector_tree_model(new_tree, root_level(new_shift)) ==
+        vector_tree_model(self, root_level(shift))
   }
 }
 
@@ -288,7 +393,7 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
     (
       @readonlyarray.model(self.tail).length() < @mathint.int_model(32) &&
       result.model() ==
-        tree_model(self.tree, root_level(self.shift)).append(
+        vector_tree_model(self.tree, root_level(self.shift)).append(
           @readonlyarray.model(self.tail).append(Seq::singleton(value)),
       )
     ) ||
@@ -300,7 +405,7 @@ predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
             @readonlyarray.model(self.tail).append(Seq::singleton(value))
         _ =>
           result.model() ==
-            tree_model(self.tree, root_level(self.shift)).append(
+            vector_tree_model(self.tree, root_level(self.shift)).append(
               @readonlyarray.model(self.tail),
             ).append(
               Seq::singleton(value),
@@ -349,7 +454,7 @@ predicate[T] pop_post_model(self : Vector[T], result : Option[Vector[T]]) {
           @mathint.int_model(1) < @readonlyarray.model(self.tail).length() &&
           vector_inv(value) &&
           value.model() ==
-            tree_model(self.tree, root_level(self.shift)).append(
+            vector_tree_model(self.tree, root_level(self.shift)).append(
               @readonlyarray.model(self.tail).sub(
                 @mathint.int_model(0),
                 @readonlyarray.model(self.tail).length() - @mathint.int_model(1),

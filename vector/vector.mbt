@@ -10,10 +10,26 @@ fn[T] Vector::tail_offset(
 ///|
 #as_free_fn
 pub fn[T] Vector::new() -> Vector[T] where {
-  proof_axiomatized: true,
   proof_ensure: result => new_post(result),
 } {
-  { tree: Tree::empty(), tail: [], size: 0, shift: 0 }
+  let result = { tree: Tree::empty(), tail: [], size: 0, shift: 0 }
+  proof_assert result.size == 0
+  proof_assert result.shift == 0
+  proof_assert result.tail.length() == 0
+  proof_assert 0 <= result.shift
+  proof_assert result.size - result.tail.length() == 0
+  proof_assert @mathint.int_model(result.size) == @mathint.int_model(0)
+  proof_assert @mathint.int_model(result.size - result.tail.length()) ==
+    @mathint.int_model(0)
+  proof_assert vector_tree_inv(result.tree, root_level(result.shift))
+  proof_assert vector_tree_model(result.tree, root_level(result.shift)).length() ==
+    @mathint.int_model(0)
+  proof_assert @readonlyarray.model(result.tail).length() ==
+    @mathint.int_model(0)
+  proof_assert result.model().length() == @mathint.int_model(0)
+  proof_assert vector_inv(result)
+  proof_assert new_post(result)
+  result
 }
 
 ///|
@@ -52,6 +68,8 @@ pub fn[T : Eq] Vector::at(
   if index >= self.tail_offset() {
     self.tail[index - self.tail_offset()]
   } else {
+    proof_assert !empty_tree_post(self.tree)
+    proof_assert tree_inv(self.tree, root_level(self.shift))
     self.tree.get(index, self.shift)
   }
 }
@@ -163,51 +181,117 @@ pub fn[T] Vector::push(
 fn[T] Vector::pop_singleton_tail(
   self : Vector[T],
 ) -> Vector[T] where {
-  proof_axiomatized: true,
   proof_require: vector_inv(self),
   proof_require: self.tail.length() == 1,
   proof_require: 1 < self.size,
   proof_ensure: result => pop_singleton_tail_post(self, result),
 } {
-  let new_tail = self.tree.last_leaf_elements()
-  let (tree, shift) = self.tree
-    .pop_rightmost_leaf(self.shift)
-    .shrink_top(self.shift)
-  { tree, tail: new_tail, size: self.size - 1, shift }
+  proof_assert @readonlyarray.model(self.tail).length() == @mathint.int_model(1)
+  proof_assert @mathint.int_model(1) < @mathint.int_model(self.size)
+  proof_assert vector_tree_model(self.tree, root_level(self.shift)).length() ==
+    @mathint.int_model(self.size - self.tail.length())
+  proof_assert !empty_tree_post(self.tree)
+  proof_assert tree_inv(self.tree, root_level(self.shift))
+  proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+    tree_model(self.tree, root_level(self.shift))
+  proof_assert tree_model(self.tree, root_level(self.shift)).length() ==
+    vector_tree_model(self.tree, root_level(self.shift)).length()
+  proof_assert @mathint.int_model(0) <
+    tree_model(self.tree, root_level(self.shift)).length()
+  let new_tail = self.tree.last_leaf_elements(self.shift)
+  proof_assert last_leaf_elements_post(self.tree, self.shift, new_tail)
+  let stripped = self.tree.pop_rightmost_leaf(self.shift)
+  proof_assert pop_rightmost_leaf_post(self.tree, self.shift, stripped)
+  let (tree, shift) = stripped.shrink_top(self.shift)
+  let result = { tree, tail: new_tail, size: self.size - 1, shift }
+  proof_assert shrink_top_post(stripped, self.shift, (tree, shift))
+  proof_assert result.model() == tree_model(self.tree, root_level(self.shift))
+  proof_assert vector_inv(result)
+  proof_assert pop_singleton_tail_post(self, result)
+  result
 }
 
 ///|
 fn[T] Vector::pop_tree_only(
   self : Vector[T],
 ) -> Vector[T] where {
-  proof_axiomatized: true,
   proof_require: vector_inv(self),
   proof_require: self.tail.length() == 0,
   proof_require: 1 < self.size,
   proof_ensure: result => pop_tree_only_post(self, result),
 } {
-  let last_leaf = self.tree.last_leaf_elements()
-  if last_leaf.length() > 1 {
-    let (tree, shift) = self.tree
-      .pop_rightmost_leaf(self.shift)
-      .shrink_top(self.shift)
-    {
-      tree,
-      tail: immutable_slice(last_leaf, 0, last_leaf.length() - 1),
-      size: self.size - 1,
-      shift,
-    }
-  } else {
-    let stripped = self.tree.pop_rightmost_leaf(self.shift)
-    let (promoted_tree, promoted_shift) = stripped.shrink_top(self.shift)
-    if promoted_tree is Empty {
-      new()
-    } else {
-      let new_tail = promoted_tree.last_leaf_elements()
-      let (tree, shift) = promoted_tree
-        .pop_rightmost_leaf(promoted_shift)
-        .shrink_top(promoted_shift)
-      { tree, tail: new_tail, size: self.size - 1, shift }
+  proof_assert @readonlyarray.model(self.tail).length() == @mathint.int_model(0)
+  proof_assert @mathint.int_model(1) < @mathint.int_model(self.size)
+  proof_assert vector_tree_model(self.tree, root_level(self.shift)).length() ==
+    @mathint.int_model(self.size - self.tail.length())
+  match self.tree {
+    Empty => panic()
+    _ => {
+      proof_assert tree_inv(self.tree, root_level(self.shift))
+      proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+        tree_model(self.tree, root_level(self.shift))
+      proof_assert tree_model(self.tree, root_level(self.shift)).length() ==
+        vector_tree_model(self.tree, root_level(self.shift)).length()
+      proof_assert @mathint.int_model(0) <
+        tree_model(self.tree, root_level(self.shift)).length()
+      let last_leaf = self.tree.last_leaf_elements(self.shift)
+      proof_assert last_leaf_elements_post(self.tree, self.shift, last_leaf)
+      if last_leaf.length() > 1 {
+        let stripped = self.tree.pop_rightmost_leaf(self.shift)
+        proof_assert pop_rightmost_leaf_post(self.tree, self.shift, stripped)
+        let (tree, shift) = stripped.shrink_top(self.shift)
+        proof_assert shrink_top_post(stripped, self.shift, (tree, shift))
+        let result = {
+          tree,
+          tail: immutable_slice(last_leaf, 0, last_leaf.length() - 1),
+          size: self.size - 1,
+          shift,
+        }
+        proof_assert vector_inv(result)
+        proof_assert pop_tree_only_post(self, result)
+        result
+      } else {
+        let stripped = self.tree.pop_rightmost_leaf(self.shift)
+        proof_assert pop_rightmost_leaf_post(self.tree, self.shift, stripped)
+        let (promoted_tree, promoted_shift) = stripped.shrink_top(self.shift)
+        proof_assert shrink_top_post(
+          stripped,
+          self.shift,
+          (promoted_tree, promoted_shift),
+        )
+        match promoted_tree {
+          Empty => new()
+          _ => {
+            proof_assert !empty_tree_post(promoted_tree)
+            proof_assert tree_inv(promoted_tree, root_level(promoted_shift))
+            proof_assert vector_tree_model(
+                promoted_tree,
+                root_level(promoted_shift),
+              ) ==
+              tree_model(promoted_tree, root_level(promoted_shift))
+            proof_assert @mathint.int_model(0) <
+              tree_model(promoted_tree, root_level(promoted_shift)).length()
+            let new_tail = promoted_tree.last_leaf_elements(promoted_shift)
+            proof_assert last_leaf_elements_post(
+              promoted_tree, promoted_shift, new_tail,
+            )
+            let stripped = promoted_tree.pop_rightmost_leaf(promoted_shift)
+            proof_assert pop_rightmost_leaf_post(
+              promoted_tree, promoted_shift, stripped,
+            )
+            let (tree, shift) = stripped.shrink_top(promoted_shift)
+            proof_assert shrink_top_post(
+              stripped,
+              promoted_shift,
+              (tree, shift),
+            )
+            let result = { tree, tail: new_tail, size: self.size - 1, shift }
+            proof_assert vector_inv(result)
+            proof_assert pop_tree_only_post(self, result)
+            result
+          }
+        }
+      }
     }
   }
 }
