@@ -60,6 +60,9 @@ fn[T] Tree::shrink_top(
   proof_require: vector_tree_inv(self, root_level(shift)),
   proof_ensure: result => shrink_top_post(self, shift, result),
 } {
+  // `moon prove` does not currently support this cursor-style loop in
+  // untrusted contracted bodies. A recursive version lowers, but then runs
+  // into child model transport obligations for single-child nodes.
   let mut current_shift = shift
   for tree = self {
     match tree {
