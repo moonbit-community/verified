@@ -90,14 +90,22 @@ fn[T : Compare] balance_left_double(
       match lr {
         Empty => panic()
         Node(lrl, lrx, lrr, _) => {
+          proof_assert lrx < x
+          proof_assert all_gt(lrx, lrr.model())
+          proof_assert all_gt(x, r.model())
+          proof_assert all_gt(lrx, r.model())
           let nl = mk(ll, lx, lrl)
           let nr = mk(lrr, x, r)
+          proof_assert mk_post(ll, lx, lrl, nl)
+          proof_assert mk_post(lrr, x, r, nr)
           proof_assert all_lt(nl.model(), lrx)
           proof_assert all_gt(lrx, nr.model())
-          proof_assert (
-            nl.model().union(nr.model()).add(lrx) ==
+          proof_assert nl.model() == ll.model().union(lrl.model()).add(lx)
+          proof_assert nr.model() == lrr.model().union(r.model()).add(x)
+          proof_assert l.model() == ll.model().union(lr.model()).add(lx)
+          proof_assert lr.model() == lrl.model().union(lrr.model()).add(lrx)
+          proof_assert nl.model().union(nr.model()).add(lrx) ==
             l.model().union(r.model()).add(x)
-          )
           let result = mk(nl, lrx, nr)
           proof_assert rebalance_post(l, x, r, result)
           result
@@ -133,12 +141,16 @@ fn[T : Compare] balance_right_double(
           proof_assert all_gt(rlx, rr.model())
           let nl = mk(l, x, rll)
           let nr = mk(rlr, rx, rr)
+          proof_assert mk_post(l, x, rll, nl)
+          proof_assert mk_post(rlr, rx, rr, nr)
           proof_assert all_lt(nl.model(), rlx)
           proof_assert all_gt(rlx, nr.model())
-          proof_assert (
-            nl.model().union(nr.model()).add(rlx) ==
+          proof_assert nl.model() == l.model().union(rll.model()).add(x)
+          proof_assert nr.model() == rlr.model().union(rr.model()).add(rx)
+          proof_assert r.model() == rl.model().union(rr.model()).add(rx)
+          proof_assert rl.model() == rll.model().union(rlr.model()).add(rlx)
+          proof_assert nl.model().union(nr.model()).add(rlx) ==
             l.model().union(r.model()).add(x)
-          )
           let result = mk(nl, rlx, nr)
           proof_assert rebalance_post(l, x, r, result)
           result
