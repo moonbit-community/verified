@@ -6,6 +6,18 @@ fn[T] Tree::empty() -> Tree[T] where {
 }
 
 ///|
+fn[T] Tree::from_leaf(
+  values : ReadOnlyArray[T],
+) -> Tree[T] where {
+  proof_axiomatized: true,
+  proof_require: @mathint.int_model(0) < @readonlyarray.model(values).length(),
+  proof_require: @readonlyarray.model(values).length() <= @mathint.int_model(32),
+  proof_ensure: result => leaf_tree_post(values, result),
+} {
+  Leaf(values)
+}
+
+///|
 fn[T] new_branch_left(leaf : ReadOnlyArray[T], shift : Int) -> Tree[T] {
   match shift {
     0 => Leaf(leaf)

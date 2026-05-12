@@ -226,6 +226,7 @@ predicate[T] append_right_leaf_post(
       tree_inv(self, root_level(shift)) &&
       @mathint.int_model(0) < @readonlyarray.model(leaf).length() &&
       @readonlyarray.model(leaf).length() <= @mathint.int_model(32) &&
+      0 <= new_shift &&
       tree_inv(new_tree, root_level(new_shift)) &&
       vector_tree_inv(new_tree, root_level(new_shift)) &&
       tree_model(new_tree, root_level(new_shift)) ==
@@ -321,6 +322,16 @@ predicate[T] empty_tree_post(result : Tree[T]) {
     Empty => true
     _ => false
   }
+}
+
+///|
+predicate[T] leaf_tree_post(values : ReadOnlyArray[T], result : Tree[T]) {
+  @mathint.int_model(0) < @readonlyarray.model(values).length() &&
+  @readonlyarray.model(values).length() <= @mathint.int_model(32) &&
+  tree_inv(result, 0) &&
+  vector_tree_inv(result, 0) &&
+  tree_model(result, 0) == @readonlyarray.model(values) &&
+  vector_tree_model(result, 0) == @readonlyarray.model(values)
 }
 
 ///|
