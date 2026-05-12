@@ -226,6 +226,7 @@ predicate[T] append_right_leaf_post(
       tree_inv(self, root_level(shift)) &&
       @mathint.int_model(0) < @readonlyarray.model(leaf).length() &&
       @readonlyarray.model(leaf).length() <= @mathint.int_model(32) &&
+      0 <= new_shift &&
       tree_inv(new_tree, root_level(new_shift)) &&
       vector_tree_inv(new_tree, root_level(new_shift)) &&
       tree_model(new_tree, root_level(new_shift)) ==
@@ -324,6 +325,16 @@ predicate[T] empty_tree_post(result : Tree[T]) {
 }
 
 ///|
+predicate[T] leaf_tree_post(values : ReadOnlyArray[T], result : Tree[T]) {
+  @mathint.int_model(0) < @readonlyarray.model(values).length() &&
+  @readonlyarray.model(values).length() <= @mathint.int_model(32) &&
+  tree_inv(result, 0) &&
+  vector_tree_inv(result, 0) &&
+  tree_model(result, 0) == @readonlyarray.model(values) &&
+  vector_tree_model(result, 0) == @readonlyarray.model(values)
+}
+
+///|
 predicate[T] new_post(result : Vector[T]) {
   vector_inv(result) && result.model().length() == @mathint.int_model(0)
 }
@@ -389,30 +400,7 @@ predicate[T] set_post_model(
 predicate[T] push_post_model(self : Vector[T], value : T, result : Vector[T]) {
   vector_inv(self) &&
   vector_inv(result) &&
-  (
-    (
-      @readonlyarray.model(self.tail).length() < @mathint.int_model(32) &&
-      result.model() ==
-        vector_tree_model(self.tree, root_level(self.shift)).append(
-          @readonlyarray.model(self.tail).append(Seq::singleton(value)),
-      )
-    ) ||
-    (
-      @mathint.int_model(32) <= @readonlyarray.model(self.tail).length() &&
-      match self.tree {
-        Empty =>
-          result.model() ==
-            @readonlyarray.model(self.tail).append(Seq::singleton(value))
-        _ =>
-          result.model() ==
-            vector_tree_model(self.tree, root_level(self.shift)).append(
-              @readonlyarray.model(self.tail),
-            ).append(
-              Seq::singleton(value),
-            )
-      }
-    )
-  )
+  result.model() == self.model().append(Seq::singleton(value))
 }
 
 ///|
@@ -421,7 +409,11 @@ predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
   @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
   @mathint.int_model(1) < self.model().length() &&
   vector_inv(result) &&
-  result.model() == tree_model(self.tree, root_level(self.shift))
+  result.model() ==
+    self.model().sub(
+      @mathint.int_model(0),
+      self.model().length() - @mathint.int_model(1),
+    )
 }
 
 ///|
@@ -444,31 +436,11 @@ predicate[T] pop_post_model(self : Vector[T], result : Option[Vector[T]]) {
     None => self.model().length() == @mathint.int_model(0)
     Some(value) =>
       @mathint.int_model(0) < self.model().length() &&
-      (
-        (
-          self.model().length() == @mathint.int_model(1) &&
-          vector_inv(value) &&
-          value.model().length() == @mathint.int_model(0)
-        ) ||
-        (
-          @mathint.int_model(1) < @readonlyarray.model(self.tail).length() &&
-          vector_inv(value) &&
-          value.model() ==
-            vector_tree_model(self.tree, root_level(self.shift)).append(
-              @readonlyarray.model(self.tail).sub(
-                @mathint.int_model(0),
-                @readonlyarray.model(self.tail).length() - @mathint.int_model(1),
-              ),
-            )
-        ) ||
-        (
-          @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
-          pop_singleton_tail_post(self, value)
-        ) ||
-        (
-          @readonlyarray.model(self.tail).length() == @mathint.int_model(0) &&
-          pop_tree_only_post(self, value)
+      vector_inv(value) &&
+      value.model() ==
+        self.model().sub(
+          @mathint.int_model(0),
+          self.model().length() - @mathint.int_model(1),
         )
-      )
   }
 }

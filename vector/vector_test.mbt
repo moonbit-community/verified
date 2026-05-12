@@ -116,3 +116,30 @@ test "observational sequences" {
   let after_pop = after_set.pop().unwrap().pop().unwrap()
   assert_eq(snapshot(after_pop), [0, 1, 2, 30, 4, 5, 6, 7, 8, 9])
 }
+
+///|
+test "multi-level tree lookup update and pop" {
+  let values = build_range(1100)
+  assert_eq(values.length(), 1100)
+  assert_eq(values[0], 0)
+  assert_eq(values[31], 31)
+  assert_eq(values[32], 32)
+  assert_eq(values[1023], 1023)
+  assert_eq(values[1024], 1024)
+  assert_eq(values[1099], 1099)
+
+  let updated = values.set(17, 1700).set(777, 7770).set(1090, 10900)
+  assert_eq(updated[17], 1700)
+  assert_eq(updated[777], 7770)
+  assert_eq(updated[1090], 10900)
+  assert_eq(updated[1099], 1099)
+
+  let mut shrunk = updated
+  for _ in 0..<80 {
+    shrunk = shrunk.pop().unwrap()
+  }
+  assert_eq(shrunk.length(), 1020)
+  assert_eq(shrunk[17], 1700)
+  assert_eq(shrunk[777], 7770)
+  assert_eq(shrunk[1019], 1019)
+}

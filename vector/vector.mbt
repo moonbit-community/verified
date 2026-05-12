@@ -65,12 +65,28 @@ pub fn[T : Eq] Vector::at(
   if !(index >= 0 && index < self.size) {
     panic()
   }
-  if index >= self.tail_offset() {
-    self.tail[index - self.tail_offset()]
+  let tail_offset = self.tail_offset()
+  if index >= tail_offset {
+    let result = self.tail[index - tail_offset]
+    proof_assert tail_offset_post(self, tail_offset)
+    proof_assert result == self.model().get(@mathint.int_model(index))
+    proof_assert at_post(self, index, result)
+    result
   } else {
-    proof_assert !empty_tree_post(self.tree)
-    proof_assert tree_inv(self.tree, root_level(self.shift))
-    self.tree.get(index, self.shift)
+    match self.tree {
+      Empty => panic()
+      _ => {
+        proof_assert tree_inv(self.tree, root_level(self.shift))
+        proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+          tree_model(self.tree, root_level(self.shift))
+        proof_assert tree_valid_index_model(self.tree, self.shift, index)
+        let result = self.tree.get(index, self.shift)
+        proof_assert tree_get_post(self.tree, self.shift, index, result)
+        proof_assert result == self.model().get(@mathint.int_model(index))
+        proof_assert at_post(self, index, result)
+        result
+      }
+    }
   }
 }
 
@@ -118,11 +134,31 @@ pub fn[T] Vector::set(
   }
   let tail_len = self.tail.length()
   if tail_len == 0 {
-    {
-      tree: self.tree.set(index, self.shift, value),
-      tail: self.tail,
-      size: self.size,
-      shift: self.shift,
+    match self.tree {
+      Empty => panic()
+      _ => {
+        proof_assert tree_inv(self.tree, root_level(self.shift))
+        proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+          tree_model(self.tree, root_level(self.shift))
+        proof_assert tree_valid_index_model(self.tree, self.shift, index)
+        let new_tree = self.tree.set(index, self.shift, value)
+        proof_assert tree_set_post(
+          self.tree,
+          self.shift,
+          index,
+          value,
+          new_tree,
+        )
+        let result = {
+          tree: new_tree,
+          tail: self.tail,
+          size: self.size,
+          shift: self.shift,
+        }
+        proof_assert vector_inv(result)
+        proof_assert set_post_model(self, index, value, result)
+        result
+      }
     }
   } else {
     let tail_offset = self.tail_offset()
@@ -134,11 +170,31 @@ pub fn[T] Vector::set(
         shift: self.shift,
       }
     } else {
-      {
-        tree: self.tree.set(index, self.shift, value),
-        tail: self.tail,
-        size: self.size,
-        shift: self.shift,
+      match self.tree {
+        Empty => panic()
+        _ => {
+          proof_assert tree_inv(self.tree, root_level(self.shift))
+          proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+            tree_model(self.tree, root_level(self.shift))
+          proof_assert tree_valid_index_model(self.tree, self.shift, index)
+          let new_tree = self.tree.set(index, self.shift, value)
+          proof_assert tree_set_post(
+            self.tree,
+            self.shift,
+            index,
+            value,
+            new_tree,
+          )
+          let result = {
+            tree: new_tree,
+            tail: self.tail,
+            size: self.size,
+            shift: self.shift,
+          }
+          proof_assert vector_inv(result)
+          proof_assert set_post_model(self, index, value, result)
+          result
+        }
       }
     }
   }
@@ -149,29 +205,82 @@ pub fn[T] Vector::push(
   self : Vector[T],
   value : T,
 ) -> Vector[T] where {
-  proof_axiomatized: true,
   proof_require: vector_inv(self),
   proof_ensure: result => push_post_model(self, value, result),
 } {
   if self.tail.length() < 32 {
-    {
+    let new_tail = immutable_push(self.tail, value)
+    proof_assert immutable_push_post(self.tail, value, new_tail)
+    let result = {
       tree: self.tree,
-      tail: immutable_push(self.tail, value),
+      tail: new_tail,
       size: self.size + 1,
       shift: self.shift,
     }
+    proof_assert result.model() == self.model().append(Seq::singleton(value))
+    proof_assert vector_inv(result)
+    proof_assert push_post_model(self, value, result)
+    result
   } else {
     match self.tree {
-      Empty =>
-        {
-          tree: Leaf(self.tail),
-          tail: immutable_push([], value),
+      Empty => {
+        let empty_tail : ReadOnlyArray[T] = []
+        let new_tail = immutable_push(empty_tail, value)
+        proof_assert immutable_push_post(empty_tail, value, new_tail)
+        proof_assert @readonlyarray.model(self.tail).length() <=
+          @mathint.int_model(32)
+        proof_assert @mathint.int_model(32) <=
+          @readonlyarray.model(self.tail).length()
+        proof_assert @readonlyarray.model(self.tail).length() ==
+          @mathint.int_model(32)
+        proof_assert @mathint.int_model(0) <
+          @readonlyarray.model(self.tail).length()
+        let new_tree = Tree::from_leaf(self.tail)
+        proof_assert leaf_tree_post(self.tail, new_tree)
+        proof_assert root_level(0) == 0
+        proof_assert tree_inv(new_tree, 0)
+        proof_assert tree_inv(new_tree, root_level(0))
+        let result = {
+          tree: new_tree,
+          tail: new_tail,
           size: self.size + 1,
           shift: 0,
         }
+        proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+          Seq::empty()
+        proof_assert self.model() == @readonlyarray.model(self.tail)
+        proof_assert @readonlyarray.model(empty_tail) == Seq::empty()
+        proof_assert @readonlyarray.model(new_tail) == Seq::singleton(value)
+        proof_assert vector_tree_model(new_tree, root_level(0)) ==
+          @readonlyarray.model(self.tail)
+        proof_assert result.model() ==
+          @readonlyarray.model(self.tail).append(Seq::singleton(value))
+        proof_assert result.model() ==
+          self.model().append(Seq::singleton(value))
+        proof_assert vector_inv(result)
+        proof_assert push_post_model(self, value, result)
+        result
+      }
       _ => {
         let (tree, shift) = self.tree.append_right_leaf(self.shift, self.tail)
-        { tree, tail: immutable_push([], value), size: self.size + 1, shift }
+        proof_assert append_right_leaf_post(
+          self.tree,
+          self.shift,
+          self.tail,
+          (tree, shift),
+        )
+        let empty_tail : ReadOnlyArray[T] = []
+        let new_tail = immutable_push(empty_tail, value)
+        proof_assert immutable_push_post(empty_tail, value, new_tail)
+        proof_assert 0 <= shift
+        proof_assert @readonlyarray.model(empty_tail) == Seq::empty()
+        proof_assert @readonlyarray.model(new_tail) == Seq::singleton(value)
+        let result = { tree, tail: new_tail, size: self.size + 1, shift }
+        proof_assert result.model() ==
+          self.model().append(Seq::singleton(value))
+        proof_assert vector_inv(result)
+        proof_assert push_post_model(self, value, result)
+        result
       }
     }
   }
@@ -206,6 +315,10 @@ fn[T] Vector::pop_singleton_tail(
   let result = { tree, tail: new_tail, size: self.size - 1, shift }
   proof_assert shrink_top_post(stripped, self.shift, (tree, shift))
   proof_assert result.model() == tree_model(self.tree, root_level(self.shift))
+  proof_assert result.model() ==
+    self
+    .model()
+    .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
   proof_assert vector_inv(result)
   proof_assert pop_singleton_tail_post(self, result)
   result
@@ -304,19 +417,49 @@ pub fn[T] Vector::pop(
   proof_ensure: result => pop_post_model(self, result),
 } {
   if self.size == 0 {
+    proof_assert self.model().length() == @mathint.int_model(0)
+    proof_assert pop_post_model(self, None)
     None
   } else if self.size == 1 {
-    Some(new())
+    let result = new()
+    proof_assert new_post(result)
+    proof_assert @mathint.int_model(0) < self.model().length()
+    proof_assert result.model() ==
+      self
+      .model()
+      .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else if self.tail.length() > 1 {
-    Some({
+    let new_tail = immutable_slice(self.tail, 0, self.tail.length() - 1)
+    proof_assert immutable_slice_post(
+      self.tail,
+      0,
+      self.tail.length() - 1,
+      new_tail,
+    )
+    let result = {
       tree: self.tree,
-      tail: immutable_slice(self.tail, 0, self.tail.length() - 1),
+      tail: new_tail,
       size: self.size - 1,
       shift: self.shift,
-    })
+    }
+    proof_assert vector_inv(result)
+    proof_assert result.model() ==
+      self
+      .model()
+      .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else if self.tail.length() == 1 {
-    Some(self.pop_singleton_tail())
+    let result = self.pop_singleton_tail()
+    proof_assert pop_singleton_tail_post(self, result)
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else {
-    Some(self.pop_tree_only())
+    let result = self.pop_tree_only()
+    proof_assert pop_tree_only_post(self, result)
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   }
 }
