@@ -315,6 +315,10 @@ fn[T] Vector::pop_singleton_tail(
   let result = { tree, tail: new_tail, size: self.size - 1, shift }
   proof_assert shrink_top_post(stripped, self.shift, (tree, shift))
   proof_assert result.model() == tree_model(self.tree, root_level(self.shift))
+  proof_assert result.model() ==
+    self
+    .model()
+    .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
   proof_assert vector_inv(result)
   proof_assert pop_singleton_tail_post(self, result)
   result
@@ -413,19 +417,49 @@ pub fn[T] Vector::pop(
   proof_ensure: result => pop_post_model(self, result),
 } {
   if self.size == 0 {
+    proof_assert self.model().length() == @mathint.int_model(0)
+    proof_assert pop_post_model(self, None)
     None
   } else if self.size == 1 {
-    Some(new())
+    let result = new()
+    proof_assert new_post(result)
+    proof_assert @mathint.int_model(0) < self.model().length()
+    proof_assert result.model() ==
+      self
+      .model()
+      .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else if self.tail.length() > 1 {
-    Some({
+    let new_tail = immutable_slice(self.tail, 0, self.tail.length() - 1)
+    proof_assert immutable_slice_post(
+      self.tail,
+      0,
+      self.tail.length() - 1,
+      new_tail,
+    )
+    let result = {
       tree: self.tree,
-      tail: immutable_slice(self.tail, 0, self.tail.length() - 1),
+      tail: new_tail,
       size: self.size - 1,
       shift: self.shift,
-    })
+    }
+    proof_assert vector_inv(result)
+    proof_assert result.model() ==
+      self
+      .model()
+      .sub(@mathint.int_model(0), self.model().length() - @mathint.int_model(1))
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else if self.tail.length() == 1 {
-    Some(self.pop_singleton_tail())
+    let result = self.pop_singleton_tail()
+    proof_assert pop_singleton_tail_post(self, result)
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   } else {
-    Some(self.pop_tree_only())
+    let result = self.pop_tree_only()
+    proof_assert pop_tree_only_post(self, result)
+    proof_assert pop_post_model(self, Some(result))
+    Some(result)
   }
 }

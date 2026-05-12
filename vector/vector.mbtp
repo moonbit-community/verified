@@ -409,7 +409,11 @@ predicate[T] pop_singleton_tail_post(self : Vector[T], result : Vector[T]) {
   @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
   @mathint.int_model(1) < self.model().length() &&
   vector_inv(result) &&
-  result.model() == tree_model(self.tree, root_level(self.shift))
+  result.model() ==
+    self.model().sub(
+      @mathint.int_model(0),
+      self.model().length() - @mathint.int_model(1),
+    )
 }
 
 ///|
@@ -432,31 +436,11 @@ predicate[T] pop_post_model(self : Vector[T], result : Option[Vector[T]]) {
     None => self.model().length() == @mathint.int_model(0)
     Some(value) =>
       @mathint.int_model(0) < self.model().length() &&
-      (
-        (
-          self.model().length() == @mathint.int_model(1) &&
-          vector_inv(value) &&
-          value.model().length() == @mathint.int_model(0)
-        ) ||
-        (
-          @mathint.int_model(1) < @readonlyarray.model(self.tail).length() &&
-          vector_inv(value) &&
-          value.model() ==
-            vector_tree_model(self.tree, root_level(self.shift)).append(
-              @readonlyarray.model(self.tail).sub(
-                @mathint.int_model(0),
-                @readonlyarray.model(self.tail).length() - @mathint.int_model(1),
-              ),
-            )
-        ) ||
-        (
-          @readonlyarray.model(self.tail).length() == @mathint.int_model(1) &&
-          pop_singleton_tail_post(self, value)
-        ) ||
-        (
-          @readonlyarray.model(self.tail).length() == @mathint.int_model(0) &&
-          pop_tree_only_post(self, value)
+      vector_inv(value) &&
+      value.model() ==
+        self.model().sub(
+          @mathint.int_model(0),
+          self.model().length() - @mathint.int_model(1),
         )
-      )
   }
 }
