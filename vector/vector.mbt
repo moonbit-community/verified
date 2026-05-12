@@ -65,12 +65,28 @@ pub fn[T : Eq] Vector::at(
   if !(index >= 0 && index < self.size) {
     panic()
   }
-  if index >= self.tail_offset() {
-    self.tail[index - self.tail_offset()]
+  let tail_offset = self.tail_offset()
+  if index >= tail_offset {
+    let result = self.tail[index - tail_offset]
+    proof_assert tail_offset_post(self, tail_offset)
+    proof_assert result == self.model().get(@mathint.int_model(index))
+    proof_assert at_post(self, index, result)
+    result
   } else {
-    proof_assert !empty_tree_post(self.tree)
-    proof_assert tree_inv(self.tree, root_level(self.shift))
-    self.tree.get(index, self.shift)
+    match self.tree {
+      Empty => panic()
+      _ => {
+        proof_assert tree_inv(self.tree, root_level(self.shift))
+        proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+          tree_model(self.tree, root_level(self.shift))
+        proof_assert tree_valid_index_model(self.tree, self.shift, index)
+        let result = self.tree.get(index, self.shift)
+        proof_assert tree_get_post(self.tree, self.shift, index, result)
+        proof_assert result == self.model().get(@mathint.int_model(index))
+        proof_assert at_post(self, index, result)
+        result
+      }
+    }
   }
 }
 
@@ -118,11 +134,25 @@ pub fn[T] Vector::set(
   }
   let tail_len = self.tail.length()
   if tail_len == 0 {
-    {
-      tree: self.tree.set(index, self.shift, value),
-      tail: self.tail,
-      size: self.size,
-      shift: self.shift,
+    match self.tree {
+      Empty => panic()
+      _ => {
+        proof_assert tree_inv(self.tree, root_level(self.shift))
+        proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+          tree_model(self.tree, root_level(self.shift))
+        proof_assert tree_valid_index_model(self.tree, self.shift, index)
+        let new_tree = self.tree.set(index, self.shift, value)
+        proof_assert tree_set_post(self.tree, self.shift, index, value, new_tree)
+        let result = {
+          tree: new_tree,
+          tail: self.tail,
+          size: self.size,
+          shift: self.shift,
+        }
+        proof_assert vector_inv(result)
+        proof_assert set_post_model(self, index, value, result)
+        result
+      }
     }
   } else {
     let tail_offset = self.tail_offset()
@@ -134,11 +164,25 @@ pub fn[T] Vector::set(
         shift: self.shift,
       }
     } else {
-      {
-        tree: self.tree.set(index, self.shift, value),
-        tail: self.tail,
-        size: self.size,
-        shift: self.shift,
+      match self.tree {
+        Empty => panic()
+        _ => {
+          proof_assert tree_inv(self.tree, root_level(self.shift))
+          proof_assert vector_tree_model(self.tree, root_level(self.shift)) ==
+            tree_model(self.tree, root_level(self.shift))
+          proof_assert tree_valid_index_model(self.tree, self.shift, index)
+          let new_tree = self.tree.set(index, self.shift, value)
+          proof_assert tree_set_post(self.tree, self.shift, index, value, new_tree)
+          let result = {
+            tree: new_tree,
+            tail: self.tail,
+            size: self.size,
+            shift: self.shift,
+          }
+          proof_assert vector_inv(result)
+          proof_assert set_post_model(self, index, value, result)
+          result
+        }
       }
     }
   }
