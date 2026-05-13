@@ -59,9 +59,10 @@ still overflow
 
 Direct experiment:
 
-- In the `cpmm_swap` example, a deeper-liquidity runtime test using reserves of
-  `5000 / 5000` produced the wrong output because the intermediate product
-  `amount_in * fee_multiplier * reserve_out` overflowed at runtime.
+- In the `examples/finance/cpmm_swap` example, a deeper-liquidity runtime test
+  using reserves of `5000 / 5000` produced the wrong output because the
+  intermediate product `amount_in * fee_multiplier * reserve_out` overflowed
+  at runtime.
 - The proof still succeeded because the Why3 model reasons over unbounded
   mathematical integers.
 
@@ -76,10 +77,12 @@ Impact:
 
 Direct experiment:
 
-- In the `bridge_custody` package, importing `bitmap32` was not enough for the
-  proof pipeline even though `bitmap32` already depends on `bv32`.
-- `moon prove bridge_custody` hit a compiler ICE until I added an explicit
-  direct `bv32` dependency in `bridge_custody/moon.pkg`.
+- In the `examples/finance/bridge_custody` package, importing `bitmap32` was not
+  enough for the proof pipeline even though `bitmap32` already depends on
+  `bv32`.
+- `moon prove examples/finance/bridge_custody` hit a compiler ICE until I added
+  an explicit direct `bv32` dependency in
+  `examples/finance/bridge_custody/moon.pkg`.
 
 Impact:
 
@@ -94,8 +97,9 @@ proof shape
 
 Direct experiment:
 
-- In the `margin_engine` package, the original `min_close_to_restore_post`
-  predicate ended with a conjunction followed by a parenthesized disjunction:
+- In the `examples/finance/margin_engine` package, the original
+  `min_close_to_restore_post` predicate ended with a conjunction followed by a
+  parenthesized disjunction:
   `... && (result == 0 || frontier < 0)`.
 - The generated WhyML for that predicate did not preserve the grouping in a
   solver-friendly way, and downstream callers could no longer easily recover

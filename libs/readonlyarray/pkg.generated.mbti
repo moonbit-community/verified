@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/libs/readonlyarray"
+
+import {
+  "moonbit-community/verified/libs/seq",
+}
+
+// Values
+pub fn[T] model(ReadOnlyArray[T]) -> @seq.Seq[T]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

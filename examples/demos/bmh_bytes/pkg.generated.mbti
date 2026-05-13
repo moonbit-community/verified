@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/examples/demos/bmh_bytes"
+
+// Values
+pub fn boyer_moore_horspool_find(Bytes, Bytes) -> Int?
+
+pub fn shifted_match_conflict(Bytes, Bytes, FixedArray[Int], Int, Int, Int, Int) -> Unit
+
+pub fn shifted_match_reads_last(Bytes, Bytes, Int, Int, Int) -> Unit
+
+pub fn skip_step_excludes(Bytes, Bytes, FixedArray[Int], Int, Int, Int, Int) -> Unit
+
+pub fn skip_step_preserves_no_match_before(Bytes, Bytes, FixedArray[Int], Int, Int, Int) -> Unit
+
+pub fn skip_table_prefix_complete(FixedArray[Int], Bytes, Int) -> Unit
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

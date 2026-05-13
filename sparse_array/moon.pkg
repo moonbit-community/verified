@@ -1,8 +1,8 @@
 import {
-  "moonbit-community/verified/bitmap32",
-  "moonbit-community/verified/bv32",
-  "moonbit-community/verified/fmap",
-  "moonbit-community/verified/fset",
+  "moonbit-community/verified/libs/bitmap32",
+  "moonbit-community/verified/libs/bv32",
+  "moonbit-community/verified/libs/fmap",
+  "moonbit-community/verified/libs/fset",
 }
 
 options(

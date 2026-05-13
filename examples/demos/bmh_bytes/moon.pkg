@@ -1,6 +1,6 @@
 import {
+  "moonbit-community/verified/libs/bytes",
   "moonbit-community/verified/libs/mathint",
-  "moonbit-community/verified/libs/readonlyarray",
   "moonbit-community/verified/libs/seq",
 }
 
