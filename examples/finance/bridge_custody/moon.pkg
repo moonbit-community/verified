@@ -1,4 +1,6 @@
 import {
+  "moonbit-community/verified/libs/bitmap32",
+  "moonbit-community/verified/libs/bv32",
   "moonbit-community/verified/libs/fset",
 }
 

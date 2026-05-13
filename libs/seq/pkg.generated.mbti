@@ -1,0 +1,27 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/libs/seq"
+
+import {
+  "moonbit-community/verified/libs/mathint",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub type Seq[T]
+pub fn[T] Seq::append(Self[T], Self[T]) -> Self[T]
+pub fn[T] Seq::empty() -> Self[T]
+pub fn[T] Seq::eq(Self[T], Self[T]) -> Bool
+pub fn[T] Seq::get(Self[T], @mathint.MathInt) -> T
+pub fn[T] Seq::length(Self[T]) -> @mathint.MathInt
+pub fn[T] Seq::set(Self[T], @mathint.MathInt, T) -> Self[T]
+pub fn[T] Seq::singleton(T) -> Self[T]
+pub fn[T] Seq::sub(Self[T], @mathint.MathInt, @mathint.MathInt) -> Self[T]
+pub fn[T] Seq::tail(Self[T], @mathint.MathInt) -> Self[T]
+pub impl[T] Eq for Seq[T]
+
+// Type aliases
+
+// Traits

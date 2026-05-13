@@ -1,5 +1,5 @@
 import {
-  "moonbit-community/verified/libs/fset",
+  "moonbit-community/verified/libs/seq",
 }
 
 options(

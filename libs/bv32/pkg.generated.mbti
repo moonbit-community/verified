@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/libs/bv32"
+
+// Values
+pub fn uint_to_bv(UInt) -> BV32
+
+// Errors
+
+// Types and methods
+pub type BV32
+pub fn BV32::lsr(Self, Int) -> Self
+pub fn BV32::nth(Self, Int) -> Bool
+
+// Type aliases
+
+// Traits
+

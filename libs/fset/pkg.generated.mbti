@@ -1,0 +1,26 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/libs/fset"
+
+// Values
+pub fn fset_empty() -> Fset[Int]
+
+pub fn fset_interval(Int, Int) -> Fset[Int]
+
+// Errors
+
+// Types and methods
+pub type Fset[T]
+pub fn[T : Eq] Fset::add(Self[T], T) -> Self[T]
+pub fn[T : Eq] Fset::cardinal(Self[T]) -> Int
+pub fn[T : Eq] Fset::empty() -> Self[T]
+pub fn[T : Eq] Fset::eq(Self[T], Self[T]) -> Bool
+pub fn[T : Eq] Fset::filter(Self[T], (T) -> Bool) -> Self[T]
+pub fn[T : Eq] Fset::mem(Self[T], T) -> Bool
+pub fn[T : Eq] Fset::remove(Self[T], T) -> Self[T]
+pub fn[T : Eq] Fset::subset(Self[T], Self[T]) -> Bool
+pub fn[T : Eq] Fset::union(Self[T], Self[T]) -> Self[T]
+pub impl[T : Eq] Eq for Fset[T]
+
+// Type aliases
+
+// Traits

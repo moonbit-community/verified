@@ -1,0 +1,38 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/libs/mathint"
+
+// Values
+pub fn int_model(Int) -> MathInt
+
+// Errors
+
+// Types and methods
+pub type MathInt
+pub fn MathInt::add(Self, Self) -> Self
+pub fn MathInt::compare(Self, Self) -> Int
+pub fn MathInt::div(Self, Self) -> Self
+pub fn MathInt::equal(Self, Self) -> Bool
+pub fn MathInt::mod(Self, Self) -> Self
+pub fn MathInt::mul(Self, Self) -> Self
+pub fn MathInt::neg(Self) -> Self
+pub fn MathInt::not_equal(Self, Self) -> Bool
+pub fn MathInt::one() -> Self
+pub fn MathInt::op_ge(Self, Self) -> Bool
+pub fn MathInt::op_gt(Self, Self) -> Bool
+pub fn MathInt::op_le(Self, Self) -> Bool
+pub fn MathInt::op_lt(Self, Self) -> Bool
+pub fn MathInt::sub(Self, Self) -> Self
+pub fn MathInt::to_int(Self) -> Int
+pub fn MathInt::zero() -> Self
+pub impl Add for MathInt
+pub impl Compare for MathInt
+pub impl Div for MathInt
+pub impl Eq for MathInt
+pub impl Mod for MathInt
+pub impl Mul for MathInt
+pub impl Neg for MathInt
+pub impl Sub for MathInt
+
+// Type aliases
+
+// Traits

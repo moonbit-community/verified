@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/examples/demos/binary_search"
+
+// Values
+pub fn[T : Compare] binary_search(FixedArray[T], T) -> Int?
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

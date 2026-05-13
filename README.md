@@ -2,8 +2,8 @@
 
 This project demonstrates MoonBit's experimental `moon prove` command, which
 enables formal verification of MoonBit programs by lowering specifications to
-[Why3](https://why3.lri.fr/) and discharging proof obligations with the
-[Z3](https://github.com/Z3Prover/z3) SMT solver.
+[Why3](https://why3.lri.fr/) and discharging proof obligations with SMT
+solvers such as [Z3](https://github.com/Z3Prover/z3), CVC5, and Alt-Ergo.
 
 ## How it works
 
@@ -109,16 +109,19 @@ Why3 breaks the WhyML specification into individual **proof obligations**
 - **Termination** — the variant decreases and stays non-negative
 - **Array bounds** — array accesses are within bounds
 
-The proving strategy (`MoonBit_Auto` in `_build/verif/why3.conf`) runs Z3 in
-multiple passes with increasing timeouts:
+The proving strategy (`MoonBit_Auto` in `_build/verif/why3.conf`) runs
+Alt-Ergo, Z3, and CVC5 in multiple passes with increasing timeouts:
 
 ```
-Z3 @ 0.2s, 1000 MB   →  quick wins
-Z3 @ 1s,   1000 MB   →  moderate goals
-compute_specified      →  unfold definitions
-split_vc               →  break conjunction goals apart
-Z3 @ 2s,   4000 MB   →  harder goals
+Alt-Ergo/Z3/CVC5 @ 0.2s, 1000 MB   →  quick wins
+Alt-Ergo/Z3/CVC5 @ 1s,   1000 MB   →  moderate goals
+compute_specified                      →  unfold definitions
+split_vc                               →  break conjunction goals apart
+Alt-Ergo/Z3/CVC5 @ 2s,   4000 MB   →  harder goals
 ```
+
+CI uses a checked-in `.github/why3.conf` with the same prover set and longer
+timeouts to reduce solver-variance failures on shared runners.
 
 Results are written to `_build/verif/<pkg>/<pkg>.proof.json` with per-goal
 status (valid, timeout, unknown, etc.).
@@ -132,60 +135,97 @@ moon prove
 This verifies all packages in the workspace. Output shows per-package results
 and a summary of total goals proved.
 
-## Examples
+## Package Map
 
-The project contains a compact set of example packages at increasing difficulty:
+The repository is a mixed collection of reusable proof infrastructure,
+verified libraries, small proof demos, and larger finance case studies. The
+curated packages are grouped by intent:
 
-### No loops (branch-only proofs)
+- `libs/*` contains low-level proof support packages used by other packages.
+- Top-level data-structure packages are the main reusable verified libraries.
+- `examples/demos/*` contains compact proof exercises and algorithm examples.
+- `examples/finance/*` contains larger finance-specific case studies.
 
-| Package | What it proves |
-|---------|---------------|
-| `abs` | `\|x\| >= 0` and equals `x` or `-x` |
-| `maxfn` | `max(a,b) >= a`, `>= b`, and equals one of them |
-| `clamp` | `lo <= clamp(x, lo, hi) <= hi` given `lo <= hi` |
+Other top-level scratch or probe directories are development artifacts, not
+part of the curated package set.
 
-### Simple loops
+### Core Proof Libraries
 
-| Package | What it proves |
-|---------|---------------|
-| `find` | Linear search: result is -1 or a valid index with matching key |
-| `count` | Count non-negatives: `0 <= result <= length` |
-| `gauss` | Sum 1..n: `result * 2 == n * (n + 1)` (Gauss formula) |
+These packages provide reusable logical models, proof shims, or low-level
+bridges used by other packages.
 
-### Binary search variants
+| Package | Role |
+|---------|------|
+| `libs/mathint` | Mathematical integer helpers |
+| `libs/seq` | Sequence model imports and operations |
+| `libs/fset` | Finite-set model imports and operations |
+| `libs/fmap` | Finite-map model imports and operations |
+| `libs/readonlyarray` | Read-only array model bridge |
+| `libs/bv32` | 32-bit bitvector model bridge |
+| `libs/bitmap32` | Trusted UInt/bitmap bridge helpers |
+| `libs/bytes` | Byte-oriented proof support |
 
-| Package | What it proves |
-|---------|---------------|
-| `binary_search` | Option-returning binary search with strong window invariants |
-| `invpred` | Binary search using a named invariant predicate |
-| `isqrt` | Integer square root via binary search: `r*r <= n < (r+1)*(r+1)` |
-| `div` | Integer division via binary search: `q*b <= a < (q+1)*b` |
+### Verified Data Structures
 
-### Quantified invariants
+These packages are closer to reusable libraries: they expose data-structure
+APIs with representation invariants and semantic model postconditions.
 
-| Package | What it proves |
-|---------|---------------|
-| `maxarr` | Index of max element: `∀ k, xs[k] <= xs[result]` |
-| `lowerbound` | Lower bound binary search: `∀ i < result, xs[i] < key` and `∀ i >= result, xs[i] >= key` — combines quantified invariants with sorted precondition |
-| `sumbounds` | Array sum bounded by element range: `lo*n <= sum <= hi*n` — nonlinear arithmetic with quantified precondition |
-| `checksorted` | If result == 1, all adjacent pairs in order — connects a boolean flag to a quantified property |
-| `arreq` | Two-array equality: if result == 1, `∀ k, xs[k] == ys[k]` |
+| Package | What it verifies |
+|---------|------------------|
+| `vector` | Persistent vector operations against a sequence model |
+| `sparse_array` | Bitmap-backed sparse array against a finite-map model |
+| `avl` | AVL tree balancing, insertion, deletion, and set model preservation |
+| `leftist_heap` | Heap merge and minimum invariants |
+| `skew_heap` | Heap merge and minimum invariants |
+| `pairing_heap` | Pairing heap structure and heap-order properties |
+| `stack_min` | Stack operations with tracked minimum |
 
-## Investor-Grade Crypto / Finance Showcase
+### Algorithm Demos
 
-For more market-facing examples, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md).
-The new packages are:
+These are compact verification examples. They are useful for learning proof
+patterns, loop invariants, binary-search invariants, quantified assertions, and
+small arithmetic facts.
 
-- `stablecoin_engine` — verified mint/repay/withdraw/liquidate flows with exact bad-debt resolution
-- `margin_engine` — verified liquidation boundary, funding impact, and minimum partial deleveraging to restore maintenance margin
-- `clearinghouse_waterfall` — exact multi-layer default waterfall with insurance, junior, senior, and socialized loss
-- `bridge_custody` — replay-safe bridge withdrawals with exact nonce-set updates
-- `cpmm_swap` — fee-adjusted constant-product AMM swap math with reserve-safety and invariant proofs
-- `ltv_lending` — solvency-preserving lending operations with exact risk-buffer accounting
-- `batch_auction` — verified uniform-price batch-auction frontier search
-- `risk_limits` — earliest-breach risk monitor for bounded exposure envelopes
-- `vesting_stream` — bounded token vesting and release logic
-- `threshold_multisig` — exact threshold execution via counted approvals
+| Package | What it demonstrates |
+|---------|----------------------|
+| `examples/demos/abs` | Branch-only arithmetic postconditions |
+| `examples/demos/clamp` | Range-bounded branch logic |
+| `examples/demos/maxfn` | Maximum of two integers |
+| `examples/demos/maxarr` | Maximum-element index with quantified array bounds |
+| `examples/demos/find` | Linear search |
+| `examples/demos/count` | Counting elements satisfying a predicate |
+| `examples/demos/gauss` | Closed-form sum of `1..n` |
+| `examples/demos/two_sum` | Pair search over arrays |
+| `examples/demos/binary_search` | Option-returning binary search |
+| `examples/demos/lowerbound` | Lower-bound binary search with quantified invariants |
+| `examples/demos/invpred` | Binary search using a named invariant predicate |
+| `examples/demos/isqrt` | Integer square root via binary search |
+| `examples/demos/div` | Integer division via binary search |
+| `examples/demos/bubble_sort` | Sorting loop invariants |
+| `examples/demos/selection_sort` | Sorting loop invariants |
+| `examples/demos/checksorted` | Relating a boolean flag to a quantified sortedness property |
+| `examples/demos/arreq` | Two-array equality |
+| `examples/demos/sumbounds` | Array sum bounded by element range |
+| `examples/demos/cauchy_schwarz` | Arithmetic inequality proof |
+| `examples/demos/bmh_bytes` | Byte-string search proof patterns |
+
+### Finance Case Studies
+
+These packages model finance, custody, auction, and risk-control workflows.
+For a market-facing overview, see [INVESTOR_SHOWCASE.md](INVESTOR_SHOWCASE.md).
+
+| Package | What it verifies |
+|---------|------------------|
+| `examples/finance/stablecoin_engine` | Mint/repay/withdraw/liquidate flows with bad-debt handling |
+| `examples/finance/margin_engine` | Liquidation boundary, funding impact, and deleveraging logic |
+| `examples/finance/clearinghouse_waterfall` | Multi-layer default waterfall accounting |
+| `examples/finance/bridge_custody` | Replay-safe bridge withdrawals |
+| `examples/finance/cpmm_swap` | Fee-adjusted constant-product AMM swap math |
+| `examples/finance/ltv_lending` | Solvency-preserving lending operations |
+| `examples/finance/batch_auction` | Uniform-price batch-auction frontier search |
+| `examples/finance/risk_limits` | Earliest-breach risk monitor |
+| `examples/finance/vesting_stream` | Bounded token vesting and release logic |
+| `examples/finance/threshold_multisig` | Threshold execution via counted approvals |
 
 ## Known limitations
 
