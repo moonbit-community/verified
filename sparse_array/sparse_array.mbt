@@ -108,6 +108,29 @@ pub fn[T : Eq] SparseArray::get(
 }
 
 ///|
+fn[T : Eq] prove_add_post(
+  sa : SparseArray[T],
+  idx : Int,
+  value : T,
+  res : SparseArray[T],
+) -> Unit where {
+  proof_require: sparse_array_inv(sa),
+  proof_require: valid_idx(idx),
+  proof_require: model(sa).mem(idx) == false,
+  proof_require: bitmap_add_post(sa.bitmap, idx, res.bitmap),
+  proof_require: add_data_ok(sa, idx, value, res),
+  proof_require: sparse_array_inv(res),
+  proof_ensure: add_post(sa, idx, value, res),
+} {
+  proof_assert ∀ j : Int,
+    model(res).mem(j) == model(sa).add(idx, value).mem(j)
+  proof_assert ∀ j : Int,
+    model(res).mem(j) →
+    model(res).find(j) == model(sa).add(idx, value).find(j)
+  proof_assert fmap_eq_hyp_local(model(res), model(sa).add(idx, value))
+}
+
+///|
 pub fn[T : Eq] SparseArray::add(
   self : SparseArray[T],
   idx : Int,
@@ -170,7 +193,9 @@ pub fn[T : Eq] SparseArray::add(
       #| been shifted, yielding the data-layout part of `add_post`.
     ),
   }
-  let result = { bitmap: bitmap_add(self.bitmap, idx), data: new_data }
+  let new_bitmap = bitmap_add(self.bitmap, idx)
+  proof_assert bitmap_add_post(self.bitmap, idx, new_bitmap)
+  let result = { bitmap: new_bitmap, data: new_data }
   proof_assert add_data_ok(self, idx, value, result)
   proof_assert mem_value(self.bitmap, idx) == false
   proof_assert count_value(result.bitmap, 0) == count_value(self.bitmap, 0) + 1
@@ -178,17 +203,12 @@ pub fn[T : Eq] SparseArray::add(
   proof_assert result.data.length() == count_value(result.bitmap, 0)
   proof_assert ∀ i : Int,
     valid_idx(i) && mem_value(result.bitmap, i) →
-      0 <= rank_value(result.bitmap, i, 0)
+    0 <= rank_value(result.bitmap, i, 0)
   proof_assert ∀ i : Int,
     valid_idx(i) && mem_value(result.bitmap, i) →
-      rank_value(result.bitmap, i, 0) < result.data.length()
+    rank_value(result.bitmap, i, 0) < result.data.length()
   proof_assert sparse_array_inv(result)
-  proof_assert ∀ j : Int,
-    model(result).mem(j) == model(self).add(idx, value).mem(j)
-  proof_assert ∀ j : Int,
-    model(result).mem(j) →
-      model(result).find(j) == model(self).add(idx, value).find(j)
-  proof_assert fmap_eq_hyp_local(model(result), model(self).add(idx, value))
+  prove_add_post(self, idx, value, result)
   proof_assert add_post(self, idx, value, result)
   result
 }
@@ -241,6 +261,26 @@ pub fn[T : Eq] SparseArray::replace(
   proof_assert replace_data_ok(self, idx, value, result)
   proof_assert replace_post(self, idx, value, result)
   result
+}
+
+///|
+fn[T : Eq] prove_remove_post(
+  sa : SparseArray[T],
+  idx : Int,
+  res : SparseArray[T],
+) -> Unit where {
+  proof_require: sparse_array_inv(sa),
+  proof_require: valid_idx(idx),
+  proof_require: model(sa).mem(idx),
+  proof_require: bitmap_remove_post(sa.bitmap, idx, res.bitmap),
+  proof_require: remove_data_ok(sa, idx, res),
+  proof_require: sparse_array_inv(res),
+  proof_ensure: remove_post(sa, idx, res),
+} {
+  proof_assert ∀ j : Int, model(res).mem(j) == model(sa).remove(idx).mem(j)
+  proof_assert ∀ j : Int,
+    model(res).mem(j) → model(res).find(j) == model(sa).remove(idx).find(j)
+  proof_assert fmap_eq_hyp_local(model(res), model(sa).remove(idx))
 }
 
 ///|
@@ -303,24 +343,22 @@ pub fn[T : Eq] SparseArray::remove(
         #| `remove_data_ok`.
       ),
     }
-    let result = { bitmap: bitmap_remove(self.bitmap, idx), data: new_data }
+    let new_bitmap = bitmap_remove(self.bitmap, idx)
+    proof_assert bitmap_remove_post(self.bitmap, idx, new_bitmap)
+    let result = { bitmap: new_bitmap, data: new_data }
     proof_assert remove_data_ok(self, idx, result)
-    proof_assert count_value(result.bitmap, 0) + 1 == count_value(self.bitmap, 0)
+    proof_assert count_value(result.bitmap, 0) + 1 ==
+      count_value(self.bitmap, 0)
     proof_assert result.data.length() + 1 == self.data.length()
     proof_assert result.data.length() == count_value(result.bitmap, 0)
     proof_assert ∀ i : Int,
       valid_idx(i) && mem_value(result.bitmap, i) →
-        0 <= rank_value(result.bitmap, i, 0)
+      0 <= rank_value(result.bitmap, i, 0)
     proof_assert ∀ i : Int,
       valid_idx(i) && mem_value(result.bitmap, i) →
-        rank_value(result.bitmap, i, 0) < result.data.length()
+      rank_value(result.bitmap, i, 0) < result.data.length()
     proof_assert sparse_array_inv(result)
-    proof_assert ∀ j : Int,
-      model(result).mem(j) == model(self).remove(idx).mem(j)
-    proof_assert ∀ j : Int,
-      model(result).mem(j) →
-        model(result).find(j) == model(self).remove(idx).find(j)
-    proof_assert fmap_eq_hyp_local(model(result), model(self).remove(idx))
+    prove_remove_post(self, idx, result)
     proof_assert remove_post(self, idx, result)
     result
   }
