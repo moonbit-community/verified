@@ -1,0 +1,160 @@
+///|
+fn leaf_hash_model(data : Int) -> Int {
+  data * 2 + 1
+}
+
+///|
+fn node_hash_model(left : Int, right : Int) -> Int {
+  left * 131 + right * 17 + 3
+}
+
+///|
+fn root_hash(node : MerkleNode) -> Int {
+  match node {
+    Leaf(_data, hash) => hash
+    Node(_left, _right, hash) => hash
+  }
+}
+
+///|
+fn tree_size(node : MerkleNode) -> Int {
+  match node {
+    Leaf(_data, _hash) => 1
+    Node(left, right, _hash) => tree_size(left) + tree_size(right)
+  }
+}
+
+///|
+fn proof_size(proof : MerkleProof) -> Int {
+  match proof {
+    Done => 1
+    Step(_direction, _sibling, rest) => proof_size(rest) + 1
+  }
+}
+
+///|
+predicate merkle_inv(node : MerkleNode) {
+  match node {
+    Leaf(data, hash) => hash == leaf_hash_model(data)
+    Node(left, right, hash) =>
+      merkle_inv(left) &&
+      merkle_inv(right) &&
+      hash == node_hash_model(root_hash(left), root_hash(right))
+  }
+}
+
+///|
+predicate tree_inv(tree : MerkleTree) {
+  merkle_inv(tree.inner)
+}
+
+///|
+predicate valid_index(node : MerkleNode, index : Int) {
+  0 <= index && index < tree_size(node)
+}
+
+///|
+predicate valid_tree_index(tree : MerkleTree, index : Int) {
+  tree_inv(tree) && valid_index(tree.inner, index)
+}
+
+///|
+fn leaf_at(node : MerkleNode, index : Int) -> Int {
+  match node {
+    Leaf(data, _hash) => data
+    Node(left, right, _hash) =>
+      if index < tree_size(left) {
+        leaf_at(left, index)
+      } else {
+        leaf_at(right, index - tree_size(left))
+      }
+  }
+}
+
+///|
+fn replay_hash(data : Int, proof : MerkleProof) -> Int {
+  match proof {
+    Done => leaf_hash_model(data)
+    Step(direction, sibling, rest) =>
+      match direction {
+        Left => node_hash_model(replay_hash(data, rest), sibling)
+        Right => node_hash_model(sibling, replay_hash(data, rest))
+      }
+  }
+}
+
+///|
+predicate singleton_post(data : Int, result : MerkleTree) {
+  tree_inv(result) &&
+  tree_size(result.inner) == 1 &&
+  root_hash(result.inner) == leaf_hash_model(data) &&
+  leaf_at(result.inner, 0) == data
+}
+
+///|
+predicate combine_post(left : MerkleTree, right : MerkleTree, result : MerkleTree) {
+  tree_inv(left) &&
+  tree_inv(right) &&
+  tree_inv(result) &&
+  tree_size(result.inner) == tree_size(left.inner) + tree_size(right.inner) &&
+  root_hash(result.inner) == node_hash_model(root_hash(left.inner), root_hash(right.inner))
+}
+
+///|
+predicate root_post(tree : MerkleTree, result : Int) {
+  result == root_hash(tree.inner)
+}
+
+///|
+predicate size_post(tree : MerkleTree, result : Int) {
+  result == tree_size(tree.inner)
+}
+
+///|
+predicate leaf_post(tree : MerkleTree, index : Int, result : Int) {
+  valid_tree_index(tree, index) &&
+  result == leaf_at(tree.inner, index)
+}
+
+///|
+predicate verify_proof_post(
+  data : Int,
+  proof : MerkleProof,
+  expected_root : Int,
+  result : Bool,
+) {
+  result == (replay_hash(data, proof) == expected_root)
+}
+
+///|
+predicate make_proof_post(
+  node : MerkleNode,
+  index : Int,
+  result : Option[MerkleProof],
+) {
+  merkle_inv(node) &&
+  valid_index(node, index) &&
+  match result {
+    None => false
+    Some(proof) => replay_hash(leaf_at(node, index), proof) == root_hash(node)
+  }
+}
+
+///|
+predicate make_tree_proof_post(
+  tree : MerkleTree,
+  index : Int,
+  result : Option[MerkleProof],
+) {
+  valid_tree_index(tree, index) &&
+  make_proof_post(tree.inner, index, result)
+}
+
+///|
+predicate generated_proof_verifies_post(
+  tree : MerkleTree,
+  index : Int,
+  result : Bool,
+) {
+  valid_tree_index(tree, index) && result == true
+}
