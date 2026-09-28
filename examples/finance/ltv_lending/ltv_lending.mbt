@@ -6,6 +6,10 @@ pub struct Position {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Position with Eq::{not_equal, equal}
+
+///|
 pub fn max_safe_debt(
   collateral : Int,
   max_ltv_bps : Int,

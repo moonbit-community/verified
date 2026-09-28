@@ -6,10 +6,18 @@ pub struct Pool {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Pool with Eq::{not_equal, equal}
+
+///|
 pub struct SwapResult {
   amount_out : Int
   next_pool : Pool
 } derive(Eq)
+
+///|
+#deprecated
+pub extend SwapResult with Eq::{not_equal, equal}
 
 ///|
 pub fn make_pool(reserve_in : Int, reserve_out : Int, fee_bps : Int) -> Pool {

@@ -8,6 +8,10 @@ pub enum Heap[T] {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend Heap with @debug.Debug::{to_repr}
+
+///|
 #proof_pure
 fn[T] rank(h : Heap[T]) -> Int {
   match h {

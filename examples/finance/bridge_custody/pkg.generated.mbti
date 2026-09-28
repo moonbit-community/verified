@@ -17,6 +17,10 @@ pub struct Bridge {
   reserve : Int
   used_nonces : UInt
 } derive(Eq)
+#deprecated
+pub fn Bridge::equal(Self, Self) -> Bool
+#deprecated
+pub fn Bridge::not_equal(Self, Self) -> Bool
 
 // Type aliases
 

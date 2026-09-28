@@ -8,6 +8,10 @@ pub struct Bridge {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Bridge with Eq::{not_equal, equal}
+
+///|
 fn nonce_mem(
   bitmap : UInt,
   nonce : Int,

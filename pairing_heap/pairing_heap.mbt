@@ -9,12 +9,20 @@ pub enum Heap[T] {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend Heap with @debug.Debug::{to_repr}
+
+///|
 /// The child list is just the forest hanging off the root, but its invariant
 /// is stronger than a plain list: each entry must itself be a non-empty heap.
 pub enum ChildList[T] {
   Nil
   Cons(Heap[T], ChildList[T])
 } derive(Debug)
+
+///|
+#deprecated
+pub extend ChildList with @debug.Debug::{to_repr}
 
 ///|
 /// The empty heap is valid immediately; the invariant has nothing to check in

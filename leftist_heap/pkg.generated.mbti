@@ -25,6 +25,8 @@ pub enum Heap[T] {
   Empty
   Node(T, Int, Heap[T], Heap[T])
 } derive(@debug.Debug)
+#deprecated
+pub fn[T : @debug.Debug] Heap::to_repr(Self[T]) -> @debug.Repr
 
 // Type aliases
 

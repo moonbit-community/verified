@@ -24,6 +24,10 @@ pub struct Engine {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Engine with Eq::{not_equal, equal}
+
+///|
 /// The result of unwinding an under-collateralized vault with `liquidate_all`.
 /// `reserve_used` is how much of the protocol reserve was consumed to cover
 /// the shortfall, `remaining_bad_debt` is the residual debt the protocol has
@@ -40,6 +44,10 @@ pub struct LiquidationResult {
   remaining_bad_debt : Int
   next_engine : Engine
 } derive(Eq)
+
+///|
+#deprecated
+pub extend LiquidationResult with Eq::{not_equal, equal}
 
 ///|
 /// The scaled signed distance from the liquidation edge. Positive values mean

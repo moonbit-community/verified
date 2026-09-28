@@ -5,10 +5,18 @@ pub enum Direction {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend Direction with @debug.Debug::{to_repr}
+
+///|
 pub enum MerkleProof {
   Done
   Step(Direction, Int, MerkleProof)
 } derive(Debug)
+
+///|
+#deprecated
+pub extend MerkleProof with @debug.Debug::{to_repr}
 
 ///|
 enum MerkleNode {
@@ -17,9 +25,17 @@ enum MerkleNode {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend MerkleNode with @debug.Debug::{to_repr}
+
+///|
 pub struct MerkleTree {
   inner : MerkleNode
 } derive(Debug)
+
+///|
+#deprecated
+pub extend MerkleTree with @debug.Debug::{to_repr}
 
 ///|
 fn hash_leaf(

@@ -2,8 +2,11 @@ import {
   "moonbit-community/verified/libs/mathint",
   "moonbit-community/verified/libs/readonlyarray",
   "moonbit-community/verified/libs/seq",
-  "moonbitlang/core/debug",
 }
+
+import {
+  "moonbitlang/core/debug",
+} for "test"
 
 options(
   "proof-enabled": true,

@@ -16,13 +16,20 @@ pub struct Pool {
   reserve_out : Int
   fee_bps : Int
 } derive(Eq)
+#deprecated
+pub fn Pool::equal(Self, Self) -> Bool
+#deprecated
+pub fn Pool::not_equal(Self, Self) -> Bool
 
 pub struct SwapResult {
   amount_out : Int
   next_pool : Pool
 } derive(Eq)
+#deprecated
+pub fn SwapResult::equal(Self, Self) -> Bool
+#deprecated
+pub fn SwapResult::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
 // Traits
-

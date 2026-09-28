@@ -14,12 +14,15 @@ pub struct SparseArray[T] {
   data : FixedArray[T]
 } derive(Eq)
 pub fn[T : Eq] SparseArray::add(Self[T], Int, T) -> Self[T]
+#deprecated
+pub fn[T : Eq] SparseArray::equal(Self[T], Self[T]) -> Bool
 pub fn[T : Eq] SparseArray::get(Self[T], Int) -> T?
 pub fn[T : Eq] SparseArray::length(Self[T]) -> Int
+#deprecated
+pub fn[T : Eq] SparseArray::not_equal(Self[T], Self[T]) -> Bool
 pub fn[T : Eq] SparseArray::remove(Self[T], Int) -> Self[T]
 pub fn[T : Eq] SparseArray::replace(Self[T], Int, T) -> Self[T]
 
 // Type aliases
 
 // Traits
-

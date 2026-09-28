@@ -19,8 +19,11 @@ pub struct Stream {
   start : Int
   duration : Int
 } derive(Eq)
+#deprecated
+pub fn Stream::equal(Self, Self) -> Bool
+#deprecated
+pub fn Stream::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
 // Traits
-

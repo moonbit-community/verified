@@ -22,8 +22,11 @@ pub struct Position {
   debt : Int
   max_ltv_bps : Int
 } derive(Eq)
+#deprecated
+pub fn Position::equal(Self, Self) -> Bool
+#deprecated
+pub fn Position::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
 // Traits
-

@@ -8,6 +8,10 @@ pub struct House {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend House with Eq::{not_equal, equal}
+
+///|
 pub struct Resolution {
   insurance_used : Int
   junior_used : Int
@@ -15,6 +19,10 @@ pub struct Resolution {
   socialized_loss : Int
   next_house : House
 } derive(Eq)
+
+///|
+#deprecated
+pub extend Resolution with Eq::{not_equal, equal}
 
 ///|
 #proof_pure

@@ -22,6 +22,10 @@ pub struct House {
   junior : Int
   senior : Int
 } derive(Eq)
+#deprecated
+pub fn House::equal(Self, Self) -> Bool
+#deprecated
+pub fn House::not_equal(Self, Self) -> Bool
 
 pub struct Resolution {
   insurance_used : Int
@@ -30,6 +34,10 @@ pub struct Resolution {
   socialized_loss : Int
   next_house : House
 } derive(Eq)
+#deprecated
+pub fn Resolution::equal(Self, Self) -> Bool
+#deprecated
+pub fn Resolution::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
