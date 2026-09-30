@@ -1,0 +1,169 @@
+///|
+fn[T] list_model(xs : List[T]) -> Seq[T] {
+  match xs {
+    Nil => Seq::empty()
+    Cons(value, rest) => Seq::singleton(value).append(list_model(rest))
+  }
+}
+
+///|
+fn[T] list_rev_model(xs : List[T]) -> Seq[T] {
+  match xs {
+    Nil => Seq::empty()
+    Cons(value, rest) => list_rev_model(rest).append(Seq::singleton(value))
+  }
+}
+
+///|
+fn[T] list_length_model(xs : List[T]) -> Int {
+  match xs {
+    Nil => 0
+    Cons(_, rest) => 1 + list_length_model(rest)
+  }
+}
+
+///|
+fn[T] Deque::model(d : Deque[T]) -> Seq[T] {
+  list_model(d.front).append(list_rev_model(d.back))
+}
+
+///|
+predicate[T] deque_raw_inv(d : Deque[T]) {
+  0 <= d.len &&
+  d.len == list_length_model(d.front) + list_length_model(d.back) &&
+  @mathint.int_model(d.len) == d.model().length()
+}
+
+///|
+predicate[T] deque_inv(d : Deque[T]) {
+  deque_raw_inv(d)
+}
+
+///|
+predicate[T] front_ready(d : Deque[T]) {
+  match d.front {
+    Nil => d.model().length() == @mathint.int_model(0)
+    _ => true
+  }
+}
+
+///|
+predicate[T] back_ready(d : Deque[T]) {
+  match d.back {
+    Nil => d.model().length() == @mathint.int_model(0)
+    _ => true
+  }
+}
+
+///|
+predicate[T] reverse_post(xs : List[T], result : List[T]) {
+  list_model(result) == list_rev_model(xs) &&
+  list_rev_model(result) == list_model(xs) &&
+  list_length_model(result) == list_length_model(xs)
+}
+
+///|
+predicate[T] reverse_append_post(xs : List[T], acc : List[T], result : List[T]) {
+  list_model(result) == list_rev_model(xs).append(list_model(acc)) &&
+  list_rev_model(result) == list_rev_model(acc).append(list_model(xs)) &&
+  list_length_model(result) == list_length_model(xs) + list_length_model(acc)
+}
+
+///|
+predicate[T] normalize_front_post(d : Deque[T], result : Deque[T]) {
+  deque_raw_inv(d) &&
+  deque_inv(result) &&
+  front_ready(result) &&
+  result.model() == d.model() &&
+  result.len == d.len
+}
+
+///|
+predicate[T] normalize_back_post(d : Deque[T], result : Deque[T]) {
+  deque_raw_inv(d) &&
+  deque_inv(result) &&
+  back_ready(result) &&
+  result.model() == d.model() &&
+  result.len == d.len
+}
+
+///|
+predicate[T] empty_post(result : Deque[T]) {
+  deque_inv(result) && result.model().length() == @mathint.int_model(0)
+}
+
+///|
+predicate[T] length_post(d : Deque[T], result : Int) {
+  deque_inv(d) && @mathint.int_model(result) == d.model().length()
+}
+
+///|
+predicate[T] is_empty_post(d : Deque[T], result : Bool) {
+  deque_inv(d) && result == (d.model().length() == @mathint.int_model(0))
+}
+
+///|
+predicate[T] push_front_post(d : Deque[T], value : T, result : Deque[T]) {
+  deque_inv(d) &&
+  deque_inv(result) &&
+  result.model() == Seq::singleton(value).append(d.model())
+}
+
+///|
+predicate[T] push_back_post(d : Deque[T], value : T, result : Deque[T]) {
+  deque_inv(d) &&
+  deque_inv(result) &&
+  result.model() == d.model().append(Seq::singleton(value))
+}
+
+///|
+predicate[T : Eq] peek_front_post(d : Deque[T], result : Option[T]) {
+  deque_inv(d) &&
+  match result {
+    None => d.model().length() == @mathint.int_model(0)
+    Some(value) =>
+      @mathint.int_model(0) < d.model().length() &&
+      value == d.model().get(@mathint.int_model(0))
+  }
+}
+
+///|
+predicate[T : Eq] pop_front_post(d : Deque[T], result : Option[(T, Deque[T])]) {
+  deque_inv(d) &&
+  match result {
+    None => d.model().length() == @mathint.int_model(0)
+    Some((value, next)) =>
+      @mathint.int_model(0) < d.model().length() &&
+      deque_inv(next) &&
+      value == d.model().get(@mathint.int_model(0)) &&
+      next.model() == d.model().tail(@mathint.int_model(1))
+  }
+}
+
+///|
+predicate[T : Eq] peek_back_post(d : Deque[T], result : Option[T]) {
+  deque_inv(d) &&
+  match result {
+    None => d.model().length() == @mathint.int_model(0)
+    Some(value) =>
+      @mathint.int_model(0) < d.model().length() &&
+      value == d.model().get(d.model().length() - @mathint.int_model(1))
+  }
+}
+
+///|
+predicate[T : Eq] pop_back_post(d : Deque[T], result : Option[(T, Deque[T])]) {
+  deque_inv(d) &&
+  match result {
+    None => d.model().length() == @mathint.int_model(0)
+    Some((value, next)) =>
+      @mathint.int_model(0) < d.model().length() &&
+      deque_inv(next) &&
+      value == d.model().get(d.model().length() - @mathint.int_model(1)) &&
+      next.model() ==
+        d.model().sub(
+          @mathint.int_model(0),
+          d.model().length() - @mathint.int_model(1),
+        )
+  }
+}

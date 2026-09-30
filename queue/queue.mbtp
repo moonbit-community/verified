@@ -1,0 +1,118 @@
+///|
+fn[T] list_model(xs : List[T]) -> Seq[T] {
+  match xs {
+    Nil => Seq::empty()
+    Cons(value, rest) => Seq::singleton(value).append(list_model(rest))
+  }
+}
+
+///|
+fn[T] list_rev_model(xs : List[T]) -> Seq[T] {
+  match xs {
+    Nil => Seq::empty()
+    Cons(value, rest) => list_rev_model(rest).append(Seq::singleton(value))
+  }
+}
+
+///|
+fn[T] list_length_model(xs : List[T]) -> Int {
+  match xs {
+    Nil => 0
+    Cons(_, rest) => 1 + list_length_model(rest)
+  }
+}
+
+///|
+fn[T] Queue::model(q : Queue[T]) -> Seq[T] {
+  list_model(q.front).append(list_rev_model(q.rear))
+}
+
+///|
+predicate[T] normalized(q : Queue[T]) {
+  match q.front {
+    Nil =>
+      match q.rear {
+        Nil => true
+        _ => false
+      }
+    _ => true
+  }
+}
+
+///|
+predicate[T] queue_raw_inv(q : Queue[T]) {
+  0 <= q.len &&
+  q.len == list_length_model(q.front) + list_length_model(q.rear) &&
+  @mathint.int_model(q.len) == q.model().length()
+}
+
+///|
+predicate[T] queue_inv(q : Queue[T]) {
+  queue_raw_inv(q) && normalized(q)
+}
+
+///|
+predicate[T] reverse_post(xs : List[T], result : List[T]) {
+  list_model(result) == list_rev_model(xs) &&
+  list_length_model(result) == list_length_model(xs)
+}
+
+///|
+predicate[T] reverse_append_post(xs : List[T], acc : List[T], result : List[T]) {
+  list_model(result) == list_rev_model(xs).append(list_model(acc)) &&
+  list_length_model(result) == list_length_model(xs) + list_length_model(acc)
+}
+
+///|
+predicate[T] normalize_post(q : Queue[T], result : Queue[T]) {
+  queue_raw_inv(q) &&
+  queue_inv(result) &&
+  result.model() == q.model() &&
+  result.len == q.len
+}
+
+///|
+predicate[T] empty_post(result : Queue[T]) {
+  queue_inv(result) && result.model().length() == @mathint.int_model(0)
+}
+
+///|
+predicate[T] length_post(q : Queue[T], result : Int) {
+  queue_inv(q) && @mathint.int_model(result) == q.model().length()
+}
+
+///|
+predicate[T] is_empty_post(q : Queue[T], result : Bool) {
+  queue_inv(q) && result == (q.model().length() == @mathint.int_model(0))
+}
+
+///|
+predicate[T] push_back_post(q : Queue[T], value : T, result : Queue[T]) {
+  queue_inv(q) &&
+  queue_inv(result) &&
+  result.model() == q.model().append(Seq::singleton(value))
+}
+
+///|
+predicate[T : Eq] peek_post(q : Queue[T], result : Option[T]) {
+  queue_inv(q) &&
+  match result {
+    None => q.model().length() == @mathint.int_model(0)
+    Some(value) =>
+      @mathint.int_model(0) < q.model().length() &&
+      value == q.model().get(@mathint.int_model(0))
+  }
+}
+
+///|
+predicate[T : Eq] pop_front_post(q : Queue[T], result : Option[(T, Queue[T])]) {
+  queue_inv(q) &&
+  match result {
+    None => q.model().length() == @mathint.int_model(0)
+    Some((value, next)) =>
+      @mathint.int_model(0) < q.model().length() &&
+      queue_inv(next) &&
+      value == q.model().get(@mathint.int_model(0)) &&
+      next.model() == q.model().tail(@mathint.int_model(1))
+  }
+}

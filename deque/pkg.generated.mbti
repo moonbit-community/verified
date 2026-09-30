@@ -1,0 +1,47 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/deque"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn[T] empty() -> Deque[T]
+
+pub fn[T] is_empty(Deque[T]) -> Bool
+
+pub fn[T] length(Deque[T]) -> Int
+
+pub fn[T : Eq] peek_back(Deque[T]) -> T?
+
+pub fn[T : Eq] peek_front(Deque[T]) -> T?
+
+pub fn[T : Eq] pop_back(Deque[T]) -> (T, Deque[T])?
+
+pub fn[T : Eq] pop_front(Deque[T]) -> (T, Deque[T])?
+
+pub fn[T] push_back(Deque[T], T) -> Deque[T]
+
+pub fn[T] push_front(Deque[T], T) -> Deque[T]
+
+// Errors
+
+// Types and methods
+pub struct Deque[T] {
+  front : List[T]
+  back : List[T]
+  len : Int
+} derive(@debug.Debug)
+#deprecated
+pub fn[T : @debug.Debug] Deque::to_repr(Self[T]) -> @debug.Repr
+
+pub enum List[T] {
+  Nil
+  Cons(T, List[T])
+} derive(@debug.Debug)
+#deprecated
+pub fn[T : @debug.Debug] List::to_repr(Self[T]) -> @debug.Repr
+
+// Type aliases
+
+// Traits

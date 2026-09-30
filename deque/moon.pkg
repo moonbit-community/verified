@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/core/debug",
+  "moonbit-community/verified/libs/mathint",
+  "moonbit-community/verified/libs/seq",
+}
+
+options(
+  "proof-enabled": true,
+)
