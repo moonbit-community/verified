@@ -25,11 +25,15 @@ pub enum ChildList[T] {
   Nil
   Cons(Heap[T], ChildList[T])
 } derive(@debug.Debug)
+#deprecated
+pub fn[T : @debug.Debug] ChildList::to_repr(Self[T]) -> @debug.Repr
 
 pub enum Heap[T] {
   Empty
   Node(T, ChildList[T], Int)
 } derive(@debug.Debug)
+#deprecated
+pub fn[T : @debug.Debug] Heap::to_repr(Self[T]) -> @debug.Repr
 
 // Type aliases
 

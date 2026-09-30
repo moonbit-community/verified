@@ -13,8 +13,11 @@ pub struct AuctionResult {
   quantity : Int
   price : Int
 } derive(Eq)
+#deprecated
+pub fn AuctionResult::equal(Self, Self) -> Bool
+#deprecated
+pub fn AuctionResult::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
 // Traits
-

@@ -35,14 +35,21 @@ pub struct Engine {
   reserve : Int
   min_ratio_bps : Int
 } derive(Eq)
+#deprecated
+pub fn Engine::equal(Self, Self) -> Bool
+#deprecated
+pub fn Engine::not_equal(Self, Self) -> Bool
 
 pub struct LiquidationResult {
   reserve_used : Int
   remaining_bad_debt : Int
   next_engine : Engine
 } derive(Eq)
+#deprecated
+pub fn LiquidationResult::equal(Self, Self) -> Bool
+#deprecated
+pub fn LiquidationResult::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
 // Traits
-

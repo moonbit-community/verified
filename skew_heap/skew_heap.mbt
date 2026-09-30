@@ -8,6 +8,10 @@ pub enum Heap[T] {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend Heap with @debug.Debug::{to_repr}
+
+///|
 fn[T] heap_size(h : Heap[T]) -> Int {
   match h {
     Empty => 0

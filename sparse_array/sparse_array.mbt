@@ -11,6 +11,10 @@ pub struct SparseArray[T] {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend SparseArray with Eq::{not_equal, equal}
+
+///|
 fn bitmap_mem(
   bitmap : UInt,
   idx : Int,

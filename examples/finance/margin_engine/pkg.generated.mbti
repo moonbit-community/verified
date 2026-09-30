@@ -30,6 +30,10 @@ pub struct Account {
   funding_debt : Int
   maintenance_margin_bps : Int
 } derive(Eq)
+#deprecated
+pub fn Account::equal(Self, Self) -> Bool
+#deprecated
+pub fn Account::not_equal(Self, Self) -> Bool
 
 // Type aliases
 

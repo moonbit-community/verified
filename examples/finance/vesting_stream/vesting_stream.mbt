@@ -7,6 +7,10 @@ pub struct Stream {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Stream with Eq::{not_equal, equal}
+
+///|
 pub fn create_stream(
   total : Int,
   start : Int,

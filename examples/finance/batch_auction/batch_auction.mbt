@@ -5,6 +5,10 @@ pub struct AuctionResult {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend AuctionResult with Eq::{not_equal, equal}
+
+///|
 pub fn clearing_quantity(
   bids : FixedArray[Int],
   asks : FixedArray[Int],

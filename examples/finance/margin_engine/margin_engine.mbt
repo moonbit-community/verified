@@ -8,6 +8,10 @@ pub struct Account {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend Account with Eq::{not_equal, equal}
+
+///|
 pub fn open_account(
   collateral : Int,
   contracts : Int,

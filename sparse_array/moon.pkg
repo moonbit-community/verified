@@ -3,8 +3,11 @@ import {
   "moonbit-community/verified/libs/bv32",
   "moonbit-community/verified/libs/fmap",
   "moonbit-community/verified/libs/fset",
-  "moonbitlang/core/debug",
 }
+
+import {
+  "moonbitlang/core/debug",
+} for "test"
 
 options(
   "proof-enabled": true,
