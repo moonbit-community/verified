@@ -18,7 +18,7 @@ fn stack_size(s : MinStack) -> Int {
 
 ///|
 /// Empty is valid because the invariant is vacuous on `Nil`.
-pub fn empty() -> MinStack where { proof_ensure: result => stack_inv(result) } {
+pub fn empty() -> MinStack where { proof_ensure: result => stack_inv(result), } {
   Nil
 }
 

@@ -35,7 +35,7 @@ pub fn open(
   proof_require: debt * 10000 <= collateral * max_ltv_bps,
   proof_ensure: result => open_post(collateral, debt, max_ltv_bps, result),
 } {
-  let result = { collateral, debt, max_ltv_bps }
+  let result = { collateral, debt, max_ltv_bps, }
   proof_assert open_post(collateral, debt, max_ltv_bps, result)
   result
 }

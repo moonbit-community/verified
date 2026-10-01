@@ -65,7 +65,7 @@ fn bitmap_rank(
 
 ///|
 pub fn[T] empty() -> SparseArray[T] {
-  { bitmap: zero_uint(), data: [] }
+  { bitmap: zero_uint(), data: [], }
 }
 
 ///|
@@ -84,7 +84,7 @@ pub fn[T : Eq] singleton(
   let data = FixedArray::make(1, value)
   proof_assert data.length() == 1
   proof_assert data[0] == value
-  let result = { bitmap, data }
+  let result = { bitmap, data, }
   proof_assert count_value(result.bitmap, 0) == 1
   proof_assert rank_value(result.bitmap, idx, 0) == 0
   proof_assert sparse_array_inv(result)
@@ -199,7 +199,7 @@ pub fn[T : Eq] SparseArray::add(
   }
   let new_bitmap = bitmap_add(self.bitmap, idx)
   proof_assert bitmap_add_post(self.bitmap, idx, new_bitmap)
-  let result = { bitmap: new_bitmap, data: new_data }
+  let result = { bitmap: new_bitmap, data: new_data, }
   proof_assert add_data_ok(self, idx, value, result)
   proof_assert mem_value(self.bitmap, idx) == false
   proof_assert count_value(result.bitmap, 0) == count_value(self.bitmap, 0) + 1
@@ -261,7 +261,7 @@ pub fn[T : Eq] SparseArray::replace(
       #| intended value, giving `replace_data_ok`.
     ),
   }
-  let result = { bitmap: self.bitmap, data: new_data }
+  let result = { bitmap: self.bitmap, data: new_data, }
   proof_assert replace_data_ok(self, idx, value, result)
   proof_assert replace_post(self, idx, value, result)
   result
@@ -300,7 +300,10 @@ pub fn[T : Eq] SparseArray::remove(
   let old_data = self.data
   let old_len = old_data.length()
   if old_len == 1 {
-    let result = { bitmap: zero_uint(), data: FixedArray::make(0, old_data[0]) }
+    let result = {
+      bitmap: zero_uint(),
+      data: FixedArray::make(0, old_data[0]),
+    }
     proof_assert remove_empty_post(self, idx, result)
     proof_assert remove_post(self, idx, result)
     result
@@ -349,7 +352,7 @@ pub fn[T : Eq] SparseArray::remove(
     }
     let new_bitmap = bitmap_remove(self.bitmap, idx)
     proof_assert bitmap_remove_post(self.bitmap, idx, new_bitmap)
-    let result = { bitmap: new_bitmap, data: new_data }
+    let result = { bitmap: new_bitmap, data: new_data, }
     proof_assert remove_data_ok(self, idx, result)
     proof_assert count_value(result.bitmap, 0) + 1 ==
       count_value(self.bitmap, 0)

@@ -74,7 +74,7 @@ fn[T] normalize_front(
         _ => {
           let front = reverse(d.back)
           proof_assert reverse_post(d.back, front)
-          let result = { front, back: Nil, len: d.len }
+          let result = { front, back: Nil, len: d.len, }
           proof_assert deque_raw_inv(result)
           proof_assert front_ready(result)
           proof_assert result.model() == d.model()
@@ -108,7 +108,7 @@ fn[T] normalize_back(
         _ => {
           let back = reverse(d.front)
           proof_assert reverse_post(d.front, back)
-          let result = { front: Nil, back, len: d.len }
+          let result = { front: Nil, back, len: d.len, }
           proof_assert deque_raw_inv(result)
           proof_assert back_ready(result)
           proof_assert result.model() == d.model()
@@ -128,7 +128,7 @@ fn[T] normalize_back(
 pub fn[T] empty() -> Deque[T] where {
   proof_ensure: result => empty_post(result),
 } {
-  let result = { front: Nil, back: Nil, len: 0 }
+  let result = { front: Nil, back: Nil, len: 0, }
   proof_assert deque_inv(result)
   proof_assert empty_post(result)
   result
@@ -162,7 +162,7 @@ pub fn[T] push_front(
   proof_require: deque_inv(d),
   proof_ensure: result => push_front_post(d, value, result),
 } {
-  let result = { front: Cons(value, d.front), back: d.back, len: d.len + 1 }
+  let result = { front: Cons(value, d.front), back: d.back, len: d.len + 1, }
   proof_assert deque_inv(result)
   proof_assert push_front_post(d, value, result)
   result
@@ -176,7 +176,7 @@ pub fn[T] push_back(
   proof_require: deque_inv(d),
   proof_ensure: result => push_back_post(d, value, result),
 } {
-  let result = { front: d.front, back: Cons(value, d.back), len: d.len + 1 }
+  let result = { front: d.front, back: Cons(value, d.back), len: d.len + 1, }
   proof_assert deque_inv(result)
   proof_assert push_back_post(d, value, result)
   result
@@ -217,7 +217,7 @@ pub fn[T : Eq] pop_front(
   match ready.front {
     Nil => None
     Cons(value, rest) => {
-      let next = { front: rest, back: ready.back, len: ready.len - 1 }
+      let next = { front: rest, back: ready.back, len: ready.len - 1, }
       proof_assert deque_inv(next)
       let result = Some((value, next))
       proof_assert pop_front_post(d, result)
@@ -261,7 +261,7 @@ pub fn[T : Eq] pop_back(
   match ready.back {
     Nil => None
     Cons(value, rest) => {
-      let next = { front: ready.front, back: rest, len: ready.len - 1 }
+      let next = { front: ready.front, back: rest, len: ready.len - 1, }
       proof_assert deque_inv(next)
       let result = Some((value, next))
       proof_assert pop_back_post(d, result)

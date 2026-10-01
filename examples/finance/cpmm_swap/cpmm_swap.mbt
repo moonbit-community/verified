@@ -21,7 +21,7 @@ pub extend SwapResult with Eq::{not_equal, equal}
 
 ///|
 pub fn make_pool(reserve_in : Int, reserve_out : Int, fee_bps : Int) -> Pool {
-  { reserve_in, reserve_out, fee_bps }
+  { reserve_in, reserve_out, fee_bps, }
 }
 
 ///|
@@ -81,7 +81,7 @@ pub fn swap_x_for_y(
     amount_out * (pool.reserve_in + amount_in)
   proof_assert next_pool.reserve_in * next_pool.reserve_out >=
     pool.reserve_in * pool.reserve_out
-  let result = { amount_out, next_pool }
+  let result = { amount_out, next_pool, }
   proof_assert swap_post(pool, amount_in, result)
   result
 }

@@ -17,7 +17,9 @@ test "skew heap insertion order" {
 test "skew heap duplicates survive one delete" {
   let h = @skew_heap.from_array([3, 3, 5][:])
   @debug.assert_eq(@skew_heap.find_min(h), Some(3))
-  guard @skew_heap.delete_min(h) is Some(h1) else { fail("expected delete_min") }
+  guard @skew_heap.delete_min(h) is Some(h1) else {
+    fail("expected delete_min")
+  }
   @debug.assert_eq(@skew_heap.find_min(h1), Some(3))
   assert_eq(@skew_heap.size(h1), 2)
 }

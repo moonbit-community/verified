@@ -74,7 +74,7 @@ fn[T] normalize(
         _ => {
           let front = reverse(q.rear)
           proof_assert reverse_post(q.rear, front)
-          let result = { front, rear: Nil, len: q.len }
+          let result = { front, rear: Nil, len: q.len, }
           proof_assert queue_inv(result)
           proof_assert result.model() == q.model()
           proof_assert normalize_post(q, result)
@@ -93,7 +93,7 @@ fn[T] normalize(
 pub fn[T] empty() -> Queue[T] where {
   proof_ensure: result => empty_post(result),
 } {
-  let result = { front: Nil, rear: Nil, len: 0 }
+  let result = { front: Nil, rear: Nil, len: 0, }
   proof_assert queue_inv(result)
   proof_assert empty_post(result)
   result
@@ -127,7 +127,7 @@ pub fn[T] push_back(
   proof_require: queue_inv(q),
   proof_ensure: result => push_back_post(q, value, result),
 } {
-  let pending = { front: q.front, rear: Cons(value, q.rear), len: q.len + 1 }
+  let pending = { front: q.front, rear: Cons(value, q.rear), len: q.len + 1, }
   proof_assert queue_raw_inv(pending)
   let result = normalize(pending)
   proof_assert normalize_post(pending, result)
@@ -158,7 +158,7 @@ pub fn[T : Eq] pop_front(
   match q.front {
     Nil => None
     Cons(value, rest) => {
-      let pending = { front: rest, rear: q.rear, len: q.len - 1 }
+      let pending = { front: rest, rear: q.rear, len: q.len - 1, }
       proof_assert queue_raw_inv(pending)
       let next = normalize(pending)
       proof_assert normalize_post(pending, next)

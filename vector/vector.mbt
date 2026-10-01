@@ -12,7 +12,7 @@ fn[T] Vector::tail_offset(
 pub fn[T] Vector::new() -> Vector[T] where {
   proof_ensure: result => new_post(result),
 } {
-  let result = { tree: Tree::empty(), tail: [], size: 0, shift: 0 }
+  let result = { tree: Tree::empty(), tail: [], size: 0, shift: 0, }
   proof_assert result.size == 0
   proof_assert result.shift == 0
   proof_assert result.tail.length() == 0
@@ -275,7 +275,7 @@ pub fn[T] Vector::push(
         proof_assert 0 <= shift
         proof_assert @readonlyarray.model(empty_tail) == Seq::empty()
         proof_assert @readonlyarray.model(new_tail) == Seq::singleton(value)
-        let result = { tree, tail: new_tail, size: self.size + 1, shift }
+        let result = { tree, tail: new_tail, size: self.size + 1, shift, }
         proof_assert result.model() ==
           self.model().append(Seq::singleton(value))
         proof_assert vector_inv(result)
@@ -312,7 +312,7 @@ fn[T] Vector::pop_singleton_tail(
   let stripped = self.tree.pop_rightmost_leaf(self.shift)
   proof_assert pop_rightmost_leaf_post(self.tree, self.shift, stripped)
   let (tree, shift) = stripped.shrink_top(self.shift)
-  let result = { tree, tail: new_tail, size: self.size - 1, shift }
+  let result = { tree, tail: new_tail, size: self.size - 1, shift, }
   proof_assert shrink_top_post(stripped, self.shift, (tree, shift))
   proof_assert result.model() == tree_model(self.tree, root_level(self.shift))
   proof_assert result.model() ==
@@ -398,7 +398,7 @@ fn[T] Vector::pop_tree_only(
               promoted_shift,
               (tree, shift),
             )
-            let result = { tree, tail: new_tail, size: self.size - 1, shift }
+            let result = { tree, tail: new_tail, size: self.size - 1, shift, }
             proof_assert vector_inv(result)
             proof_assert pop_tree_only_post(self, result)
             result

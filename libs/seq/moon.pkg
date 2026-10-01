@@ -4,6 +4,7 @@ import {
 
 // The `Eq` impl lives in the .mbtp proof layer, so it has no runtime methods
 // to promote and `pub extend` cannot target it from .mbt.
+
 warnings = "-implicit_impl_as_method"
 
 options(
