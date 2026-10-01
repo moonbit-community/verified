@@ -97,7 +97,7 @@ pub fn make_engine(
   proof_require: valid_ratio_bps(min_ratio_bps),
   proof_ensure: result => engine_inv(result),
 } {
-  let result = { collateral, debt, reserve, min_ratio_bps }
+  let result = { collateral, debt, reserve, min_ratio_bps, }
   proof_assert engine_inv(result)
   result
 }
@@ -124,7 +124,7 @@ pub fn open_engine(
     open_engine_post(collateral, debt, reserve, min_ratio_bps, result)
   },
 } {
-  let result = { collateral, debt, reserve, min_ratio_bps }
+  let result = { collateral, debt, reserve, min_ratio_bps, }
   proof_assert open_engine_post(
     collateral, debt, reserve, min_ratio_bps, result,
   )
@@ -401,7 +401,7 @@ pub fn liquidate_all(
     reserve: engine.reserve - reserve_used,
     min_ratio_bps: engine.min_ratio_bps,
   }
-  let result = { reserve_used, remaining_bad_debt, next_engine }
+  let result = { reserve_used, remaining_bad_debt, next_engine, }
   proof_assert liquidate_all_post(engine, result)
   result
 }

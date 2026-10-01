@@ -1,7 +1,15 @@
 ///|
 test "nothing is claimable before the cliff starts" {
   let stream = @vesting_stream.create_stream(1_000, 10, 100)
-  assert_eq(@vesting_stream.vested_amount(stream.total, stream.start, stream.duration, 5), 0)
+  assert_eq(
+    @vesting_stream.vested_amount(
+      stream.total,
+      stream.start,
+      stream.duration,
+      5,
+    ),
+    0,
+  )
   assert_eq(@vesting_stream.claimable(stream, 5), 0)
 }
 

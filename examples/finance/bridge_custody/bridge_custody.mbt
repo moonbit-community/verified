@@ -34,7 +34,7 @@ pub fn empty(
   proof_ensure: result => empty_post(reserve, result),
 } {
   let used_nonces = @bitmap32.zero_uint()
-  let result = { reserve, used_nonces }
+  let result = { reserve, used_nonces, }
   proof_assert bridge_inv(result)
   proof_assert model(result) == @fset.fset_empty()
   proof_assert empty_post(reserve, result)
@@ -86,7 +86,7 @@ pub fn execute_withdraw(
   proof_ensure: result => execute_withdraw_post(bridge, nonce, amount, result),
 } {
   let used_nonces = @bitmap32.bitmap_add(bridge.used_nonces, nonce)
-  let result = { reserve: bridge.reserve - amount, used_nonces }
+  let result = { reserve: bridge.reserve - amount, used_nonces, }
   proof_assert execute_withdraw_post(bridge, nonce, amount, result)
   result
 }

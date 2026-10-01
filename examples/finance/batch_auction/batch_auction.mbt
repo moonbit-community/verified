@@ -72,7 +72,7 @@ pub fn clear_book(
   } else {
     asks[quantity - 1] + (bids[quantity - 1] - asks[quantity - 1]) / 2
   }
-  let result = { quantity, price }
+  let result = { quantity, price, }
   proof_assert auction_result_post(bids, asks, result)
   result
 }

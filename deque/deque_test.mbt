@@ -3,7 +3,10 @@ test "batched deque supports both ends" {
   let d0 : @deque.Deque[Int] = @deque.empty()
   assert_eq(@deque.is_empty(d0), true)
 
-  let d1 = @deque.push_front(@deque.push_back(@deque.push_front(@deque.push_back(d0, 2), 1), 3), 0)
+  let d1 = @deque.push_front(
+    @deque.push_back(@deque.push_front(@deque.push_back(d0, 2), 1), 3),
+    0,
+  )
   assert_eq(@deque.length(d1), 4)
   match @deque.peek_front(d1) {
     Some(value) => assert_eq(value, 0)

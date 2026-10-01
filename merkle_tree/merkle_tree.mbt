@@ -116,7 +116,7 @@ pub fn singleton(
   proof_ensure: result => singleton_post(data, result),
 } {
   let h = hash_leaf(data)
-  let result = { inner: Leaf(data, h) }
+  let result = { inner: Leaf(data, h), }
   proof_assert singleton_post(data, result)
   result
 }
@@ -133,7 +133,7 @@ pub fn combine(
   let left_root = root(left)
   let right_root = root(right)
   let h = hash_node(left_root, right_root)
-  let result = { inner: Node(left.inner, right.inner, h) }
+  let result = { inner: Node(left.inner, right.inner, h), }
   proof_assert left_root == root_hash(left.inner)
   proof_assert right_root == root_hash(right.inner)
   proof_assert merkle_inv(result.inner)

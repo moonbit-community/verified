@@ -97,7 +97,7 @@ pub fn make_house(
   proof_require: 0 <= senior,
   proof_ensure: result => house_inv(result),
 } {
-  let result = { collateral, liability, insurance, junior, senior }
+  let result = { collateral, liability, insurance, junior, senior, }
   proof_assert house_inv(result)
   result
 }

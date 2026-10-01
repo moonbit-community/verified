@@ -20,7 +20,7 @@ pub fn create_stream(
   proof_require: 0 < duration,
   proof_ensure: result => stream_inv(result),
 } {
-  let result = { total, released: 0, start, duration }
+  let result = { total, released: 0, start, duration, }
   proof_assert stream_inv(result)
   result
 }

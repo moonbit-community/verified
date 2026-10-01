@@ -10,6 +10,7 @@ import {
 
 // `seq` is only reached through `@bytes.model(...).length()` in the .mbtp
 // proofs; the type checker calls it unused, but the Why3 lowering needs it.
+
 warnings = "-unused_package"
 
 options(
