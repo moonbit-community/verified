@@ -1,8 +1,8 @@
 ///|
 pub fn find(
-  xs : FixedArray[Int],
-  key : Int,
-) -> Int where {
+  xs : FixedArray[Int32],
+  key : Int32,
+) -> Int32 where {
   proof_ensure: result => find_ok(xs, key, result),
 } {
   for i = 0, found = -1; i < xs.length(); {

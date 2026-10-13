@@ -1,8 +1,8 @@
 ///|
 fn build_skip_table(
   needle : Bytes,
-  needle_len : Int,
-) -> FixedArray[Int] where {
+  needle_len : Int32,
+) -> FixedArray[Int32] where {
   proof_require: bytes_len_ok(needle, needle_len),
   proof_require: needle_len > 0,
   proof_ensure: result => skip_table_ok(result, needle),
@@ -25,8 +25,8 @@ fn build_skip_table(
     proof_assert i == needle_len - 1
     proof_assert i == bytes_length(needle) - 1
     proof_assert skip_table_prefix_ok(skip, needle, i)
-    proof_assert ∀ c : Int,
-      ∀ s : Int,
+    proof_assert ∀ c : Int32,
+      ∀ s : Int32,
         0 <= c && c < 256 && 1 <= s && s < skip[c] →
         byte_value(needle, bytes_length(needle) - 1 - s) != c
     proof_assert skip_table_ok(skip, needle)
@@ -43,8 +43,8 @@ fn build_skip_table(
 fn matches_at(
   haystack : Bytes,
   needle : Bytes,
-  offset : Int,
-  needle_len : Int,
+  offset : Int32,
+  needle_len : Int32,
 ) -> Bool where {
   proof_require: bytes_len_ok(needle, needle_len),
   proof_require: valid_offset(haystack, needle, offset),
@@ -105,7 +105,7 @@ fn matches_at(
 pub fn boyer_moore_horspool_find(
   haystack : Bytes,
   needle : Bytes,
-) -> Int? where {
+) -> Int32? where {
   proof_ensure: result => search_ok(haystack, needle, result),
 } {
   let haystack_len = haystack.length()

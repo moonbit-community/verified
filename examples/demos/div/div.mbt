@@ -1,8 +1,8 @@
 ///|
 pub fn div(
-  a : Int,
-  b : Int,
-) -> Int where {
+  a : Int32,
+  b : Int32,
+) -> Int32 where {
   proof_require: valid_div_args(a, b),
   proof_ensure: result => div_ok(a, b, result),
 } {

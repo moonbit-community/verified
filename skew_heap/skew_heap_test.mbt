@@ -1,6 +1,6 @@
 ///|
 test "skew heap empty" {
-  let h : @skew_heap.Heap[Int] = @skew_heap.empty()
+  let h : @skew_heap.Heap[Int32] = @skew_heap.empty()
   @debug.assert_eq(@skew_heap.find_min(h), None)
   guard @skew_heap.delete_min(h) is None else { fail("expected empty delete") }
   assert_eq(@skew_heap.size(h), 0)

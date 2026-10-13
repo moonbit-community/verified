@@ -1,7 +1,7 @@
 ///|
 pub fn index_of_max(
-  xs : FixedArray[Int],
-) -> Int where {
+  xs : FixedArray[Int32],
+) -> Int32 where {
   proof_require: nonempty(xs),
   proof_ensure: result => is_max_index(xs, result),
 } {

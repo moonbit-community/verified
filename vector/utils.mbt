@@ -1,7 +1,7 @@
 ///|
 fn[T] immutable_set(
   arr : ReadOnlyArray[T],
-  i : Int,
+  i : Int32,
   v : T,
 ) -> ReadOnlyArray[T] where {
   proof_axiomatized: true,
@@ -43,8 +43,8 @@ fn[T] immutable_concat(
 ///|
 fn[T] immutable_slice(
   arr : ReadOnlyArray[T],
-  start : Int,
-  stop : Int,
+  start : Int32,
+  stop : Int32,
 ) -> ReadOnlyArray[T] where {
   proof_axiomatized: true,
   proof_require: 0 <= start,
@@ -61,22 +61,22 @@ fn[T] immutable_slice(
 }
 
 ///|
-fn shr_as_uint(x : Int, y : Int) -> Int {
+fn shr_as_uint(x : Int32, y : Int32) -> Int32 {
   (x.reinterpret_as_uint() >> y).reinterpret_as_int()
 }
 
 ///|
-fn radix_indexing(index : Int, shift : Int) -> Int {
+fn radix_indexing(index : Int32, shift : Int32) -> Int32 {
   shr_as_uint(index, shift) & bitmask
 }
 
 ///|
-fn radix_subindex(index : Int, shift : Int) -> Int {
+fn radix_subindex(index : Int32, shift : Int32) -> Int32 {
   index & ((1 << shift) - 1)
 }
 
 ///|
-fn get_branch_index(sizes : ReadOnlyArray[Int], index : Int) -> Int {
+fn get_branch_index(sizes : ReadOnlyArray[Int32], index : Int32) -> Int32 {
   let lo = for lo = 0, hi = sizes.length(); LINEAR_THRESHOLD < hi - lo; {
     let mid = (lo + hi) / 2
     if sizes[mid] <= index {

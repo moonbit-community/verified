@@ -4,7 +4,7 @@
 /// ordering with the rank constraint that makes merges cheap.
 pub enum Heap[T] {
   Empty
-  Node(T, Int, Heap[T], Heap[T])
+  Node(T, Int32, Heap[T], Heap[T])
 } derive(Debug)
 
 ///|
@@ -13,7 +13,7 @@ pub extend Heap with @debug.Debug::{to_repr}
 
 ///|
 #proof_pure
-fn[T] rank(h : Heap[T]) -> Int {
+fn[T] rank(h : Heap[T]) -> Int32 {
   match h {
     Empty => 0
     Node(_, rank, _, _) => rank
@@ -21,7 +21,7 @@ fn[T] rank(h : Heap[T]) -> Int {
 }
 
 ///|
-fn[T] heap_size(h : Heap[T]) -> Int {
+fn[T] heap_size(h : Heap[T]) -> Int32 {
   match h {
     Empty => 0
     Node(_, _, left, right) => 1 + heap_size(left) + heap_size(right)
@@ -30,7 +30,7 @@ fn[T] heap_size(h : Heap[T]) -> Int {
 
 ///|
 #proof_pure
-fn min2(a : Int, b : Int) -> Int {
+fn min2(a : Int32, b : Int32) -> Int32 {
   if a < b {
     a
   } else {
@@ -46,7 +46,7 @@ pub fn[T : Compare] empty() -> Heap[T] where {
 }
 
 ///|
-pub fn[T] size(h : Heap[T]) -> Int {
+pub fn[T] size(h : Heap[T]) -> Int32 {
   heap_size(h)
 }
 

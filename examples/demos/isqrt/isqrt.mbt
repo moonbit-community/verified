@@ -1,7 +1,7 @@
 ///|
 pub fn isqrt(
-  n : Int,
-) -> Int where {
+  n : Int32,
+) -> Int32 where {
   proof_require: nonneg(n),
   proof_ensure: result => isqrt_ok(n, result),
 } {

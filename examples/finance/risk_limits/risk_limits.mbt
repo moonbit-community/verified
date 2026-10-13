@@ -1,8 +1,8 @@
 ///|
 pub fn first_breach(
-  exposures : FixedArray[Int],
-  limits : FixedArray[Int],
-) -> Int? where {
+  exposures : FixedArray[Int32],
+  limits : FixedArray[Int32],
+) -> Int32? where {
   proof_require: same_length(exposures, limits),
   proof_ensure: result => first_breach_post(exposures, limits, result),
 } {

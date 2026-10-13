@@ -1,8 +1,8 @@
 ///|
 pub fn binary_search(
-  xs : FixedArray[Int],
-  key : Int,
-) -> Int where {
+  xs : FixedArray[Int32],
+  key : Int32,
+) -> Int32 where {
   proof_require: sorted(xs),
   proof_ensure: result => binary_search_ok(xs, key, result),
 } {

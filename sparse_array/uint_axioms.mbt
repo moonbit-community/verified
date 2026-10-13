@@ -1,5 +1,5 @@
 ///|
-fn zero_uint() -> UInt where {
+fn zero_uint() -> UInt32 where {
   proof_ensure: result => empty_bitmap_inv(result),
 } {
   @bitmap32.zero_uint()
@@ -7,9 +7,9 @@ fn zero_uint() -> UInt where {
 
 ///|
 fn uint_lsr(
-  bitmap : UInt,
-  idx : Int,
-) -> UInt where {
+  bitmap : UInt32,
+  idx : Int32,
+) -> UInt32 where {
   proof_require: valid_idx(idx),
   proof_ensure: result => uint_lsr_post(bitmap, idx, result),
 } {
@@ -18,7 +18,7 @@ fn uint_lsr(
 
 ///|
 fn uint_bit0(
-  x : UInt,
+  x : UInt32,
 ) -> Bool where {
   proof_ensure: result => result == @bv32.uint_to_bv(x).nth(0),
 } {
@@ -27,9 +27,9 @@ fn uint_bit0(
 
 ///|
 fn bitmap_add(
-  bitmap : UInt,
-  idx : Int,
-) -> UInt where {
+  bitmap : UInt32,
+  idx : Int32,
+) -> UInt32 where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx) == false,
   proof_ensure: result => bitmap_add_post(bitmap, idx, result),
@@ -39,9 +39,9 @@ fn bitmap_add(
 
 ///|
 fn bitmap_remove(
-  bitmap : UInt,
-  idx : Int,
-) -> UInt where {
+  bitmap : UInt32,
+  idx : Int32,
+) -> UInt32 where {
   proof_require: valid_idx(idx),
   proof_require: mem_value(bitmap, idx),
   proof_ensure: result => bitmap_remove_post(bitmap, idx, result),

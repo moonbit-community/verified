@@ -1,8 +1,8 @@
 ///|
 pub fn arrays_equal(
-  xs : FixedArray[Int],
-  ys : FixedArray[Int],
-) -> Int where {
+  xs : FixedArray[Int32],
+  ys : FixedArray[Int32],
+) -> Int32 where {
   proof_require: same_length(xs, ys),
   proof_ensure: result => arrays_eq_ok(xs, ys, result),
 } {

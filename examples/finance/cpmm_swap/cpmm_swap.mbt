@@ -1,8 +1,8 @@
 ///|
 pub struct Pool {
-  reserve_in : Int
-  reserve_out : Int
-  fee_bps : Int
+  reserve_in : Int32
+  reserve_out : Int32
+  fee_bps : Int32
 } derive(Eq)
 
 ///|
@@ -11,7 +11,7 @@ pub extend Pool with Eq::{not_equal, equal}
 
 ///|
 pub struct SwapResult {
-  amount_out : Int
+  amount_out : Int32
   next_pool : Pool
 } derive(Eq)
 
@@ -20,15 +20,19 @@ pub struct SwapResult {
 pub extend SwapResult with Eq::{not_equal, equal}
 
 ///|
-pub fn make_pool(reserve_in : Int, reserve_out : Int, fee_bps : Int) -> Pool {
+pub fn make_pool(
+  reserve_in : Int32,
+  reserve_out : Int32,
+  fee_bps : Int32,
+) -> Pool {
   { reserve_in, reserve_out, fee_bps, }
 }
 
 ///|
 pub fn quote_amount_out(
   pool : Pool,
-  amount_in : Int,
-) -> Int where {
+  amount_in : Int32,
+) -> Int32 where {
   proof_require: pool_inv(pool),
   proof_require: 0 < amount_in,
   proof_ensure: result => quote_post(pool, amount_in, result),
@@ -53,7 +57,7 @@ pub fn quote_amount_out(
 ///|
 pub fn swap_x_for_y(
   pool : Pool,
-  amount_in : Int,
+  amount_in : Int32,
 ) -> SwapResult where {
   proof_require: pool_inv(pool),
   proof_require: 0 < amount_in,

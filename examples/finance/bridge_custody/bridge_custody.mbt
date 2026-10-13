@@ -3,8 +3,8 @@ using @fset {type Fset}
 
 ///|
 pub struct Bridge {
-  reserve : Int
-  used_nonces : UInt
+  reserve : Int32
+  used_nonces : UInt32
 } derive(Eq)
 
 ///|
@@ -13,8 +13,8 @@ pub extend Bridge with Eq::{not_equal, equal}
 
 ///|
 fn nonce_mem(
-  bitmap : UInt,
-  nonce : Int,
+  bitmap : UInt32,
+  nonce : Int32,
 ) -> Bool where {
   proof_require: @bitmap32.valid_idx(nonce),
   proof_ensure: result => result == @bitmap32.mem_value(bitmap, nonce),
@@ -28,7 +28,7 @@ fn nonce_mem(
 
 ///|
 pub fn empty(
-  reserve : Int,
+  reserve : Int32,
 ) -> Bridge where {
   proof_require: 0 <= reserve,
   proof_ensure: result => empty_post(reserve, result),
@@ -44,7 +44,7 @@ pub fn empty(
 ///|
 pub fn deposit(
   bridge : Bridge,
-  amount : Int,
+  amount : Int32,
 ) -> Bridge where {
   proof_require: bridge_inv(bridge),
   proof_require: 0 <= amount,
@@ -61,7 +61,7 @@ pub fn deposit(
 ///|
 pub fn nonce_used(
   bridge : Bridge,
-  nonce : Int,
+  nonce : Int32,
 ) -> Bool where {
   proof_require: bridge_inv(bridge),
   proof_require: @bitmap32.valid_idx(nonce),
@@ -75,8 +75,8 @@ pub fn nonce_used(
 ///|
 pub fn execute_withdraw(
   bridge : Bridge,
-  nonce : Int,
-  amount : Int,
+  nonce : Int32,
+  amount : Int32,
 ) -> Bridge where {
   proof_require: bridge_inv(bridge),
   proof_require: @bitmap32.valid_idx(nonce),

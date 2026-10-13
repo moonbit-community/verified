@@ -7,6 +7,4 @@ import {
 
 warnings = "-implicit_impl_as_method"
 
-options(
-  "proof-enabled": true,
-)
+proof_enabled = true

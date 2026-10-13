@@ -1,6 +1,6 @@
 ///|
 test "leftist heap empty" {
-  let h : @leftist_heap.Heap[Int] = @leftist_heap.empty()
+  let h : @leftist_heap.Heap[Int32] = @leftist_heap.empty()
   @debug.assert_eq(@leftist_heap.find_min(h), None)
   guard @leftist_heap.delete_min(h) is None else {
     fail("expected empty delete")

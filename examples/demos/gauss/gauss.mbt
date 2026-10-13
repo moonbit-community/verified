@@ -1,7 +1,7 @@
 ///|
 pub fn sum_to(
-  n : Int,
-) -> Int where {
+  n : Int32,
+) -> Int32 where {
   proof_require: nonneg(n),
   proof_ensure: result => gauss_ok(n, result),
 } {

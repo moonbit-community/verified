@@ -1,10 +1,10 @@
 ///|
 pub struct House {
-  collateral : Int
-  liability : Int
-  insurance : Int
-  junior : Int
-  senior : Int
+  collateral : Int32
+  liability : Int32
+  insurance : Int32
+  junior : Int32
+  senior : Int32
 } derive(Eq)
 
 ///|
@@ -13,10 +13,10 @@ pub extend House with Eq::{not_equal, equal}
 
 ///|
 pub struct Resolution {
-  insurance_used : Int
-  junior_used : Int
-  senior_used : Int
-  socialized_loss : Int
+  insurance_used : Int32
+  junior_used : Int32
+  senior_used : Int32
+  socialized_loss : Int32
   next_house : House
 } derive(Eq)
 
@@ -26,7 +26,7 @@ pub extend Resolution with Eq::{not_equal, equal}
 
 ///|
 #proof_pure
-fn shortfall(house : House) -> Int {
+fn shortfall(house : House) -> Int32 {
   if house.liability <= house.collateral {
     0
   } else {
@@ -36,7 +36,7 @@ fn shortfall(house : House) -> Int {
 
 ///|
 #proof_pure
-fn insurance_used_to_cover(house : House) -> Int {
+fn insurance_used_to_cover(house : House) -> Int32 {
   if shortfall(house) <= house.insurance {
     shortfall(house)
   } else {
@@ -46,13 +46,13 @@ fn insurance_used_to_cover(house : House) -> Int {
 
 ///|
 #proof_pure
-fn remaining_after_insurance(house : House) -> Int {
+fn remaining_after_insurance(house : House) -> Int32 {
   shortfall(house) - insurance_used_to_cover(house)
 }
 
 ///|
 #proof_pure
-fn junior_used_to_cover(house : House) -> Int {
+fn junior_used_to_cover(house : House) -> Int32 {
   if remaining_after_insurance(house) <= house.junior {
     remaining_after_insurance(house)
   } else {
@@ -62,13 +62,13 @@ fn junior_used_to_cover(house : House) -> Int {
 
 ///|
 #proof_pure
-fn remaining_after_junior(house : House) -> Int {
+fn remaining_after_junior(house : House) -> Int32 {
   remaining_after_insurance(house) - junior_used_to_cover(house)
 }
 
 ///|
 #proof_pure
-fn senior_used_to_cover(house : House) -> Int {
+fn senior_used_to_cover(house : House) -> Int32 {
   if remaining_after_junior(house) <= house.senior {
     remaining_after_junior(house)
   } else {
@@ -78,17 +78,17 @@ fn senior_used_to_cover(house : House) -> Int {
 
 ///|
 #proof_pure
-fn socialized_tail_loss(house : House) -> Int {
+fn socialized_tail_loss(house : House) -> Int32 {
   remaining_after_junior(house) - senior_used_to_cover(house)
 }
 
 ///|
 pub fn make_house(
-  collateral : Int,
-  liability : Int,
-  insurance : Int,
-  junior : Int,
-  senior : Int,
+  collateral : Int32,
+  liability : Int32,
+  insurance : Int32,
+  junior : Int32,
+  senior : Int32,
 ) -> House where {
   proof_require: 0 <= collateral,
   proof_require: 0 <= liability,
@@ -105,7 +105,7 @@ pub fn make_house(
 ///|
 pub fn total_buffer(
   house : House,
-) -> Int where {
+) -> Int32 where {
   proof_require: house_inv(house),
   proof_ensure: result => total_buffer_post(house, result),
 } {
@@ -129,7 +129,7 @@ pub fn can_fully_absorb(
 ///|
 pub fn add_insurance(
   house : House,
-  amount : Int,
+  amount : Int32,
 ) -> House where {
   proof_require: house_inv(house),
   proof_require: 0 <= amount,

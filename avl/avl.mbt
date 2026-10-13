@@ -4,12 +4,12 @@ using @fset {type Fset}
 ///|
 pub enum Tree[T] {
   Empty
-  Node(Tree[T], T, Tree[T], Int)
+  Node(Tree[T], T, Tree[T], Int32)
 }
 
 ///|
 #proof_pure
-fn[T] height(t : Tree[T]) -> Int {
+fn[T] height(t : Tree[T]) -> Int32 {
   match t {
     Empty => 0
     Node(_, _, _, h) => h
@@ -18,7 +18,7 @@ fn[T] height(t : Tree[T]) -> Int {
 
 ///|
 #proof_pure
-fn max2(a : Int, b : Int) -> Int {
+fn max2(a : Int32, b : Int32) -> Int32 {
   if a < b {
     b
   } else {

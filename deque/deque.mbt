@@ -15,7 +15,7 @@ pub extend List with @debug.Debug::{to_repr}
 pub struct Deque[T] {
   front : List[T]
   back : List[T]
-  len : Int
+  len : Int32
 } derive(Debug)
 
 ///|
@@ -137,7 +137,7 @@ pub fn[T] empty() -> Deque[T] where {
 ///|
 pub fn[T] length(
   d : Deque[T],
-) -> Int where {
+) -> Int32 where {
   proof_require: deque_inv(d),
   proof_ensure: result => length_post(d, result),
 } {

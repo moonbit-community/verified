@@ -1,7 +1,7 @@
 ///|
 pub struct AuctionResult {
-  quantity : Int
-  price : Int
+  quantity : Int32
+  price : Int32
 } derive(Eq)
 
 ///|
@@ -10,9 +10,9 @@ pub extend AuctionResult with Eq::{not_equal, equal}
 
 ///|
 pub fn clearing_quantity(
-  bids : FixedArray[Int],
-  asks : FixedArray[Int],
-) -> Int where {
+  bids : FixedArray[Int32],
+  asks : FixedArray[Int32],
+) -> Int32 where {
   proof_require: same_length(bids, asks),
   proof_require: bids_desc(bids),
   proof_require: asks_asc(asks),
@@ -58,8 +58,8 @@ pub fn clearing_quantity(
 
 ///|
 pub fn clear_book(
-  bids : FixedArray[Int],
-  asks : FixedArray[Int],
+  bids : FixedArray[Int32],
+  asks : FixedArray[Int32],
 ) -> AuctionResult where {
   proof_require: same_length(bids, asks),
   proof_require: bids_desc(bids),

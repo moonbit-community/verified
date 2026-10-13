@@ -11,7 +11,7 @@ pub extend Direction with @debug.Debug::{to_repr}
 ///|
 pub enum MerkleProof {
   Done
-  Step(Direction, Int, MerkleProof)
+  Step(Direction, Int32, MerkleProof)
 } derive(Debug)
 
 ///|
@@ -20,8 +20,8 @@ pub extend MerkleProof with @debug.Debug::{to_repr}
 
 ///|
 enum MerkleNode {
-  Leaf(Int, Int)
-  Node(MerkleNode, MerkleNode, Int)
+  Leaf(Int32, Int32)
+  Node(MerkleNode, MerkleNode, Int32)
 } derive(Debug)
 
 ///|
@@ -39,8 +39,8 @@ pub extend MerkleTree with @debug.Debug::{to_repr}
 
 ///|
 fn hash_leaf(
-  data : Int,
-) -> Int where {
+  data : Int32,
+) -> Int32 where {
   proof_axiomatized: true,
   proof_ensure: result => result == leaf_hash_model(data),
 } {
@@ -49,9 +49,9 @@ fn hash_leaf(
 
 ///|
 fn hash_node(
-  left : Int,
-  right : Int,
-) -> Int where {
+  left : Int32,
+  right : Int32,
+) -> Int32 where {
   proof_axiomatized: true,
   proof_ensure: result => result == node_hash_model(left, right),
 } {
@@ -78,7 +78,7 @@ fn prove_tree_size_positive(
 fn prove_left_child_size_decrease(
   left : MerkleNode,
   right : MerkleNode,
-  hash : Int,
+  hash : Int32,
 ) -> Unit where {
   proof_ensure: tree_size(left) < tree_size(Node(left, right, hash)),
 } {
@@ -89,7 +89,7 @@ fn prove_left_child_size_decrease(
 fn prove_right_child_size_decrease(
   left : MerkleNode,
   right : MerkleNode,
-  hash : Int,
+  hash : Int32,
 ) -> Unit where {
   proof_ensure: tree_size(right) < tree_size(Node(left, right, hash)),
 } {
@@ -111,7 +111,7 @@ fn prove_proof_size_positive(
 
 ///|
 pub fn singleton(
-  data : Int,
+  data : Int32,
 ) -> MerkleTree where {
   proof_ensure: result => singleton_post(data, result),
 } {
@@ -148,7 +148,7 @@ pub fn combine(
 ///|
 pub fn root(
   tree : MerkleTree,
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => root_post(tree, result),
 } {
   match tree.inner {
@@ -160,7 +160,7 @@ pub fn root(
 ///|
 pub fn size(
   tree : MerkleTree,
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => size_post(tree, result),
 } {
   node_size(tree.inner)
@@ -169,7 +169,7 @@ pub fn size(
 ///|
 fn node_size(
   node : MerkleNode,
-) -> Int where {
+) -> Int32 where {
   proof_decrease: tree_size(node),
   proof_ensure: result => result == tree_size(node),
 } {
@@ -187,8 +187,8 @@ fn node_size(
 ///|
 pub fn leaf(
   tree : MerkleTree,
-  index : Int,
-) -> Int where {
+  index : Int32,
+) -> Int32 where {
   proof_require: valid_tree_index(tree, index),
   proof_ensure: result => leaf_post(tree, index, result),
 } {
@@ -200,8 +200,8 @@ pub fn leaf(
 ///|
 fn leaf_node(
   node : MerkleNode,
-  index : Int,
-) -> Int where {
+  index : Int32,
+) -> Int32 where {
   proof_decrease: tree_size(node),
   proof_require: merkle_inv(node),
   proof_require: valid_index(node, index),
@@ -237,9 +237,9 @@ fn leaf_node(
 
 ///|
 pub fn verify_proof(
-  data : Int,
+  data : Int32,
   proof : MerkleProof,
-  expected_root : Int,
+  expected_root : Int32,
 ) -> Bool where {
   proof_ensure: result => verify_proof_post(data, proof, expected_root, result),
 } {
@@ -253,9 +253,9 @@ pub fn verify_proof(
 
 ///|
 fn replay_proof(
-  data : Int,
+  data : Int32,
   proof : MerkleProof,
-) -> Int where {
+) -> Int32 where {
   proof_decrease: proof_size(proof),
   proof_ensure: result => result == replay_hash(data, proof),
 } {
@@ -289,7 +289,7 @@ fn replay_proof(
 ///|
 pub fn make_proof(
   tree : MerkleTree,
-  index : Int,
+  index : Int32,
 ) -> MerkleProof? where {
   proof_require: valid_tree_index(tree, index),
   proof_ensure: result => make_tree_proof_post(tree, index, result),
@@ -302,7 +302,7 @@ pub fn make_proof(
 ///|
 fn make_proof_node(
   node : MerkleNode,
-  index : Int,
+  index : Int32,
 ) -> MerkleProof? where {
   proof_decrease: tree_size(node),
   proof_require: merkle_inv(node),
@@ -382,7 +382,7 @@ fn make_proof_node(
 ///|
 fn node_root(
   node : MerkleNode,
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => result == root_hash(node),
 } {
   match node {
@@ -394,7 +394,7 @@ fn node_root(
 ///|
 pub fn generated_proof_verifies(
   tree : MerkleTree,
-  index : Int,
+  index : Int32,
 ) -> Bool where {
   proof_require: valid_tree_index(tree, index),
   proof_ensure: result => generated_proof_verifies_post(tree, index, result),

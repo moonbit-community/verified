@@ -2,6 +2,4 @@ import {
   "moonbit-community/verified/libs/seq",
 }
 
-options(
-  "proof-enabled": true,
-)
+proof_enabled = true
