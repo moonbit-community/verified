@@ -1,8 +1,8 @@
 ///|
 fn[T : Eq] Tree::get(
   self : Tree[T],
-  index : Int,
-  shift : Int,
+  index : Int32,
+  shift : Int32,
 ) -> T where {
   proof_axiomatized: true,
   proof_require: tree_inv(self, root_level(shift)),
@@ -32,8 +32,8 @@ fn[T : Eq] Tree::get(
 ///|
 fn[T] Tree::set(
   self : Tree[T],
-  index : Int,
-  shift : Int,
+  index : Int32,
+  shift : Int32,
   value : T,
 ) -> Tree[T] where {
   proof_axiomatized: true,
@@ -77,9 +77,9 @@ fn[T] Tree::set(
 
 ///|
 fn append_sizes_last(
-  sizes : ReadOnlyArray[Int]?,
-  delta : Int,
-) -> ReadOnlyArray[Int]? {
+  sizes : ReadOnlyArray[Int32]?,
+  delta : Int32,
+) -> ReadOnlyArray[Int32]? {
   match sizes {
     Some(values) =>
       Some(
@@ -95,9 +95,9 @@ fn append_sizes_last(
 
 ///|
 fn push_sizes_last(
-  sizes : ReadOnlyArray[Int]?,
-  delta : Int,
-) -> ReadOnlyArray[Int]? {
+  sizes : ReadOnlyArray[Int32]?,
+  delta : Int32,
+) -> ReadOnlyArray[Int32]? {
   match sizes {
     Some(values) =>
       Some(immutable_push(values, values[values.length() - 1] + delta))
@@ -108,9 +108,9 @@ fn push_sizes_last(
 ///|
 fn[T] Tree::append_right_leaf(
   self : Tree[T],
-  shift : Int,
+  shift : Int32,
   leaf : ReadOnlyArray[T],
-) -> (Tree[T], Int) where {
+) -> (Tree[T], Int32) where {
   proof_axiomatized: true,
   proof_require: tree_inv(self, root_level(shift)),
   proof_require: @mathint.int_model(0) < @readonlyarray.model(leaf).length(),
@@ -122,9 +122,9 @@ fn[T] Tree::append_right_leaf(
 
   fn worker(
     node : Tree[T],
-    shift : Int,
+    shift : Int32,
     leaf : ReadOnlyArray[T],
-    delta : Int,
+    delta : Int32,
   ) -> Tree[T]? {
     match node {
       Leaf(elems) => {

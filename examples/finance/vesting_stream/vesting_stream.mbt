@@ -1,9 +1,9 @@
 ///|
 pub struct Stream {
-  total : Int
-  released : Int
-  start : Int
-  duration : Int
+  total : Int32
+  released : Int32
+  start : Int32
+  duration : Int32
 } derive(Eq)
 
 ///|
@@ -12,9 +12,9 @@ pub extend Stream with Eq::{not_equal, equal}
 
 ///|
 pub fn create_stream(
-  total : Int,
-  start : Int,
-  duration : Int,
+  total : Int32,
+  start : Int32,
+  duration : Int32,
 ) -> Stream where {
   proof_require: 0 <= total,
   proof_require: 0 < duration,
@@ -27,11 +27,11 @@ pub fn create_stream(
 
 ///|
 pub fn vested_amount(
-  total : Int,
-  start : Int,
-  duration : Int,
-  now : Int,
-) -> Int where {
+  total : Int32,
+  start : Int32,
+  duration : Int32,
+  now : Int32,
+) -> Int32 where {
   proof_require: 0 <= total,
   proof_require: 0 < duration,
   proof_ensure: result => {
@@ -53,8 +53,8 @@ pub fn vested_amount(
 ///|
 pub fn claimable(
   stream : Stream,
-  now : Int,
-) -> Int where {
+  now : Int32,
+) -> Int32 where {
   proof_require: stream_inv(stream),
   proof_ensure: result => claimable_post(stream, now, result),
 } {
@@ -79,7 +79,7 @@ pub fn claimable(
 ///|
 pub fn release(
   stream : Stream,
-  now : Int,
+  now : Int32,
 ) -> Stream where {
   proof_require: stream_inv(stream),
   proof_ensure: result => release_post(stream, now, result),

@@ -15,7 +15,7 @@ pub extend List with @debug.Debug::{to_repr}
 pub struct Queue[T] {
   front : List[T]
   rear : List[T]
-  len : Int
+  len : Int32
 } derive(Debug)
 
 ///|
@@ -102,7 +102,7 @@ pub fn[T] empty() -> Queue[T] where {
 ///|
 pub fn[T] length(
   q : Queue[T],
-) -> Int where {
+) -> Int32 where {
   proof_require: queue_inv(q),
   proof_ensure: result => length_post(q, result),
 } {

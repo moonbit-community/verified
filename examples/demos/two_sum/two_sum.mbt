@@ -1,8 +1,8 @@
 ///|
 pub fn first_hit(
-  a : FixedArray[Int],
-  sum : Int,
-) -> (Int, Int)? where {
+  a : FixedArray[Int32],
+  sum : Int32,
+) -> (Int32, Int32)? where {
   proof_ensure: result => two_sum_result_ok(a, sum, result),
 } {
   for i = 0; i < a.length(); {
@@ -69,9 +69,9 @@ pub fn first_hit(
 
 ///|
 pub fn one_loop_positive(
-  a : FixedArray[Int],
-  sum : Int,
-) -> (Int, Int)? where {
+  a : FixedArray[Int32],
+  sum : Int32,
+) -> (Int32, Int32)? where {
   proof_require: nonnegative(sum),
   proof_require: nonnegative_entries(a),
   proof_ensure: result => positive_two_sum_result_ok(a, sum, result),

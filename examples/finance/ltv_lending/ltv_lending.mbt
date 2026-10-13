@@ -1,8 +1,8 @@
 ///|
 pub struct Position {
-  collateral : Int
-  debt : Int
-  max_ltv_bps : Int
+  collateral : Int32
+  debt : Int32
+  max_ltv_bps : Int32
 } derive(Eq)
 
 ///|
@@ -11,9 +11,9 @@ pub extend Position with Eq::{not_equal, equal}
 
 ///|
 pub fn max_safe_debt(
-  collateral : Int,
-  max_ltv_bps : Int,
-) -> Int where {
+  collateral : Int32,
+  max_ltv_bps : Int32,
+) -> Int32 where {
   proof_require: 0 <= collateral,
   proof_require: valid_bps(max_ltv_bps),
   proof_ensure: result => max_safe_debt_post(collateral, max_ltv_bps, result),
@@ -25,9 +25,9 @@ pub fn max_safe_debt(
 
 ///|
 pub fn open(
-  collateral : Int,
-  debt : Int,
-  max_ltv_bps : Int,
+  collateral : Int32,
+  debt : Int32,
+  max_ltv_bps : Int32,
 ) -> Position where {
   proof_require: 0 <= collateral,
   proof_require: 0 <= debt,
@@ -43,7 +43,7 @@ pub fn open(
 ///|
 pub fn borrow(
   position : Position,
-  extra_debt : Int,
+  extra_debt : Int32,
 ) -> Position where {
   proof_require: safe_position(position),
   proof_require: 0 <= extra_debt,
@@ -64,7 +64,7 @@ pub fn borrow(
 ///|
 pub fn repay(
   position : Position,
-  payment : Int,
+  payment : Int32,
 ) -> Position where {
   proof_require: safe_position(position),
   proof_require: 0 <= payment,
@@ -84,7 +84,7 @@ pub fn repay(
 ///|
 pub fn add_collateral(
   position : Position,
-  extra_collateral : Int,
+  extra_collateral : Int32,
 ) -> Position where {
   proof_require: safe_position(position),
   proof_require: 0 <= extra_collateral,

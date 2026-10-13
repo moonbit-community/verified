@@ -1,6 +1,6 @@
 ///|
 test "empty heap" {
-  let h : @pairing_heap.Heap[Int] = @pairing_heap.empty()
+  let h : @pairing_heap.Heap[Int32] = @pairing_heap.empty()
   debug_inspect(@pairing_heap.find_min(h), content="None")
   debug_inspect(@pairing_heap.delete_min(h), content="None")
   debug_inspect(@pairing_heap.size(h), content="0")

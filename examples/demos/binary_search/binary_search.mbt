@@ -2,17 +2,17 @@
 pub fn[T : Compare] binary_search(
   xs : FixedArray[T],
   key : T,
-) -> Int? where {
+) -> Int32? where {
   proof_require: sorted(xs),
   proof_ensure: result => binary_search_ok(xs, key, result),
 } {
   for i = 0, j = xs.length(); i < j; {
     let h = i + (j - i) / 2
     if xs[h] < key {
-      proof_assert ∀ idx : Int, 0 <= idx && idx < h + 1 → xs[idx] < key
+      proof_assert ∀ idx : Int32, 0 <= idx && idx < h + 1 → xs[idx] < key
       continue h + 1, j
     } else if key < xs[h] {
-      proof_assert ∀ idx : Int,
+      proof_assert ∀ idx : Int32,
         h <= idx && idx < xs.length() → key < xs[idx]
       continue i, h
     } else {
@@ -25,8 +25,8 @@ pub fn[T : Compare] binary_search(
     proof_invariant: 0 <= i,
     proof_invariant: i <= j,
     proof_invariant: j <= xs.length(),
-    proof_invariant: ∀ idx : Int, 0 <= idx && idx < i → xs[idx] < key,
-    proof_invariant: ∀ idx : Int,
+    proof_invariant: ∀ idx : Int32, 0 <= idx && idx < i → xs[idx] < key,
+    proof_invariant: ∀ idx : Int32,
       j <= idx && idx < xs.length() → key < xs[idx],
     proof_yield: res => binary_search_ok(xs, key, res),
     proof_reasoning: (

@@ -1,9 +1,9 @@
 ///|
 pub fn bounded_sum(
-  xs : FixedArray[Int],
-  lo : Int,
-  hi : Int,
-) -> Int where {
+  xs : FixedArray[Int32],
+  lo : Int32,
+  hi : Int32,
+) -> Int32 where {
   proof_require: in_range(xs, lo, hi),
   proof_ensure: result => sum_bounded(xs, lo, hi, result),
 } {

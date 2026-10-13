@@ -1,6 +1,6 @@
 ///|
 test "batched deque supports both ends" {
-  let d0 : @deque.Deque[Int] = @deque.empty()
+  let d0 : @deque.Deque[Int32] = @deque.empty()
   assert_eq(@deque.is_empty(d0), true)
 
   let d1 = @deque.push_front(

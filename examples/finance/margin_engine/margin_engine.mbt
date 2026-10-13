@@ -1,10 +1,10 @@
 ///|
 pub struct Account {
-  collateral : Int
-  contracts : Int
-  entry_price : Int
-  funding_debt : Int
-  maintenance_margin_bps : Int
+  collateral : Int32
+  contracts : Int32
+  entry_price : Int32
+  funding_debt : Int32
+  maintenance_margin_bps : Int32
 } derive(Eq)
 
 ///|
@@ -13,11 +13,11 @@ pub extend Account with Eq::{not_equal, equal}
 
 ///|
 pub fn open_account(
-  collateral : Int,
-  contracts : Int,
-  entry_price : Int,
-  funding_debt : Int,
-  maintenance_margin_bps : Int,
+  collateral : Int32,
+  contracts : Int32,
+  entry_price : Int32,
+  funding_debt : Int32,
+  maintenance_margin_bps : Int32,
 ) -> Account where {
   proof_require: 0 <= collateral,
   proof_require: 0 <= contracts,
@@ -48,8 +48,8 @@ pub fn open_account(
 ///|
 pub fn equity_value(
   account : Account,
-  mark : Int,
-) -> Int where {
+  mark : Int32,
+) -> Int32 where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
   proof_ensure: result => equity_value_post(account, mark, result),
@@ -65,8 +65,8 @@ pub fn equity_value(
 ///|
 pub fn margin_buffer(
   account : Account,
-  mark : Int,
-) -> Int where {
+  mark : Int32,
+) -> Int32 where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
   proof_ensure: result => margin_buffer_post(account, mark, result),
@@ -86,7 +86,7 @@ pub fn margin_buffer(
 ///|
 pub fn liquidation_price(
   account : Account,
-) -> Int where {
+) -> Int32 where {
   proof_require: account_inv(account),
   proof_ensure: result => liquidation_price_post(account, result),
 } {
@@ -109,8 +109,8 @@ pub fn liquidation_price(
 ///|
 pub fn apply_funding(
   account : Account,
-  amount : Int,
-  mark : Int,
+  amount : Int32,
+  mark : Int32,
 ) -> Account where {
   proof_require: healthy_at(account, mark),
   proof_require: 0 <= amount,
@@ -133,8 +133,8 @@ pub fn apply_funding(
 ///|
 pub fn partial_close(
   account : Account,
-  close_units : Int,
-  mark : Int,
+  close_units : Int32,
+  mark : Int32,
 ) -> Account where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,
@@ -162,8 +162,8 @@ pub fn partial_close(
 ///|
 pub fn min_close_to_restore(
   account : Account,
-  mark : Int,
-) -> Int where {
+  mark : Int32,
+) -> Int32 where {
   proof_require: account_inv(account),
   proof_require: 0 < mark,
   proof_require: 0 <= equity(account, mark),
@@ -217,7 +217,7 @@ pub fn min_close_to_restore(
 ///|
 pub fn close_to_restore(
   account : Account,
-  mark : Int,
+  mark : Int32,
 ) -> Account where {
   proof_require: account_inv(account),
   proof_require: 0 < mark,
@@ -239,7 +239,7 @@ pub fn close_to_restore(
 ///|
 pub fn is_liquidatable(
   account : Account,
-  mark : Int,
+  mark : Int32,
 ) -> Bool where {
   proof_require: account_inv(account),
   proof_require: 0 <= mark,

@@ -2,6 +2,4 @@
 // to promote and `pub extend` cannot target it from .mbt.
 warnings = "-implicit_impl_as_method"
 
-options(
-  "proof-enabled": true,
-)
+proof_enabled = true

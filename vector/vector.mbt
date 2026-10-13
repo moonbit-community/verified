@@ -1,7 +1,7 @@
 ///|
 fn[T] Vector::tail_offset(
   self : Vector[T],
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => tail_offset_post(self, result),
 } {
   self.size - self.tail.length()
@@ -35,7 +35,7 @@ pub fn[T] Vector::new() -> Vector[T] where {
 ///|
 pub fn[T] Vector::length(
   self : Vector[T],
-) -> Int where {
+) -> Int32 where {
   proof_require: vector_inv(self),
   proof_ensure: result => length_post(self, result),
 } {
@@ -56,7 +56,7 @@ pub fn[T] Vector::is_empty(
 #alias("_[_]")
 pub fn[T : Eq] Vector::at(
   self : Vector[T],
-  index : Int,
+  index : Int32,
 ) -> T where {
   proof_require: vector_inv(self),
   proof_require: valid_index_model(self, index),
@@ -93,7 +93,7 @@ pub fn[T : Eq] Vector::at(
 ///|
 pub fn[T : Eq] Vector::get(
   self : Vector[T],
-  index : Int,
+  index : Int32,
 ) -> T? where {
   proof_require: vector_inv(self),
   proof_ensure: result => get_post_model(self, index, result),
@@ -122,7 +122,7 @@ pub fn[T : Eq] Vector::peek(
 ///|
 pub fn[T] Vector::set(
   self : Vector[T],
-  index : Int,
+  index : Int32,
   value : T,
 ) -> Vector[T] where {
   proof_require: vector_inv(self),

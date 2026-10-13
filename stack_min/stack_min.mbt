@@ -5,11 +5,11 @@
 /// whole suffix beneath it.
 pub enum MinStack {
   Nil
-  Cons(Int, Int, MinStack)
+  Cons(Int32, Int32, MinStack)
 }
 
 ///|
-fn stack_size(s : MinStack) -> Int {
+fn stack_size(s : MinStack) -> Int32 {
   match s {
     Nil => 0
     Cons(_, _, tail) => 1 + stack_size(tail)
@@ -25,7 +25,7 @@ pub fn empty() -> MinStack where { proof_ensure: result => stack_inv(result), } 
 ///|
 /// `size` is just the structural length of the spine; it does not depend on
 /// the cached minimum fields.
-pub fn size(s : MinStack) -> Int {
+pub fn size(s : MinStack) -> Int32 {
   stack_size(s)
 }
 
@@ -34,7 +34,7 @@ pub fn size(s : MinStack) -> Int {
 /// cell and discharge that it really is the minimum for the whole stack.
 pub fn min_value(
   s : MinStack,
-) -> Int? where {
+) -> Int32? where {
   proof_require: stack_inv(s),
   proof_ensure: result => min_value_post(s, result),
 } {
@@ -53,7 +53,7 @@ pub fn min_value(
 /// empty-stack case handled separately.
 pub fn push(
   s : MinStack,
-  value : Int,
+  value : Int32,
 ) -> MinStack where {
   proof_require: stack_inv(s),
   proof_ensure: result => push_post(s, value, result),
@@ -65,7 +65,7 @@ pub fn push(
   let result = Cons(value, new_min, s)
   proof_assert stack_inv(result)
   proof_assert count(result, value) == count(s, value) + 1
-  proof_assert ∀ y : Int, y != value → count(result, y) == count(s, y)
+  proof_assert ∀ y : Int32, y != value → count(result, y) == count(s, y)
   proof_assert push_post(s, value, result)
   result
 }
@@ -75,7 +75,7 @@ pub fn push(
 /// invariant, so the proof is a straight reuse of the existing suffix.
 pub fn pop(
   s : MinStack,
-) -> (Int, MinStack)? where {
+) -> (Int32, MinStack)? where {
   proof_require: stack_inv(s),
   proof_ensure: result => pop_post(s, result),
 } {
@@ -93,6 +93,6 @@ pub fn pop(
 /// Folding from right to left is the proof-friendly direction here: each
 /// `push` sees a stack that already satisfies the invariant, so the cached
 /// minimum is rebuilt incrementally.
-pub fn from_array(arr : ArrayView[Int]) -> MinStack {
+pub fn from_array(arr : ArrayView[Int32]) -> MinStack {
   arr.rev_fold(init=Nil, (st, value) => push(st, value))
 }

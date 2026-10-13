@@ -12,7 +12,7 @@ pub enum Heap[T] {
 pub extend Heap with @debug.Debug::{to_repr}
 
 ///|
-fn[T] heap_size(h : Heap[T]) -> Int {
+fn[T] heap_size(h : Heap[T]) -> Int32 {
   match h {
     Empty => 0
     Node(_, left, right) => 1 + heap_size(left) + heap_size(right)
@@ -27,7 +27,7 @@ pub fn[T : Compare] empty() -> Heap[T] where {
 }
 
 ///|
-pub fn[T] size(h : Heap[T]) -> Int {
+pub fn[T] size(h : Heap[T]) -> Int32 {
   heap_size(h)
 }
 

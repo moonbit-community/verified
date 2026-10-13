@@ -1,5 +1,5 @@
 ///|
-fn build_range(count : Int) -> @vector.Vector[Int] {
+fn build_range(count : Int32) -> @vector.Vector[Int32] {
   for i = 0, v = @vector.Vector::new(); i < count; {
     continue i + 1, v.push(i)
   } nobreak {
@@ -8,7 +8,7 @@ fn build_range(count : Int) -> @vector.Vector[Int] {
 }
 
 ///|
-fn snapshot(v : @vector.Vector[Int]) -> Array[Int] {
+fn snapshot(v : @vector.Vector[Int32]) -> Array[Int32] {
   let out = []
   for i in 0..<v.length() {
     out.push(v[i])
@@ -18,7 +18,7 @@ fn snapshot(v : @vector.Vector[Int]) -> Array[Int] {
 
 ///|
 test "empty and singleton operations" {
-  let empty : @vector.Vector[Int] = @vector.Vector::new()
+  let empty : @vector.Vector[Int32] = @vector.Vector::new()
   assert_eq(empty.is_empty(), true)
   @debug.assert_eq(empty.peek(), None)
   match empty.pop() {

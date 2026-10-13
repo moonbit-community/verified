@@ -1,7 +1,7 @@
 ///|
 pub fn[T : Compare] check_sorted(
   xs : FixedArray[T],
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => check_sorted_ok(xs, result),
 } {
   for i = 0, ok = 1; i < xs.length() - 1; {

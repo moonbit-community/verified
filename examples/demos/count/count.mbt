@@ -1,7 +1,7 @@
 ///|
 pub fn count_nonneg(
-  xs : FixedArray[Int],
-) -> Int where {
+  xs : FixedArray[Int32],
+) -> Int32 where {
   proof_ensure: result => count_bounded(xs, result),
 } {
   for i = 0, count = 0; i < xs.length(); {

@@ -1,6 +1,6 @@
 ///|
 test "empty lookup" {
-  let sa : @sparse_array.SparseArray[Int] = @sparse_array.empty()
+  let sa : @sparse_array.SparseArray[Int32] = @sparse_array.empty()
   @debug.assert_eq(sa.get(0), None)
   assert_eq(sa.length(), 0)
 }

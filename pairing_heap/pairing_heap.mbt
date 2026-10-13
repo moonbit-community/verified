@@ -5,7 +5,7 @@
 /// pairwise merges.
 pub enum Heap[T] {
   Empty
-  Node(T, ChildList[T], Int)
+  Node(T, ChildList[T], Int32)
 } derive(Debug)
 
 ///|
@@ -36,7 +36,7 @@ pub fn[T : Compare] empty() -> Heap[T] where {
 ///|
 /// `size` is the cached count stored in the root, so no traversal is needed to
 /// answer it once the invariant has been established.
-pub fn[T] size(h : Heap[T]) -> Int {
+pub fn[T] size(h : Heap[T]) -> Int32 {
   match h {
     Empty => 0
     Node(_, _, n) => n

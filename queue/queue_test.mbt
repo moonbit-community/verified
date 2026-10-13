@@ -1,6 +1,6 @@
 ///|
 test "batched queue preserves FIFO order" {
-  let q0 : @queue.Queue[Int] = @queue.empty()
+  let q0 : @queue.Queue[Int32] = @queue.empty()
   assert_eq(@queue.length(q0), 0)
   assert_eq(@queue.is_empty(q0), true)
 

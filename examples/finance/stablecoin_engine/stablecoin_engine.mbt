@@ -17,10 +17,10 @@
 /// `healthy` additionally requires `headroom(engine) >= 0`, and
 /// `liquidatable` is the strict negation of healthy on top of `engine_inv`.
 pub struct Engine {
-  collateral : Int
-  debt : Int
-  reserve : Int
-  min_ratio_bps : Int
+  collateral : Int32
+  debt : Int32
+  reserve : Int32
+  min_ratio_bps : Int32
 } derive(Eq)
 
 ///|
@@ -40,8 +40,8 @@ pub extend Engine with Eq::{not_equal, equal}
 /// fully absorbed the loss and no debt remains, or the reserve was drained to
 /// zero and whatever is left lives on as bad debt.
 pub struct LiquidationResult {
-  reserve_used : Int
-  remaining_bad_debt : Int
+  reserve_used : Int32
+  remaining_bad_debt : Int32
   next_engine : Engine
 } derive(Eq)
 
@@ -86,10 +86,10 @@ pub extend LiquidationResult with Eq::{not_equal, equal}
 /// For the common "open a fresh position" case, use `open_engine` instead,
 /// which additionally enforces the healthy-at-creation ratio.
 pub fn make_engine(
-  collateral : Int,
-  debt : Int,
-  reserve : Int,
-  min_ratio_bps : Int,
+  collateral : Int32,
+  debt : Int32,
+  reserve : Int32,
+  min_ratio_bps : Int32,
 ) -> Engine where {
   proof_require: 0 <= collateral,
   proof_require: 0 <= debt,
@@ -110,10 +110,10 @@ pub fn make_engine(
 /// module takes `healthy` as a precondition, so `open_engine` is how callers
 /// step into the healthy-state chain to begin with.
 pub fn open_engine(
-  collateral : Int,
-  debt : Int,
-  reserve : Int,
-  min_ratio_bps : Int,
+  collateral : Int32,
+  debt : Int32,
+  reserve : Int32,
+  min_ratio_bps : Int32,
 ) -> Engine where {
   proof_require: 0 <= collateral,
   proof_require: 0 <= debt,
@@ -140,9 +140,9 @@ pub fn open_engine(
 /// characterize the floor uniquely, so callers can use this function as the
 /// canonical limit when sizing a new mint.
 pub fn max_mintable(
-  collateral : Int,
-  min_ratio_bps : Int,
-) -> Int where {
+  collateral : Int32,
+  min_ratio_bps : Int32,
+) -> Int32 where {
   proof_require: 0 <= collateral,
   proof_require: valid_ratio_bps(min_ratio_bps),
   proof_ensure: result => max_mintable_post(collateral, min_ratio_bps, result),
@@ -160,7 +160,7 @@ pub fn max_mintable(
 /// to redo the ratio arithmetic.
 pub fn safety_buffer(
   engine : Engine,
-) -> Int where {
+) -> Int32 where {
   proof_require: engine_inv(engine),
   proof_ensure: result => safety_buffer_post(engine, result),
 } {
@@ -178,7 +178,7 @@ pub fn safety_buffer(
 /// resources" as opposed to "is this particular vault safe right now".
 pub fn equity_value(
   engine : Engine,
-) -> Int where {
+) -> Int32 where {
   proof_require: engine_inv(engine),
   proof_ensure: result => equity_value_post(engine, result),
 } {
@@ -200,7 +200,7 @@ pub fn equity_value(
 /// liability is created with no matching asset).
 pub fn mint(
   engine : Engine,
-  amount : Int,
+  amount : Int32,
 ) -> Engine where {
   proof_require: healthy(engine),
   proof_require: 0 <= amount,
@@ -230,7 +230,7 @@ pub fn mint(
 /// ratio, never below it.
 pub fn repay(
   engine : Engine,
-  amount : Int,
+  amount : Int32,
 ) -> Engine where {
   proof_require: healthy(engine),
   proof_require: 0 <= amount,
@@ -258,7 +258,7 @@ pub fn repay(
 /// to liquidation.
 pub fn add_collateral(
   engine : Engine,
-  amount : Int,
+  amount : Int32,
 ) -> Engine where {
   proof_require: healthy(engine),
   proof_require: 0 <= amount,
@@ -286,7 +286,7 @@ pub fn add_collateral(
 /// `<=` rather than `<`.
 pub fn withdraw_collateral(
   engine : Engine,
-  amount : Int,
+  amount : Int32,
 ) -> Engine where {
   proof_require: healthy(engine),
   proof_require: 0 <= amount,
@@ -314,7 +314,7 @@ pub fn withdraw_collateral(
 /// which is the entire effect on the vault's books.
 pub fn add_reserve(
   engine : Engine,
-  amount : Int,
+  amount : Int32,
 ) -> Engine where {
   proof_require: engine_inv(engine),
   proof_require: 0 <= amount,

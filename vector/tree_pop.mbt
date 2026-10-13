@@ -1,7 +1,7 @@
 ///|
 fn[T] Tree::last_leaf_elements(
   self : Tree[T],
-  shift : Int,
+  shift : Int32,
 ) -> ReadOnlyArray[T] where {
   proof_axiomatized: true,
   proof_require: tree_inv(self, root_level(shift)),
@@ -20,7 +20,7 @@ fn[T] Tree::last_leaf_elements(
 ///|
 fn[T] Tree::pop_rightmost_leaf(
   self : Tree[T],
-  shift : Int,
+  shift : Int32,
 ) -> Tree[T] where {
   proof_axiomatized: true,
   proof_require: tree_inv(self, root_level(shift)),
@@ -54,8 +54,8 @@ fn[T] Tree::pop_rightmost_leaf(
 ///|
 fn[T] Tree::shrink_top(
   self : Tree[T],
-  shift : Int,
-) -> (Tree[T], Int) where {
+  shift : Int32,
+) -> (Tree[T], Int32) where {
   proof_axiomatized: true,
   proof_require: vector_tree_inv(self, root_level(shift)),
   proof_ensure: result => shrink_top_post(self, shift, result),

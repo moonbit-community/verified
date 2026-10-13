@@ -18,7 +18,7 @@ fn[T] Tree::from_leaf(
 }
 
 ///|
-fn[T] new_branch_left(leaf : ReadOnlyArray[T], shift : Int) -> Tree[T] {
+fn[T] new_branch_left(leaf : ReadOnlyArray[T], shift : Int32) -> Tree[T] {
   match shift {
     0 => Leaf(leaf)
     s => Node([new_branch_left(leaf, s - num_bits)], None)
@@ -26,7 +26,7 @@ fn[T] new_branch_left(leaf : ReadOnlyArray[T], shift : Int) -> Tree[T] {
 }
 
 ///|
-fn[T] Tree::size(self : Tree[T], shift : Int) -> Int {
+fn[T] Tree::size(self : Tree[T], shift : Int32) -> Int32 {
   match self {
     Empty => 0
     Leaf(l) => l.length()
@@ -41,8 +41,8 @@ fn[T] Tree::size(self : Tree[T], shift : Int) -> Int {
 ///|
 fn[T] compute_sizes(
   children : ReadOnlyArray[Tree[T]],
-  shift : Int,
-) -> ReadOnlyArray[Int]? {
+  shift : Int32,
+) -> ReadOnlyArray[Int32]? {
   let len = children.length()
   let sizes = ReadOnlyArray::makei(len, fn(i) {
     let mut sum = 0

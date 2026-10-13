@@ -13,6 +13,4 @@ import {
 
 warnings = "-unused_package"
 
-options(
-  "proof-enabled": true,
-)
+proof_enabled = true

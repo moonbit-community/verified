@@ -1,7 +1,7 @@
 ///|
 pub fn[T : Compare] sort(
   arr : FixedArray[T],
-) -> Int where {
+) -> Int32 where {
   proof_ensure: result => result == 0 && sorted_desc(arr),
 } {
   let n = arr.length()
