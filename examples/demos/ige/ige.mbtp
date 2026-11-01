@@ -1,0 +1,265 @@
+///|
+/// Infinite Garble Extension (IGE) mode algebra, following the mode layer of
+/// https://github.com/danghica/cjr-crypto (`example/aes_ige/rocq/ige.v`).
+///
+/// The block cipher is abstract: any pair `e`/`d` with `d(e(b)) == b` on
+/// 128-bit blocks. AES itself and memory-level refinement are out of scope.
+#proof_import("bv.BV128")
+fn bv_of_int(x : Int) -> BV128 = "of_int"
+
+///|
+#proof_import("bv.BV128")
+fn bv_to_uint(x : BV128) -> Int = "t'int"
+
+///|
+#proof_import("bv.BV128")
+fn bv_xor(a : BV128, b : BV128) -> BV128 = "bw_xor"
+
+///|
+/// XOR of two 128-bit blocks, as unsigned integers.
+fn xor128(a : Int, b : Int) -> Int {
+  bv_to_uint(bv_xor(bv_of_int(a), bv_of_int(b)))
+}
+
+///|
+/// A 16-byte block: an integer in `[0, 2^128)`.
+predicate block(x : Int) {
+  bv_to_uint(bv_of_int(x)) == x
+}
+
+///|
+pub lemma xor128_range(a : Int, b : Int) where {
+  proof_ensure: block(xor128(a, b)),
+} {
+}
+
+///|
+predicate bv_xor_cancel_ok() {
+  ∀ x : BV128, ∀ y : BV128,
+    bv_to_uint(bv_xor(bv_xor(x, y), y)) == bv_to_uint(x)
+}
+
+///|
+lemma bv_xor_cancel() where {
+  proof_ensure: bv_xor_cancel_ok(),
+} {
+}
+
+///|
+/// The intermediate facts stay in `Int`, because the solvers do not close the
+/// `of_int`/`to_uint` round trip on their own.
+pub lemma xor128_cancel(a : Int, k : Int) where {
+  proof_require: block(a),
+  proof_ensure: xor128(xor128(a, k), k) == a,
+} {
+  bv_xor_cancel()
+  xor128_range(a, k)
+  proof_assert bv_to_uint(bv_of_int(xor128(a, k))) == xor128(a, k)
+  proof_assert bv_to_uint(
+      bv_xor(bv_xor(bv_of_int(a), bv_of_int(k)), bv_of_int(k)),
+    ) ==
+    a
+}
+
+///|
+/// `d` inverts `e` on blocks, and `e` maps blocks to blocks.
+predicate cipher_pair(e : (Int) -> Int, d : (Int) -> Int) {
+  ∀ b : Int, block(b) → block(e(b)) && d(e(b)) == b
+}
+
+///|
+predicate all_blocks(xs : Blocks) {
+  match xs {
+    Nil => true
+    Cons(x, rest) => block(x) && all_blocks(rest)
+  }
+}
+
+///|
+predicate iv_blocks(v : Iv) {
+  block(v.c) && block(v.p)
+}
+
+///|
+/// `c_i = E(p_i ^ c_{i-1}) ^ p_{i-1}`.
+fn enc_step(e : (Int) -> Int, p : Int, v : Iv) -> Int {
+  xor128(e(xor128(p, v.c)), v.p)
+}
+
+///|
+/// `p_i = D(c_i ^ p_{i-1}) ^ c_{i-1}`.
+fn dec_step(d : (Int) -> Int, c : Int, v : Iv) -> Int {
+  xor128(d(xor128(c, v.p)), v.c)
+}
+
+///|
+fn mk_iv(c : Int, p : Int) -> Iv {
+  Iv::{ c, p }
+}
+
+///|
+fn enc_blocks(e : (Int) -> Int, xs : Blocks, v : Iv) -> Blocks {
+  match xs {
+    Nil => Nil
+    Cons(p, rest) =>
+      Cons(enc_step(e, p, v), enc_blocks(e, rest, mk_iv(enc_step(e, p, v), p)))
+  }
+}
+
+///|
+fn enc_iv(e : (Int) -> Int, xs : Blocks, v : Iv) -> Iv {
+  match xs {
+    Nil => v
+    Cons(p, rest) => enc_iv(e, rest, mk_iv(enc_step(e, p, v), p))
+  }
+}
+
+///|
+fn dec_blocks(d : (Int) -> Int, xs : Blocks, v : Iv) -> Blocks {
+  match xs {
+    Nil => Nil
+    Cons(c, rest) =>
+      Cons(dec_step(d, c, v), dec_blocks(d, rest, mk_iv(c, dec_step(d, c, v))))
+  }
+}
+
+///|
+fn dec_iv(d : (Int) -> Int, xs : Blocks, v : Iv) -> Iv {
+  match xs {
+    Nil => v
+    Cons(c, rest) => dec_iv(d, rest, mk_iv(c, dec_step(d, c, v)))
+  }
+}
+
+///|
+fn len(xs : Blocks) -> Int {
+  match xs {
+    Nil => 0
+    Cons(_x, rest) => 1 + len(rest)
+  }
+}
+
+///|
+fn append(xs : Blocks, ys : Blocks) -> Blocks {
+  match xs {
+    Nil => ys
+    Cons(x, rest) => Cons(x, append(rest, ys))
+  }
+}
+
+///|
+/// Structural equality; derived `Eq` is not available in logic bodies.
+predicate same_blocks(xs : Blocks, ys : Blocks) {
+  match xs {
+    Nil =>
+      match ys {
+        Nil => true
+        Cons(_y, _yr) => false
+      }
+    Cons(x, xr) =>
+      match ys {
+        Nil => false
+        Cons(y, yr) => x == y && same_blocks(xr, yr)
+      }
+  }
+}
+
+///|
+predicate same_iv(a : Iv, b : Iv) {
+  a.c == b.c && a.p == b.p
+}
+
+///|
+predicate step_ok(e : (Int) -> Int, d : (Int) -> Int) {
+  ∀ p : Int, ∀ v : Iv, (block(p) && iv_blocks(v)) →
+    (block(enc_step(e, p, v)) && dec_step(d, enc_step(e, p, v), v) == p)
+}
+
+///|
+pub lemma step_inverse(e : (Int) -> Int, d : (Int) -> Int) where {
+  proof_require: cipher_pair(e, d),
+  proof_ensure: step_ok(e, d),
+} {
+  proof_assert ∀ a : Int, ∀ b : Int, block(xor128(a, b))
+  proof_assert ∀ a : Int, ∀ k : Int, block(a) → xor128(xor128(a, k), k) == a
+}
+
+///|
+/// IGE decryption inverts IGE encryption from the same IV, and both sides
+/// finish with the same chaining IV.
+predicate roundtrip_ok(e : (Int) -> Int, d : (Int) -> Int, xs : Blocks) {
+  ∀ v : Iv, iv_blocks(v) →
+    (iv_blocks(enc_iv(e, xs, v)) &&
+    all_blocks(enc_blocks(e, xs, v)) &&
+    same_blocks(dec_blocks(d, enc_blocks(e, xs, v), v), xs) &&
+    same_iv(dec_iv(d, enc_blocks(e, xs, v), v), enc_iv(e, xs, v)))
+}
+
+///|
+pub lemma ige_roundtrip(e : (Int) -> Int, d : (Int) -> Int, xs : Blocks) where {
+  proof_decrease: xs,
+  proof_require: cipher_pair(e, d),
+  proof_require: all_blocks(xs),
+  proof_ensure: roundtrip_ok(e, d, xs),
+} {
+  step_inverse(e, d)
+  match xs {
+    Nil => ()
+    Cons(_p, rest) => ige_roundtrip(e, d, rest)
+  }
+}
+
+///|
+predicate length_ok(e : (Int) -> Int, xs : Blocks) {
+  ∀ v : Iv, len(enc_blocks(e, xs, v)) == len(xs)
+}
+
+///|
+pub lemma ige_encrypt_length(e : (Int) -> Int, xs : Blocks) where {
+  proof_decrease: xs,
+  proof_ensure: length_ok(e, xs),
+} {
+  match xs {
+    Nil => ()
+    Cons(_p, rest) => ige_encrypt_length(e, rest)
+  }
+}
+
+///|
+predicate enc_refl_ok(e : (Int) -> Int, ys : Blocks) {
+  ∀ v : Iv, same_blocks(enc_blocks(e, ys, v), enc_blocks(e, ys, v))
+}
+
+///|
+pub lemma enc_blocks_refl(e : (Int) -> Int, ys : Blocks) where {
+  proof_decrease: ys,
+  proof_ensure: enc_refl_ok(e, ys),
+} {
+  match ys {
+    Nil => ()
+    Cons(_y, rest) => enc_blocks_refl(e, rest)
+  }
+}
+
+///|
+/// Encrypting `xs ++ ys` equals encrypting `xs`, then `ys` from the carried IV.
+predicate chunks_ok(e : (Int) -> Int, xs : Blocks, ys : Blocks) {
+  ∀ v : Iv,
+    same_blocks(
+      enc_blocks(e, append(xs, ys), v),
+      append(enc_blocks(e, xs, v), enc_blocks(e, ys, enc_iv(e, xs, v))),
+    ) &&
+    same_iv(enc_iv(e, append(xs, ys), v), enc_iv(e, ys, enc_iv(e, xs, v)))
+}
+
+///|
+pub lemma ige_encrypt_chunks(e : (Int) -> Int, xs : Blocks, ys : Blocks) where {
+  proof_decrease: xs,
+  proof_ensure: chunks_ok(e, xs, ys),
+} {
+  enc_blocks_refl(e, ys)
+  match xs {
+    Nil => ()
+    Cons(_p, rest) => ige_encrypt_chunks(e, rest, ys)
+  }
+}
