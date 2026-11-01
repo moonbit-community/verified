@@ -90,6 +90,7 @@ facts.
 | `examples/demos/sumbounds` | Array sum bounded by element range |
 | `examples/demos/cauchy_schwarz` | Arithmetic inequality proof |
 | `examples/demos/bmh_bytes` | Byte-string search proof patterns |
+| `examples/demos/ige` | IGE block-cipher mode round trip and chunking over 128-bit blocks |
 
 ## Finance Case Studies
 
