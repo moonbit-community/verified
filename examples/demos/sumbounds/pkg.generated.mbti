@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/sumbounds"
 
 // Values
-pub fn bounded_sum(FixedArray[Int], Int, Int) -> Int
+pub fn bounded_sum(FixedArray[Int32], Int32, Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn bounded_sum(FixedArray[Int], Int, Int) -> Int
 // Type aliases
 
 // Traits
-

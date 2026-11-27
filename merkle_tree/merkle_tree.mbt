@@ -1,37 +1,41 @@
 ///|
+#derive(Debug)
 pub enum Direction {
   Left
   Right
-} derive(Debug)
+}
 
 ///|
 #deprecated
 pub extend Direction with @debug.Debug::{to_repr}
 
 ///|
+#derive(Debug)
 pub enum MerkleProof {
   Done
   Step(Direction, Int32, MerkleProof)
-} derive(Debug)
+}
 
 ///|
 #deprecated
 pub extend MerkleProof with @debug.Debug::{to_repr}
 
 ///|
+#derive(Debug)
 enum MerkleNode {
   Leaf(Int32, Int32)
   Node(MerkleNode, MerkleNode, Int32)
-} derive(Debug)
+}
 
 ///|
 #deprecated
 pub extend MerkleNode with @debug.Debug::{to_repr}
 
 ///|
+#derive(Debug)
 pub struct MerkleTree {
   inner : MerkleNode
-} derive(Debug)
+}
 
 ///|
 #deprecated

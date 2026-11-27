@@ -2,13 +2,13 @@
 package "moonbit-community/verified/examples/finance/threshold_multisig"
 
 // Values
-pub fn approval_count_step_one(FixedArray[Int], Int) -> Unit
+pub fn approval_count_step_one(FixedArray[Int32], Int32) -> Unit
 
-pub fn approval_count_step_zero(FixedArray[Int], Int) -> Unit
+pub fn approval_count_step_zero(FixedArray[Int32], Int32) -> Unit
 
-pub fn can_execute(FixedArray[Int], Int) -> Bool
+pub fn can_execute(FixedArray[Int32], Int32) -> Bool
 
-pub fn count_approvals(FixedArray[Int]) -> Int
+pub fn count_approvals(FixedArray[Int32]) -> Int32
 
 // Errors
 
@@ -17,4 +17,3 @@ pub fn count_approvals(FixedArray[Int]) -> Int
 // Type aliases
 
 // Traits
-

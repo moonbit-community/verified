@@ -21,19 +21,19 @@ pub fn MathInt::compare(self : MathInt, other : MathInt) -> Int = "(-)"
 
 ///|
 #proof_import("int.Int")
-pub fn MathInt::op_lt(self : MathInt, other : MathInt) -> Bool = "(<)"
+pub fn MathInt::lt(self : MathInt, other : MathInt) -> Bool = "(<)"
 
 ///|
 #proof_import("int.Int")
-pub fn MathInt::op_le(self : MathInt, other : MathInt) -> Bool = "(<=)"
+pub fn MathInt::le(self : MathInt, other : MathInt) -> Bool = "(<=)"
 
 ///|
 #proof_import("int.Int")
-pub fn MathInt::op_gt(self : MathInt, other : MathInt) -> Bool = "(>)"
+pub fn MathInt::gt(self : MathInt, other : MathInt) -> Bool = "(>)"
 
 ///|
 #proof_import("int.Int")
-pub fn MathInt::op_ge(self : MathInt, other : MathInt) -> Bool = "(>=)"
+pub fn MathInt::ge(self : MathInt, other : MathInt) -> Bool = "(>=)"
 
 ///|
 #proof_import("int.Int")
@@ -84,26 +84,6 @@ pub impl Compare for MathInt with fn compare(self : MathInt, other : MathInt) ->
 }
 
 ///|
-pub impl Compare for MathInt with fn op_lt(self : MathInt, other : MathInt) -> Bool {
-  MathInt::op_lt(self, other)
-}
-
-///|
-pub impl Compare for MathInt with fn op_le(self : MathInt, other : MathInt) -> Bool {
-  MathInt::op_le(self, other)
-}
-
-///|
-pub impl Compare for MathInt with fn op_gt(self : MathInt, other : MathInt) -> Bool {
-  MathInt::op_gt(self, other)
-}
-
-///|
-pub impl Compare for MathInt with fn op_ge(self : MathInt, other : MathInt) -> Bool {
-  MathInt::op_ge(self, other)
-}
-
-///|
 pub impl Add for MathInt with fn add(self : MathInt, other : MathInt) -> MathInt {
   MathInt::add(self, other)
 }
@@ -131,4 +111,24 @@ pub impl Mod for MathInt with fn mod(self : MathInt, other : MathInt) -> MathInt
 ///|
 pub impl Neg for MathInt with fn neg(self : MathInt) -> MathInt {
   MathInt::neg(self)
+}
+
+///|
+pub impl Compare for MathInt with fn lt(self : MathInt, other : MathInt) -> Bool {
+  MathInt::lt(self, other)
+}
+
+///|
+pub impl Compare for MathInt with fn le(self : MathInt, other : MathInt) -> Bool {
+  MathInt::le(self, other)
+}
+
+///|
+pub impl Compare for MathInt with fn gt(self : MathInt, other : MathInt) -> Bool {
+  MathInt::gt(self, other)
+}
+
+///|
+pub impl Compare for MathInt with fn ge(self : MathInt, other : MathInt) -> Bool {
+  MathInt::ge(self, other)
 }

@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/find"
 
 // Values
-pub fn find(FixedArray[Int], Int) -> Int
+pub fn find(FixedArray[Int32], Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn find(FixedArray[Int], Int) -> Int
 // Type aliases
 
 // Traits
-

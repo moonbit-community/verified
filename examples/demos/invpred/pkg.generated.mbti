@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/invpred"
 
 // Values
-pub fn binary_search(FixedArray[Int], Int) -> Int
+pub fn binary_search(FixedArray[Int32], Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn binary_search(FixedArray[Int], Int) -> Int
 // Type aliases
 
 // Traits
-

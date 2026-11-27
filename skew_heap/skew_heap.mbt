@@ -2,10 +2,11 @@
 /// A skew heap keeps the minimum at the root and leaves the children otherwise
 /// unconstrained. The invariant only asks that every value below a node is at
 /// least the node value, which is exactly what `merge` has to re-establish.
+#derive(Debug)
 pub enum Heap[T] {
   Empty
   Node(T, Heap[T], Heap[T])
-} derive(Debug)
+}
 
 ///|
 #deprecated

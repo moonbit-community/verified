@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/maxarr"
 
 // Values
-pub fn index_of_max(FixedArray[Int]) -> Int
+pub fn index_of_max(FixedArray[Int32]) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn index_of_max(FixedArray[Int]) -> Int
 // Type aliases
 
 // Traits
-

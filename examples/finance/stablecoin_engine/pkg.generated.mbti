@@ -2,49 +2,51 @@
 package "moonbit-community/verified/examples/finance/stablecoin_engine"
 
 // Values
-pub fn add_collateral(Engine, Int) -> Engine
+pub fn add_collateral(Engine, Int32) -> Engine
 
-pub fn add_reserve(Engine, Int) -> Engine
+pub fn add_reserve(Engine, Int32) -> Engine
 
-pub fn equity_value(Engine) -> Int
+pub fn equity_value(Engine) -> Int32
 
 pub fn is_liquidatable(Engine) -> Bool
 
 pub fn liquidate_all(Engine) -> LiquidationResult
 
-pub fn make_engine(Int, Int, Int, Int) -> Engine
+pub fn make_engine(Int32, Int32, Int32, Int32) -> Engine
 
-pub fn max_mintable(Int, Int) -> Int
+pub fn max_mintable(Int32, Int32) -> Int32
 
-pub fn mint(Engine, Int) -> Engine
+pub fn mint(Engine, Int32) -> Engine
 
-pub fn open_engine(Int, Int, Int, Int) -> Engine
+pub fn open_engine(Int32, Int32, Int32, Int32) -> Engine
 
-pub fn repay(Engine, Int) -> Engine
+pub fn repay(Engine, Int32) -> Engine
 
-pub fn safety_buffer(Engine) -> Int
+pub fn safety_buffer(Engine) -> Int32
 
-pub fn withdraw_collateral(Engine, Int) -> Engine
+pub fn withdraw_collateral(Engine, Int32) -> Engine
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct Engine {
-  collateral : Int
-  debt : Int
-  reserve : Int
-  min_ratio_bps : Int
-} derive(Eq)
+  collateral : Int32
+  debt : Int32
+  reserve : Int32
+  min_ratio_bps : Int32
+}
 #deprecated
 pub fn Engine::equal(Self, Self) -> Bool
 #deprecated
 pub fn Engine::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub struct LiquidationResult {
-  reserve_used : Int
-  remaining_bad_debt : Int
+  reserve_used : Int32
+  remaining_bad_debt : Int32
   next_engine : Engine
-} derive(Eq)
+}
 #deprecated
 pub fn LiquidationResult::equal(Self, Self) -> Bool
 #deprecated

@@ -2,34 +2,35 @@
 package "moonbit-community/verified/examples/finance/margin_engine"
 
 // Values
-pub fn apply_funding(Account, Int, Int) -> Account
+pub fn apply_funding(Account, Int32, Int32) -> Account
 
-pub fn close_to_restore(Account, Int) -> Account
+pub fn close_to_restore(Account, Int32) -> Account
 
-pub fn equity_value(Account, Int) -> Int
+pub fn equity_value(Account, Int32) -> Int32
 
-pub fn is_liquidatable(Account, Int) -> Bool
+pub fn is_liquidatable(Account, Int32) -> Bool
 
-pub fn liquidation_price(Account) -> Int
+pub fn liquidation_price(Account) -> Int32
 
-pub fn margin_buffer(Account, Int) -> Int
+pub fn margin_buffer(Account, Int32) -> Int32
 
-pub fn min_close_to_restore(Account, Int) -> Int
+pub fn min_close_to_restore(Account, Int32) -> Int32
 
-pub fn open_account(Int, Int, Int, Int, Int) -> Account
+pub fn open_account(Int32, Int32, Int32, Int32, Int32) -> Account
 
-pub fn partial_close(Account, Int, Int) -> Account
+pub fn partial_close(Account, Int32, Int32) -> Account
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct Account {
-  collateral : Int
-  contracts : Int
-  entry_price : Int
-  funding_debt : Int
-  maintenance_margin_bps : Int
-} derive(Eq)
+  collateral : Int32
+  contracts : Int32
+  entry_price : Int32
+  funding_debt : Int32
+  maintenance_margin_bps : Int32
+}
 #deprecated
 pub fn Account::equal(Self, Self) -> Bool
 #deprecated

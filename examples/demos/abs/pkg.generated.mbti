@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/abs"
 
 // Values
-pub fn abs(Int) -> Int
+pub fn abs(Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn abs(Int) -> Int
 // Type aliases
 
 // Traits
-

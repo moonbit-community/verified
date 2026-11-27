@@ -2,26 +2,27 @@
 package "moonbit-community/verified/examples/finance/ltv_lending"
 
 // Values
-pub fn add_collateral(Position, Int) -> Position
+pub fn add_collateral(Position, Int32) -> Position
 
-pub fn borrow(Position, Int) -> Position
+pub fn borrow(Position, Int32) -> Position
 
 pub fn is_liquidatable(Position) -> Bool
 
-pub fn max_safe_debt(Int, Int) -> Int
+pub fn max_safe_debt(Int32, Int32) -> Int32
 
-pub fn open(Int, Int, Int) -> Position
+pub fn open(Int32, Int32, Int32) -> Position
 
-pub fn repay(Position, Int) -> Position
+pub fn repay(Position, Int32) -> Position
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct Position {
-  collateral : Int
-  debt : Int
-  max_ltv_bps : Int
-} derive(Eq)
+  collateral : Int32
+  debt : Int32
+  max_ltv_bps : Int32
+}
 #deprecated
 pub fn Position::equal(Self, Self) -> Bool
 #deprecated

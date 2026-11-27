@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/clamp"
 
 // Values
-pub fn clamp(Int, Int, Int) -> Int
+pub fn clamp(Int32, Int32, Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn clamp(Int, Int, Int) -> Int
 // Type aliases
 
 // Traits
-

@@ -1,19 +1,21 @@
 ///|
+#derive(Eq)
 pub struct Pool {
   reserve_in : Int32
   reserve_out : Int32
   fee_bps : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated
 pub extend Pool with Eq::{not_equal, equal}
 
 ///|
+#derive(Eq)
 pub struct SwapResult {
   amount_out : Int32
   next_pool : Pool
-} derive(Eq)
+}
 
 ///|
 #deprecated

@@ -1,9 +1,10 @@
 ///|
+#derive(Eq)
 pub struct Position {
   collateral : Int32
   debt : Int32
   max_ltv_bps : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated

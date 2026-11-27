@@ -2,27 +2,27 @@
 package "moonbit-community/verified/libs/mathint"
 
 // Values
-pub fn int_model(Int) -> MathInt
+pub fn int_model(Int32) -> MathInt
 
 // Errors
 
 // Types and methods
 pub type MathInt
 pub fn MathInt::add(Self, Self) -> Self
-pub fn MathInt::compare(Self, Self) -> Int
+pub fn MathInt::compare(Self, Self) -> Int32
 pub fn MathInt::div(Self, Self) -> Self
 pub fn MathInt::equal(Self, Self) -> Bool
+pub fn MathInt::ge(Self, Self) -> Bool
+pub fn MathInt::gt(Self, Self) -> Bool
+pub fn MathInt::le(Self, Self) -> Bool
+pub fn MathInt::lt(Self, Self) -> Bool
 pub fn MathInt::mod(Self, Self) -> Self
 pub fn MathInt::mul(Self, Self) -> Self
 pub fn MathInt::neg(Self) -> Self
 pub fn MathInt::not_equal(Self, Self) -> Bool
 pub fn MathInt::one() -> Self
-pub fn MathInt::op_ge(Self, Self) -> Bool
-pub fn MathInt::op_gt(Self, Self) -> Bool
-pub fn MathInt::op_le(Self, Self) -> Bool
-pub fn MathInt::op_lt(Self, Self) -> Bool
 pub fn MathInt::sub(Self, Self) -> Self
-pub fn MathInt::to_int(Self) -> Int
+pub fn MathInt::to_int(Self) -> Int32
 pub fn MathInt::zero() -> Self
 pub impl Add for MathInt
 pub impl Compare for MathInt

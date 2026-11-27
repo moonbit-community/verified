@@ -2,17 +2,18 @@
 package "moonbit-community/verified/examples/finance/batch_auction"
 
 // Values
-pub fn clear_book(FixedArray[Int], FixedArray[Int]) -> AuctionResult
+pub fn clear_book(FixedArray[Int32], FixedArray[Int32]) -> AuctionResult
 
-pub fn clearing_quantity(FixedArray[Int], FixedArray[Int]) -> Int
+pub fn clearing_quantity(FixedArray[Int32], FixedArray[Int32]) -> Int32
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct AuctionResult {
-  quantity : Int
-  price : Int
-} derive(Eq)
+  quantity : Int32
+  price : Int32
+}
 #deprecated
 pub fn AuctionResult::equal(Self, Self) -> Bool
 #deprecated
