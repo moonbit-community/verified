@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/cauchy_schwarz"
 
 // Values
-pub fn cauchy_schwarz_gap(FixedArray[Int], FixedArray[Int]) -> Int
+pub fn cauchy_schwarz_gap(FixedArray[Int32], FixedArray[Int32]) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn cauchy_schwarz_gap(FixedArray[Int], FixedArray[Int]) -> Int
 // Type aliases
 
 // Traits
-

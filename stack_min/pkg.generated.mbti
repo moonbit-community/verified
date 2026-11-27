@@ -4,25 +4,24 @@ package "moonbit-community/verified/stack_min"
 // Values
 pub fn empty() -> MinStack
 
-pub fn from_array(ArrayView[Int]) -> MinStack
+pub fn from_array(ArrayView[Int32]) -> MinStack
 
-pub fn min_value(MinStack) -> Int?
+pub fn min_value(MinStack) -> Int32?
 
-pub fn pop(MinStack) -> (Int, MinStack)?
+pub fn pop(MinStack) -> (Int32, MinStack)?
 
-pub fn push(MinStack, Int) -> MinStack
+pub fn push(MinStack, Int32) -> MinStack
 
-pub fn size(MinStack) -> Int
+pub fn size(MinStack) -> Int32
 
 // Errors
 
 // Types and methods
 pub enum MinStack {
   Nil
-  Cons(Int, Int, MinStack)
+  Cons(Int32, Int32, MinStack)
 }
 
 // Type aliases
 
 // Traits
-

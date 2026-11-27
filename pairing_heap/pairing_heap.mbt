@@ -3,10 +3,11 @@
 /// size. The child list invariant is the important part: every child must be a
 /// valid non-empty heap, so the root of each child can participate in later
 /// pairwise merges.
+#derive(Debug)
 pub enum Heap[T] {
   Empty
   Node(T, ChildList[T], Int32)
-} derive(Debug)
+}
 
 ///|
 #deprecated
@@ -15,10 +16,11 @@ pub extend Heap with @debug.Debug::{to_repr}
 ///|
 /// The child list is just the forest hanging off the root, but its invariant
 /// is stronger than a plain list: each entry must itself be a non-empty heap.
+#derive(Debug)
 pub enum ChildList[T] {
   Nil
   Cons(Heap[T], ChildList[T])
-} derive(Debug)
+}
 
 ///|
 #deprecated

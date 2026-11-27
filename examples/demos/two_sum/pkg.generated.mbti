@@ -2,9 +2,9 @@
 package "moonbit-community/verified/examples/demos/two_sum"
 
 // Values
-pub fn first_hit(FixedArray[Int], Int) -> (Int, Int)?
+pub fn first_hit(FixedArray[Int32], Int32) -> (Int32, Int32)?
 
-pub fn one_loop_positive(FixedArray[Int], Int) -> (Int, Int)?
+pub fn one_loop_positive(FixedArray[Int32], Int32) -> (Int32, Int32)?
 
 // Errors
 
@@ -13,4 +13,3 @@ pub fn one_loop_positive(FixedArray[Int], Int) -> (Int, Int)?
 // Type aliases
 
 // Traits
-

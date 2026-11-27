@@ -16,12 +16,13 @@
 /// valid `[10000, 30000]` window. Healthier states layer on top:
 /// `healthy` additionally requires `headroom(engine) >= 0`, and
 /// `liquidatable` is the strict negation of healthy on top of `engine_inv`.
+#derive(Eq)
 pub struct Engine {
   collateral : Int32
   debt : Int32
   reserve : Int32
   min_ratio_bps : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated
@@ -39,11 +40,12 @@ pub extend Engine with Eq::{not_equal, equal}
 /// `next_engine.reserve == 0 || next_engine.debt == 0`: either the reserve
 /// fully absorbed the loss and no debt remains, or the reserve was drained to
 /// zero and whatever is left lives on as bad debt.
+#derive(Eq)
 pub struct LiquidationResult {
   reserve_used : Int32
   remaining_bad_debt : Int32
   next_engine : Engine
-} derive(Eq)
+}
 
 ///|
 #deprecated

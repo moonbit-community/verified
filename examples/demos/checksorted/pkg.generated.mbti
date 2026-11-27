@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/checksorted"
 
 // Values
-pub fn[T : Compare] check_sorted(FixedArray[T]) -> Int
+pub fn[T : Compare] check_sorted(FixedArray[T]) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn[T : Compare] check_sorted(FixedArray[T]) -> Int
 // Type aliases
 
 // Traits
-

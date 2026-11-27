@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/finance/risk_limits"
 
 // Values
-pub fn first_breach(FixedArray[Int], FixedArray[Int]) -> Int?
+pub fn first_breach(FixedArray[Int32], FixedArray[Int32]) -> Int32?
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn first_breach(FixedArray[Int], FixedArray[Int]) -> Int?
 // Type aliases
 
 // Traits
-

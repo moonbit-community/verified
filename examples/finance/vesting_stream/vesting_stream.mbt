@@ -1,10 +1,11 @@
 ///|
+#derive(Eq)
 pub struct Stream {
   total : Int32
   released : Int32
   start : Int32
   duration : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated

@@ -1,11 +1,12 @@
 ///|
+#derive(Eq)
 pub struct Account {
   collateral : Int32
   contracts : Int32
   entry_price : Int32
   funding_debt : Int32
   maintenance_margin_bps : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated

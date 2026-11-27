@@ -2,21 +2,23 @@
 using @seq {type Seq}
 
 ///|
+#derive(Debug)
 pub enum List[T] {
   Nil
   Cons(T, List[T])
-} derive(Debug)
+}
 
 ///|
 #deprecated
 pub extend List with @debug.Debug::{to_repr}
 
 ///|
+#derive(Debug)
 pub struct Deque[T] {
   front : List[T]
   back : List[T]
   len : Int32
-} derive(Debug)
+}
 
 ///|
 #deprecated

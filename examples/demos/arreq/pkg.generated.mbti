@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/arreq"
 
 // Values
-pub fn arrays_equal(FixedArray[Int], FixedArray[Int]) -> Int
+pub fn arrays_equal(FixedArray[Int32], FixedArray[Int32]) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn arrays_equal(FixedArray[Int], FixedArray[Int]) -> Int
 // Type aliases
 
 // Traits
-

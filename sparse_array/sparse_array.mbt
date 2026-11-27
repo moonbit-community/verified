@@ -5,10 +5,11 @@ using @fmap {type Fmap}
 using @fset {type Fset}
 
 ///|
+#derive(Eq)
 pub struct SparseArray[T] {
   bitmap : UInt32
   data : FixedArray[T]
-} derive(Eq)
+}
 
 ///|
 #deprecated

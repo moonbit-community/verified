@@ -15,10 +15,9 @@ pub fn[T : Compare] insert(T, Tree[T]) -> Tree[T]
 // Types and methods
 pub enum Tree[T] {
   Empty
-  Node(Tree[T], T, Tree[T], Int)
+  Node(Tree[T], T, Tree[T], Int32)
 }
 
 // Type aliases
 
 // Traits
-

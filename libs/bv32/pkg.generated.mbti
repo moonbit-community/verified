@@ -2,16 +2,15 @@
 package "moonbit-community/verified/libs/bv32"
 
 // Values
-pub fn uint_to_bv(UInt) -> BV32
+pub fn uint_to_bv(UInt32) -> BV32
 
 // Errors
 
 // Types and methods
 pub type BV32
-pub fn BV32::lsr(Self, Int) -> Self
-pub fn BV32::nth(Self, Int) -> Bool
+pub fn BV32::lsr(Self, Int32) -> Self
+pub fn BV32::nth(Self, Int32) -> Bool
 
 // Type aliases
 
 // Traits
-

@@ -2,21 +2,22 @@
 package "moonbit-community/verified/examples/finance/bridge_custody"
 
 // Values
-pub fn deposit(Bridge, Int) -> Bridge
+pub fn deposit(Bridge, Int32) -> Bridge
 
-pub fn empty(Int) -> Bridge
+pub fn empty(Int32) -> Bridge
 
-pub fn execute_withdraw(Bridge, Int, Int) -> Bridge
+pub fn execute_withdraw(Bridge, Int32, Int32) -> Bridge
 
-pub fn nonce_used(Bridge, Int) -> Bool
+pub fn nonce_used(Bridge, Int32) -> Bool
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct Bridge {
-  reserve : Int
-  used_nonces : UInt
-} derive(Eq)
+  reserve : Int32
+  used_nonces : UInt32
+}
 #deprecated
 pub fn Bridge::equal(Self, Self) -> Bool
 #deprecated

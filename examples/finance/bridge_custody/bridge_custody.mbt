@@ -2,10 +2,11 @@
 using @fset {type Fset}
 
 ///|
+#derive(Eq)
 pub struct Bridge {
   reserve : Int32
   used_nonces : UInt32
-} derive(Eq)
+}
 
 ///|
 #deprecated

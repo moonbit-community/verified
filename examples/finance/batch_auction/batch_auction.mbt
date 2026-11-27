@@ -1,8 +1,9 @@
 ///|
+#derive(Eq)
 pub struct AuctionResult {
   quantity : Int32
   price : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated

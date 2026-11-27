@@ -2,10 +2,11 @@
 /// A leftist heap stores a rank alongside each node, where the stored rank is
 /// the null-path length of the right spine. The invariant combines the heap
 /// ordering with the rank constraint that makes merges cheap.
+#derive(Debug)
 pub enum Heap[T] {
   Empty
   Node(T, Int32, Heap[T], Heap[T])
-} derive(Debug)
+}
 
 ///|
 #deprecated

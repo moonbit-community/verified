@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/verified/merkle_tree"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn combine(MerkleTree, MerkleTree) -> MerkleTree
+
+pub fn generated_proof_verifies(MerkleTree, Int32) -> Bool
+
+pub fn leaf(MerkleTree, Int32) -> Int32
+
+pub fn make_proof(MerkleTree, Int32) -> MerkleProof?
+
+pub fn root(MerkleTree) -> Int32
+
+pub fn singleton(Int32) -> MerkleTree
+
+pub fn size(MerkleTree) -> Int32
+
+pub fn verify_proof(Int32, MerkleProof, Int32) -> Bool
+
+// Errors
+
+// Types and methods
+#derive(@debug.Debug)
+pub enum Direction {
+  Left
+  Right
+}
+#deprecated
+pub fn Direction::to_repr(Self) -> @debug.Repr
+
+#derive(@debug.Debug)
+type MerkleNode
+#deprecated
+pub fn MerkleNode::to_repr(Self) -> @debug.Repr
+
+#derive(@debug.Debug)
+pub enum MerkleProof {
+  Done
+  Step(Direction, Int32, MerkleProof)
+}
+#deprecated
+pub fn MerkleProof::to_repr(Self) -> @debug.Repr
+
+#derive(@debug.Debug)
+pub struct MerkleTree {
+  inner : MerkleNode
+}
+#deprecated
+pub fn MerkleTree::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

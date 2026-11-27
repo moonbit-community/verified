@@ -2,7 +2,7 @@
 package "moonbit-community/verified/examples/demos/gauss"
 
 // Values
-pub fn sum_to(Int) -> Int
+pub fn sum_to(Int32) -> Int32
 
 // Errors
 
@@ -11,4 +11,3 @@ pub fn sum_to(Int) -> Int
 // Type aliases
 
 // Traits
-

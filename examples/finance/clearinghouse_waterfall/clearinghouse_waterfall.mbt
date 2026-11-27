@@ -1,24 +1,26 @@
 ///|
+#derive(Eq)
 pub struct House {
   collateral : Int32
   liability : Int32
   insurance : Int32
   junior : Int32
   senior : Int32
-} derive(Eq)
+}
 
 ///|
 #deprecated
 pub extend House with Eq::{not_equal, equal}
 
 ///|
+#derive(Eq)
 pub struct Resolution {
   insurance_used : Int32
   junior_used : Int32
   senior_used : Int32
   socialized_loss : Int32
   next_house : House
-} derive(Eq)
+}
 
 ///|
 #deprecated

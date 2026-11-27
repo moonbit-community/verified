@@ -10,7 +10,7 @@ pub fn[T] empty() -> Queue[T]
 
 pub fn[T] is_empty(Queue[T]) -> Bool
 
-pub fn[T] length(Queue[T]) -> Int
+pub fn[T] length(Queue[T]) -> Int32
 
 pub fn[T : Eq] peek(Queue[T]) -> T?
 
@@ -21,18 +21,20 @@ pub fn[T] push_back(Queue[T], T) -> Queue[T]
 // Errors
 
 // Types and methods
+#derive(@debug.Debug)
 pub enum List[T] {
   Nil
   Cons(T, List[T])
-} derive(@debug.Debug)
+}
 #deprecated
 pub fn[T : @debug.Debug] List::to_repr(Self[T]) -> @debug.Repr
 
+#derive(@debug.Debug)
 pub struct Queue[T] {
   front : List[T]
   rear : List[T]
-  len : Int
-} derive(@debug.Debug)
+  len : Int32
+}
 #deprecated
 pub fn[T : @debug.Debug] Queue::to_repr(Self[T]) -> @debug.Repr
 

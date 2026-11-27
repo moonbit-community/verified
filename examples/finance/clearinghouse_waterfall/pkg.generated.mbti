@@ -2,38 +2,40 @@
 package "moonbit-community/verified/examples/finance/clearinghouse_waterfall"
 
 // Values
-pub fn add_insurance(House, Int) -> House
+pub fn add_insurance(House, Int32) -> House
 
 pub fn can_fully_absorb(House) -> Bool
 
-pub fn make_house(Int, Int, Int, Int, Int) -> House
+pub fn make_house(Int32, Int32, Int32, Int32, Int32) -> House
 
 pub fn resolve_default(House) -> Resolution
 
-pub fn total_buffer(House) -> Int
+pub fn total_buffer(House) -> Int32
 
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub struct House {
-  collateral : Int
-  liability : Int
-  insurance : Int
-  junior : Int
-  senior : Int
-} derive(Eq)
+  collateral : Int32
+  liability : Int32
+  insurance : Int32
+  junior : Int32
+  senior : Int32
+}
 #deprecated
 pub fn House::equal(Self, Self) -> Bool
 #deprecated
 pub fn House::not_equal(Self, Self) -> Bool
 
+#derive(Eq)
 pub struct Resolution {
-  insurance_used : Int
-  junior_used : Int
-  senior_used : Int
-  socialized_loss : Int
+  insurance_used : Int32
+  junior_used : Int32
+  senior_used : Int32
+  socialized_loss : Int32
   next_house : House
-} derive(Eq)
+}
 #deprecated
 pub fn Resolution::equal(Self, Self) -> Bool
 #deprecated
